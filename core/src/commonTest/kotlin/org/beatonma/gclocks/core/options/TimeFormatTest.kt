@@ -159,8 +159,10 @@ class TimeFormatTest {
     }
 }
 
-private fun timeOfDay(hour: Int, minute: Int, second: Int) = object : TimeOfDay {
-    override val hour = hour
-    override val minute = minute
-    override val second = second
-}
+private fun timeOfDay(hour: Int, minute: Int, second: Int, millisecond: Int = 0) =
+    object : TimeOfDay {
+        override val hour = hour
+        override val minute = minute
+        override val second = second
+        override val millisecond = millisecond
+    }

@@ -6,5 +6,7 @@ enum class PaintStyle {
     ;
 }
 
-interface Paint
-interface Paints
+interface Paints {
+    val colors: Array<Color>
+        get() = arrayOf(Color.Red, Color.Green, Color.Blue, Color.White)
+}

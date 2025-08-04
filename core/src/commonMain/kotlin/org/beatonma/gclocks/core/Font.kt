@@ -5,7 +5,7 @@ import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.TimeFormat
 
 
-interface ClockFont<G : Glyph<*>> {
-    fun getGlyphAt(index: Int): G
-    fun measure(format: TimeFormat, layout: Layout, spacingPx: Int): Size<Int>
+interface ClockFont<G : Glyph> {
+    fun getGlyphAt(index: Int, format: TimeFormat): G
+    fun measure(format: TimeFormat, layout: Layout, spacingPx: Int): Size<Float>
 }

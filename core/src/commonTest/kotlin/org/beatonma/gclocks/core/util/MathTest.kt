@@ -23,10 +23,10 @@ class MathTest {
     }
 
     @Test
-    fun normalize() {
-        assertEquals(0f, normalize(0f, 0f, 100f))
-        assertEquals(0.5f, normalize(50f, 0f, 100f))
-        assertEquals(1f, normalize(100f, 0f, 100f))
+    fun progress() {
+        assertEquals(0f, progress(0f, 0f, 100f))
+        assertEquals(0.5f, progress(50f, 0f, 100f))
+        assertEquals(1f, progress(100f, 0f, 100f))
     }
 
     @Test

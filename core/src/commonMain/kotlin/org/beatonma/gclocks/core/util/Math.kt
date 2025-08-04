@@ -21,7 +21,7 @@ fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Float =
  * Return value is always in the range 0..1, even if value falls outside the
  * given min..max range.
  */
-fun normalize(value: Float, min: Float, max: Float): Float =
+fun progress(value: Float, min: Float, max: Float): Float =
     constrain((value - min) / (max - min), 0f, 1f)
 
 /**

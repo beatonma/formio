@@ -40,6 +40,11 @@ enum class TimeFormat {
                 }
             }
         }
+    val stringLength: Int
+        get() = when (resolution) {
+            TimeResolution.Minutes -> 5 // HH_MM: Two 'hour' digits reserved even if zero-padding is not used
+            TimeResolution.Seconds -> 8 // HH_MM_SS: Two 'hour' digits reserved even if zero-padding is not used
+        }
 
     fun apply(time: TimeOfDay): String {
         val (hour, minute, second) = time
