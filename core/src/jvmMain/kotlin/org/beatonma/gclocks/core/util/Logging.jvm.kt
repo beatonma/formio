@@ -2,6 +2,11 @@
 
 package org.beatonma.gclocks.core.util
 
+fun <T> T.dump(label: String? = null): T {
+    debug(if (label != null) "$label: $this" else "$this")
+    return this
+}
+
 actual fun debug(content: Any?) {
     println("$content")
 }

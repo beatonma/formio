@@ -2,13 +2,15 @@ package org.beatonma.gclocks.core.geometry
 
 import kotlin.math.PI
 
-private const val PI_FLOAT = PI.toFloat()
-private const val CIRCLE_RADIANS = (2.0 * PI).toFloat()
+private const val PiFloat = PI.toFloat()
+private const val CircleRadians = (2.0 * PI).toFloat()
+private const val DegreesToRadiansFactor: Float = PiFloat / 180f
+private const val RadiansToDegreesFactor: Float = 180f / PiFloat
 
 @JvmInline
 value class Angle internal constructor(override val value: Float) : Scalar {
     val asRadians: Float get() = value
-    val asDegrees: Float get() = value * (180f / PI_FLOAT)
+    val asDegrees: Float get() = value * RadiansToDegreesFactor
 
     operator fun plus(other: Angle) = Angle(this.value + other.value)
     operator fun minus(other: Angle) = Angle(this.value - other.value)
@@ -26,9 +28,9 @@ value class Angle internal constructor(override val value: Float) : Scalar {
 /** Normalise the value to the range 0 <= n <= 2pi*/
 val Float.positiveRadians: Angle
     get() = when {
-        this < 0f -> Angle(CIRCLE_RADIANS - (-this % CIRCLE_RADIANS))
-        else -> Angle(this % CIRCLE_RADIANS)
+        this < 0f -> Angle(CircleRadians - (-this % CircleRadians))
+        else -> Angle(this % CircleRadians)
     }
 val Float.radians: Angle get() = Angle(this)
-val Float.positiveDegrees: Angle get() = (this * PI_FLOAT / 180f).positiveRadians
-val Float.degrees: Angle get() = Angle(this * PI_FLOAT / 180f)
+val Float.positiveDegrees: Angle get() = (this * DegreesToRadiansFactor).positiveRadians
+val Float.degrees: Angle get() = Angle(this * DegreesToRadiansFactor)

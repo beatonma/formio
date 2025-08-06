@@ -5,6 +5,8 @@ import org.beatonma.gclocks.core.geometry.Point
 import org.beatonma.gclocks.core.geometry.Rect
 import org.beatonma.gclocks.core.geometry.degrees
 
+private const val DefaultAlpha = 1f
+
 enum class StrokeCap {
     Round,
     Butt,
@@ -64,7 +66,7 @@ interface Canvas<T> : CanvasPath {
         centerY: Float,
         radius: Float,
         style: DrawStyle = Fill,
-        alpha: Float = 1f,
+        alpha: Float = DefaultAlpha,
     )
 
     fun drawCircle(
@@ -72,7 +74,7 @@ interface Canvas<T> : CanvasPath {
         center: Position,
         radius: Float,
         style: DrawStyle = Fill,
-        alpha: Float = 1f,
+        alpha: Float = DefaultAlpha,
     ) = drawCircle(
         centerX = center.x,
         centerY = center.y,
@@ -89,7 +91,7 @@ interface Canvas<T> : CanvasPath {
         x2: Float,
         y2: Float,
         style: Stroke,
-        alpha: Float = 1f,
+        alpha: Float = DefaultAlpha,
     )
 
     fun drawLine(
@@ -97,7 +99,7 @@ interface Canvas<T> : CanvasPath {
         start: Position,
         end: Position,
         style: Stroke,
-        alpha: Float = 1f,
+        alpha: Float = DefaultAlpha,
     ) = drawLine(
         x1 = start.x,
         y1 = start.y,
@@ -115,7 +117,7 @@ interface Canvas<T> : CanvasPath {
         right: Float,
         bottom: Float,
         style: DrawStyle = Fill,
-        alpha: Float = 1f,
+        alpha: Float = DefaultAlpha,
     ) {
         beginPath()
         moveTo(left, top)
@@ -135,7 +137,7 @@ interface Canvas<T> : CanvasPath {
         color: Color,
         rect: Rect<Float>,
         style: DrawStyle = Fill,
-        alpha: Float = 1f,
+        alpha: Float = DefaultAlpha,
     ) = drawRect(
         left = rect.left,
         top = rect.top,
@@ -146,19 +148,53 @@ interface Canvas<T> : CanvasPath {
         alpha = alpha
     )
 
+    fun drawRoundRect(
+        color: Color,
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        radius: Float,
+        style: DrawStyle = Fill,
+        alpha: Float = DefaultAlpha,
+    )
+
+    fun drawBoundedArc(
+        color: Color,
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        startAngle: Angle = (-90f).degrees,
+        sweepAngle: Angle = 180f.degrees,
+        style: DrawStyle = Fill,
+        alpha: Float = DefaultAlpha,
+    ) {
+        drawPath(color, style, alpha) {
+            boundedArc(
+                left = left,
+                top = top,
+                right = right,
+                bottom = bottom,
+                startAngle = startAngle,
+                sweepAngle = sweepAngle,
+            )
+        }
+    }
+
     /**
      * Render the currently plotted path to the canvas.
      */
     fun drawPath(
         color: Color,
         style: DrawStyle = Fill,
-        alpha: Float = 1f,
+        alpha: Float = DefaultAlpha,
     )
 
     fun drawPath(
         color: Color,
         style: DrawStyle = Fill,
-        alpha: Float = 1f,
+        alpha: Float = DefaultAlpha,
         block: CanvasAction<T>,
     ) {
         beginPath()
@@ -202,20 +238,6 @@ interface Canvas<T> : CanvasPath {
         pivotY: Float,
         block: CanvasAction<T>,
     )
-
-//    fun scaleWithPivot(
-//        scaleX: Float,
-//        scaleY: Float,
-//        pivotX: Float,
-//        pivotY: Float,
-//        block: CanvasAction<T>,
-//    ) {
-//        withTranslation(pivotX, pivotY) {
-//            withScale(scaleX, scaleY) {
-//                block()
-//            }
-//        }
-//    }
 
     fun withRotation(
         angle: Angle,

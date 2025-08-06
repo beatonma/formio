@@ -1,7 +1,9 @@
 package org.beatonma.gclocks.compose
 
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap as ComposeStrokeCap
 import androidx.compose.ui.graphics.StrokeJoin as ComposeStrokeJoin
@@ -26,7 +28,7 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 
 private val DefaultPivot = Offset.Zero // TODO not certain if pivot is correct
 
-class ComposeCanvas() : Canvas<DrawScope> {
+object ComposeCanvas : Canvas<DrawScope> {
     private val path: Path = Path()
     private var _drawScope: DrawScope? = null
     private val drawScope: DrawScope get() = _drawScope!!
@@ -129,6 +131,26 @@ class ComposeCanvas() : Canvas<DrawScope> {
             color = color.toCompose(),
             alpha = alpha,
             style = style.toCompose(),
+        )
+    }
+
+    override fun drawRoundRect(
+        color: Color,
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        radius: Float,
+        style: DrawStyle,
+        alpha: Float,
+    ) {
+        drawScope.drawRoundRect(
+            color = color.toCompose(),
+            topLeft = Offset(left, top),
+            size = Size(right - left, bottom - top),
+            cornerRadius = CornerRadius(radius),
+            style = style.toCompose(),
+            alpha = alpha,
         )
     }
 

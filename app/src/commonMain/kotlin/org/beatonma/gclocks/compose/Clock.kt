@@ -9,17 +9,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
-import org.beatonma.gclocks.core.BaseClockGlyph
 import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.ClockLayout
 import org.beatonma.gclocks.core.ClockRenderer
 import org.beatonma.gclocks.core.MeasureStrategy
 import org.beatonma.gclocks.core.geometry.FloatSize
 import org.beatonma.gclocks.core.graphics.Color
-import org.beatonma.gclocks.core.graphics.Paints
-import org.beatonma.gclocks.dev.DevFont
-import org.beatonma.gclocks.dev.DevGlyph
-import org.beatonma.gclocks.dev.DevOptions
 import org.beatonma.gclocks.form.FormFont
 import org.beatonma.gclocks.form.FormGlyph
 import org.beatonma.gclocks.form.FormOptions
@@ -45,7 +40,6 @@ fun Clock(modifier: Modifier = Modifier) {
             }
         }
     }
-    val canvas = remember { ComposeCanvas() }
     val frameDeltaMillis = currentFrameDelta()
 
     Canvas(
@@ -58,8 +52,8 @@ fun Clock(modifier: Modifier = Modifier) {
     ) {
         frameDeltaMillis
         animator.tick()
-        canvas.withScope(this) {
-            animator.render(canvas)
+        ComposeCanvas.withScope(this) {
+            animator.render(ComposeCanvas)
         }
     }
 }
