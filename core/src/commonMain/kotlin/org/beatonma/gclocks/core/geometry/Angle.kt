@@ -23,13 +23,12 @@ value class Angle internal constructor(override val value: Float) : Scalar {
     override fun toString(): String = "$asDegrees°"
 }
 
-val Float.radians: Angle get() = positiveRadians
-val Float.degrees: Angle get() = (this * PI_FLOAT / 180f).positiveRadians
-val Float.rawDegrees: Angle get() = Angle(this * PI.toFloat() / 180f)
-
 /** Normalise the value to the range 0 <= n <= 2pi*/
-private val Float.positiveRadians: Angle
+val Float.positiveRadians: Angle
     get() = when {
         this < 0f -> Angle(CIRCLE_RADIANS - (-this % CIRCLE_RADIANS))
         else -> Angle(this % CIRCLE_RADIANS)
     }
+val Float.radians: Angle get() = Angle(this)
+val Float.positiveDegrees: Angle get() = (this * PI_FLOAT / 180f).positiveRadians
+val Float.degrees: Angle get() = Angle(this * PI_FLOAT / 180f)

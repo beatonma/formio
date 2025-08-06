@@ -1,6 +1,6 @@
 package org.beatonma.gclocks.core.graphics
 
-import org.beatonma.gclocks.core.geometry.degrees
+import org.beatonma.gclocks.core.geometry.positiveDegrees
 import kotlin.jvm.JvmInline
 import kotlin.math.min
 
@@ -46,7 +46,7 @@ value class Color(val value: ULong) {
                 g -> ((b - r) / chroma) + 2
                 b -> ((r - g) / chroma) + 4
                 else -> error("rgbMax $rgbMax is not any of rgb components ($r, $g, $b)")
-            } * 60).degrees.asDegrees
+            } * 60).positiveDegrees.asDegrees
         }
         val saturation = when (lightness) {
             0f, 1f -> 0f

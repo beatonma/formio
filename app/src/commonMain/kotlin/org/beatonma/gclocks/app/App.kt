@@ -1,16 +1,13 @@
 package org.beatonma.gclocks.app
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -49,32 +46,36 @@ fun App() {
         listOf(
             Color.DarkGray,
             Color.LightGray,
+            Color.LightGray,
+            Color.DarkGray,
         )
     }
-
     MaterialTheme {
+//        Column(Modifier.fillMaxSize().safeDrawingPadding()) {
+//            Clock(Modifier.fillMaxSize())
+//        }
         LazyVerticalGrid(
             GridCells.Adaptive(minSize = 160.dp),
-            modifier = Modifier.fillMaxSize().safeDrawingPadding()
+            modifier = Modifier.fillMaxSize().safeDrawingPadding().background(Color.DarkGray)
         ) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Clock(Modifier.fillMaxWidth().aspectRatio(16f / 9f))
+            }
+
             itemsIndexed(
                 keys,
                 key = { index, key -> key },
             ) { index, key ->
-                Box(Modifier.fillMaxSize().border(2.dp, Color.Blue)) {
-                    GlyphPreview(
-                        FormGlyph(GlyphRole.Hour).apply {
-                            this.key = key
-                        },
-                        paints,
-                        Modifier.fillMaxSize()
-                    )
-                }
+                GlyphPreview(
+                    FormGlyph(GlyphRole.Hour).apply {
+                        this.key = key
+                    },
+                    paints,
+                    Modifier
+                        .background(colors[index % colors.size])
+                        .fillMaxSize()
+                )
             }
         }
-
-//        Column(Modifier.fillMaxSize().safeDrawingPadding()) {
-//            Clock(Modifier.fillMaxSize())
-//        }
     }
 }

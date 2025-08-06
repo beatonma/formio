@@ -1,7 +1,7 @@
 package org.beatonma.gclocks.compose
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -26,14 +26,17 @@ fun GlyphPreview(glyph: Glyph, paints: Paints, modifier: Modifier = Modifier) {
     val canvas = remember { ComposeCanvas() }
     var animProgress by remember { mutableFloatStateOf(0f) }
 
-    Canvas(modifier.onSizeChanged { size ->
-        preview.setAvailableSize(
-            FloatSize(
-                size.width.toFloat(),
-                size.height.toFloat()
-            )
-        )
-    }) {
+    Canvas(
+        modifier
+            .aspectRatio(glyph.companion.aspectRatio)
+            .onSizeChanged { size ->
+                preview.setAvailableSize(
+                    FloatSize(
+                        size.width.toFloat(),
+                        size.height.toFloat()
+                    )
+                )
+            }) {
         canvas.withScope(this) {
             preview.draw(this, animProgress, paints)
         }
@@ -49,13 +52,11 @@ private class GlyphPreview(
 
     fun setAvailableSize(available: Size<Float>) {
         val scale = MeasureStrategy.Fit.measureScale(glyph.maxSize, available)
-//        glyph.scale = scale
-        measuredSize = glyph.maxSize //.scaledBy(scale)
-
+        glyph.scale = scale
+        measuredSize = glyph.maxSize.scaledBy(scale)
     }
 
     fun draw(canvas: Canvas<*>, glyphProgress: Float, paints: Paints) {
-        canvas.drawRect(0f, 0f, measuredSize.x, measuredSize.y, Color.Red, Stroke())
         canvas.withScale(glyph.scale) {
             glyph.draw(canvas, glyphProgress, paints)
         }

@@ -55,10 +55,10 @@ class ComposeCanvas() : Canvas<DrawScope> {
     }
 
     override fun drawCircle(
+        color: Color,
         centerX: Float,
         centerY: Float,
         radius: Float,
-        color: Color,
         style: DrawStyle,
         alpha: Float,
     ) {
@@ -71,11 +71,11 @@ class ComposeCanvas() : Canvas<DrawScope> {
     }
 
     override fun drawLine(
+        color: Color,
         x1: Float,
         y1: Float,
         x2: Float,
         y2: Float,
-        color: Color,
         style: Stroke,
         alpha: Float,
     ) {

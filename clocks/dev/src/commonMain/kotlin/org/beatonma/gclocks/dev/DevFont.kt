@@ -5,6 +5,7 @@ import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.ClockFont
+import org.beatonma.gclocks.core.GlyphCompanion
 import org.beatonma.gclocks.core.geometry.FloatSize
 import org.beatonma.gclocks.core.geometry.Size
 import org.beatonma.gclocks.core.graphics.Stroke
@@ -70,188 +71,171 @@ class DevFont : ClockFont<DevGlyph> {
 
 
 class DevGlyph : BaseClockGlyph(GlyphRole.Default) {
-    override val maxSize = FloatSize(
-        x = 120f,
-        y = 120f,
-    )
+    companion object : GlyphCompanion {
+        override val maxSize = FloatSize(
+            x = 120f,
+            y = 120f,
+        )
+        override val aspectRatio: Float = maxSize.aspectRatio()
+    }
+
+    override val companion: GlyphCompanion = DevGlyph
 
     override val role: GlyphRole = GlyphRole.Second
     override var scale: Float = 1f
 
-    private fun drawPlaceholder(
-        canvas: Canvas<*>,
+    private fun Canvas<*>.drawPlaceholder(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        canvas.drawCircle(60f, 60f, 60f, paints.colors.first(), Stroke())
+        drawCircle(paints.colors.first(), 60f, 60f, 60f, Stroke())
     }
 
-    override fun drawZeroOne(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawZeroOne(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawOneTwo(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawOneTwo(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawTwoThree(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawTwoThree(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawThreeFour(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawThreeFour(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawFourFive(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawFourFive(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawFiveSix(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawFiveSix(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawSixSeven(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawSixSeven(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawSevenEight(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawSevenEight(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawEightNine(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawEightNine(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawNineZero(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawNineZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawOneZero(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawOneZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawTwoZero(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawTwoZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawThreeZero(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawThreeZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawFiveZero(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawFiveZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawOneEmpty(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawOneEmpty(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawTwoEmpty(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawTwoEmpty(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawEmptyOne(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawEmptyOne(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawSeparator(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawSeparator(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawSpace(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawSpace(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawUnderscore(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawUnderscore(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
-    override fun drawHash(
-        canvas: Canvas<*>,
+    override fun Canvas<*>.drawHash(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawPlaceholder(canvas, glyphProgress, paints)
+        drawPlaceholder(glyphProgress, paints)
     }
 
     override fun getWidthAtProgress(glyphProgress: Float): Float {

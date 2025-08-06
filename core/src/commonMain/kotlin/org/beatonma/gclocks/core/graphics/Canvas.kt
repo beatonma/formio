@@ -3,6 +3,7 @@ package org.beatonma.gclocks.core.graphics
 import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.geometry.Point
 import org.beatonma.gclocks.core.geometry.Rect
+import org.beatonma.gclocks.core.geometry.degrees
 
 enum class StrokeCap {
     Round,
@@ -54,23 +55,23 @@ class Stroke(
 
 
 typealias Position = Point<Float>
-
+private typealias CanvasAction<T> = Canvas<T>.() -> Unit
 
 interface Canvas<T> : CanvasPath {
     fun drawCircle(
+        color: Color,
         centerX: Float,
         centerY: Float,
         radius: Float,
-        color: Color,
-        style: DrawStyle,
+        style: DrawStyle = Fill,
         alpha: Float = 1f,
     )
 
     fun drawCircle(
+        color: Color,
         center: Position,
         radius: Float,
-        color: Color,
-        style: DrawStyle,
+        style: DrawStyle = Fill,
         alpha: Float = 1f,
     ) = drawCircle(
         centerX = center.x,
@@ -82,19 +83,19 @@ interface Canvas<T> : CanvasPath {
     )
 
     fun drawLine(
+        color: Color,
         x1: Float,
         y1: Float,
         x2: Float,
         y2: Float,
-        color: Color,
         style: Stroke,
         alpha: Float = 1f,
     )
 
     fun drawLine(
+        color: Color,
         start: Position,
         end: Position,
-        color: Color,
         style: Stroke,
         alpha: Float = 1f,
     ) = drawLine(
@@ -108,12 +109,12 @@ interface Canvas<T> : CanvasPath {
     )
 
     fun drawRect(
+        color: Color,
         left: Float,
         top: Float,
         right: Float,
         bottom: Float,
-        color: Color,
-        style: DrawStyle,
+        style: DrawStyle = Fill,
         alpha: Float = 1f,
     ) {
         beginPath()
@@ -131,9 +132,9 @@ interface Canvas<T> : CanvasPath {
     }
 
     fun drawRect(
-        rect: Rect<Float>,
         color: Color,
-        style: DrawStyle,
+        rect: Rect<Float>,
+        style: DrawStyle = Fill,
         alpha: Float = 1f,
     ) = drawRect(
         left = rect.left,
@@ -150,15 +151,15 @@ interface Canvas<T> : CanvasPath {
      */
     fun drawPath(
         color: Color,
-        style: DrawStyle,
+        style: DrawStyle = Fill,
         alpha: Float = 1f,
     )
 
     fun drawPath(
         color: Color,
-        style: DrawStyle,
+        style: DrawStyle = Fill,
         alpha: Float = 1f,
-        block: Canvas<T>.() -> Unit,
+        block: CanvasAction<T>,
     ) {
         beginPath()
 
@@ -167,7 +168,7 @@ interface Canvas<T> : CanvasPath {
         closePath()
     }
 
-    fun withCheckpoint(block: Canvas<T>.() -> Unit) {
+    fun withCheckpoint(block: CanvasAction<T>) {
         save()
         block()
         restore()
@@ -178,20 +179,20 @@ interface Canvas<T> : CanvasPath {
 
     fun withScale(
         scale: Float,
-        block: Canvas<T>.() -> Unit,
+        block: CanvasAction<T>,
     )
 
     fun withScale(
         scaleX: Float,
         scaleY: Float,
-        block: Canvas<T>.() -> Unit,
+        block: CanvasAction<T>,
     )
 
     fun withScale(
         scale: Float,
         pivotX: Float,
         pivotY: Float,
-        block: Canvas<T>.() -> Unit,
+        block: CanvasAction<T>,
     )
 
     fun withScale(
@@ -199,41 +200,41 @@ interface Canvas<T> : CanvasPath {
         scaleY: Float,
         pivotX: Float,
         pivotY: Float,
-        block: Canvas<T>.() -> Unit,
+        block: CanvasAction<T>,
     )
 
-    fun scaleWithPivot(
-        scaleX: Float,
-        scaleY: Float,
-        pivotX: Float,
-        pivotY: Float,
-        block: Canvas<T>.() -> Unit,
-    ) {
-        withTranslation(pivotX, pivotY) {
-            withScale(scaleX, scaleY) {
-                block()
-            }
-        }
-    }
+//    fun scaleWithPivot(
+//        scaleX: Float,
+//        scaleY: Float,
+//        pivotX: Float,
+//        pivotY: Float,
+//        block: CanvasAction<T>,
+//    ) {
+//        withTranslation(pivotX, pivotY) {
+//            withScale(scaleX, scaleY) {
+//                block()
+//            }
+//        }
+//    }
 
     fun withRotation(
         angle: Angle,
         pivotX: Float,
         pivotY: Float,
-        block: Canvas<T>.() -> Unit,
+        block: CanvasAction<T>,
     )
 
     fun withTranslation(
         x: Float,
         y: Float,
-        block: Canvas<T>.() -> Unit,
+        block: CanvasAction<T>,
     )
 
     fun withTranslationAndScale(
         x: Float,
         y: Float,
         scale: Float,
-        block: Canvas<T>.() -> Unit,
+        block: CanvasAction<T>,
     )
 
     fun clear()
@@ -256,15 +257,15 @@ interface CanvasPath {
         top: Float,
         right: Float,
         bottom: Float,
-        startAngle: Angle,
-        sweepAngle: Angle,
+        startAngle: Angle = (-90f).degrees,
+        sweepAngle: Angle = 180f.degrees,
     )
 
     fun beginPath()
     fun closePath()
 }
 
-inline fun <T> Canvas<T>.withPath(block: Canvas<T>.() -> Unit) {
+inline fun <T> Canvas<T>.withPath(block: CanvasAction<T>) {
     block()
     closePath()
 }

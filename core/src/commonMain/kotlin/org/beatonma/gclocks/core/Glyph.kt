@@ -33,15 +33,16 @@ enum class GlyphRole {
     SeparatorMinutesSeconds,
 }
 
-//class GlyphLayoutInfo(
-//    val height: Float,
-//    val maxWidth: Float,
-//)
-
 private typealias OnStateChange = (newState: GlyphState) -> Unit
 
-interface Glyph {
+interface GlyphCompanion {
     val maxSize: Size<Float>
+    val aspectRatio: Float
+}
+
+interface Glyph {
+    val companion: GlyphCompanion
+    val maxSize: Size<Float> get() = companion.maxSize
     val role: GlyphRole
     var key: String
     val state: GlyphState
@@ -181,51 +182,53 @@ abstract class BaseClockGlyph(
     override var scale: Float = 1f,
 ) : BaseGlyph() {
     override fun draw(canvas: Canvas<*>, glyphProgress: Float, paints: Paints) {
-        when (key) {
-            "0", "0_1" -> ::drawZeroOne
-            "1", "1_2" -> ::drawOneTwo
-            "2", "2_3" -> ::drawTwoThree
-            "3", "3_4" -> ::drawThreeFour
-            "4", "4_5" -> ::drawFourFive
-            "5", "5_6" -> ::drawFiveSix
-            "6", "6_7" -> ::drawSixSeven
-            "7", "7_8" -> ::drawSevenEight
-            "8", "8_9" -> ::drawEightNine
-            "9", "9_0" -> ::drawNineZero
-            "1_0" -> ::drawOneZero
-            "2_0" -> ::drawTwoZero
-            "3_0" -> ::drawThreeZero
-            "5_0" -> ::drawFiveZero
-            "1_ " -> ::drawOneEmpty
-            "2_ " -> ::drawTwoEmpty
-            " _1" -> ::drawEmptyOne
-            ":" -> ::drawSeparator
-            " " -> ::drawSpace
-            "_" -> ::drawUnderscore
-            "#" -> ::drawHash
-            else -> throw Exception("Unhandled glyph key '${key}'")
-        }(canvas, glyphProgress, paints)
+        with(canvas) {
+            when (key) {
+                "0", "0_1" -> drawZeroOne(glyphProgress, paints)
+                "1", "1_2" -> drawOneTwo(glyphProgress, paints)
+                "2", "2_3" -> drawTwoThree(glyphProgress, paints)
+                "3", "3_4" -> drawThreeFour(glyphProgress, paints)
+                "4", "4_5" -> drawFourFive(glyphProgress, paints)
+                "5", "5_6" -> drawFiveSix(glyphProgress, paints)
+                "6", "6_7" -> drawSixSeven(glyphProgress, paints)
+                "7", "7_8" -> drawSevenEight(glyphProgress, paints)
+                "8", "8_9" -> drawEightNine(glyphProgress, paints)
+                "9", "9_0" -> drawNineZero(glyphProgress, paints)
+                "1_0" -> drawOneZero(glyphProgress, paints)
+                "2_0" -> drawTwoZero(glyphProgress, paints)
+                "3_0" -> drawThreeZero(glyphProgress, paints)
+                "5_0" -> drawFiveZero(glyphProgress, paints)
+                "1_ " -> drawOneEmpty(glyphProgress, paints)
+                "2_ " -> drawTwoEmpty(glyphProgress, paints)
+                " _1" -> drawEmptyOne(glyphProgress, paints)
+                ":" -> drawSeparator(glyphProgress, paints)
+                " " -> drawSpace(glyphProgress, paints)
+                "_" -> drawUnderscore(glyphProgress, paints)
+                "#" -> drawHash(glyphProgress, paints)
+                else -> throw Exception("Unhandled glyph key '${key}'")
+            }
+        }
     }
 
-    abstract fun drawZeroOne(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawOneTwo(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawTwoThree(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawThreeFour(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawFourFive(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawFiveSix(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawSixSeven(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawSevenEight(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawEightNine(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawNineZero(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawOneZero(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawTwoZero(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawThreeZero(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawFiveZero(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawOneEmpty(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawTwoEmpty(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawEmptyOne(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawSeparator(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawSpace(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawUnderscore(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
-    abstract fun drawHash(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawZeroOne(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawOneTwo(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawTwoThree(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawThreeFour(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawFourFive(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawFiveSix(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawSixSeven(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawSevenEight(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawEightNine(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawNineZero(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawOneZero(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawTwoZero(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawThreeZero(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawFiveZero(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawOneEmpty(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawTwoEmpty(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawEmptyOne(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawSeparator(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawSpace(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawUnderscore(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas<*>.drawHash(glyphProgress: Float, paints: Paints)
 }

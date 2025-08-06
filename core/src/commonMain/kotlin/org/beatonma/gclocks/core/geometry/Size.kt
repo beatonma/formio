@@ -3,6 +3,7 @@ package org.beatonma.gclocks.core.geometry
 interface Size<T : Number> : Vector2<T> {
     val isEmpty: Boolean
     fun scaledBy(factor: Float): Size<Float>
+    fun aspectRatio(): Float
 }
 
 interface MutableSize<T : Number> : Size<T> {
@@ -22,6 +23,8 @@ class IntSize(
         y.toFloat() * factor,
     )
 
+    override fun aspectRatio(): Float = x.toFloat() / y.toFloat()
+
     override fun toString(): String = Vector2.toString(this)
 
     companion object {
@@ -40,6 +43,8 @@ class FloatSize(
         x * factor,
         y * factor,
     )
+
+    override fun aspectRatio(): Float = x / y
 
     override fun toString(): String = Vector2.toString(this)
 
