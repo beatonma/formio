@@ -80,6 +80,9 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+            implementation(libs.skiko.awt.runtime.linux.x64)
+            implementation(libs.androidx.collection.ktx)
+            implementation(libs.ui.backhandler)
         }
     }
 }
@@ -117,7 +120,7 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "org.beatonma.MainKt"
+        mainClass = "org.beatonma.gclocks.app.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
