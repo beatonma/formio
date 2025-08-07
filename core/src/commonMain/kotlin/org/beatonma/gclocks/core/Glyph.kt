@@ -2,6 +2,7 @@ package org.beatonma.gclocks.core
 
 import org.beatonma.gclocks.core.geometry.Size
 import org.beatonma.gclocks.core.graphics.Canvas
+import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Paints
 
 enum class GlyphState {
@@ -202,12 +203,17 @@ abstract class BaseClockGlyph(
                 "2_ " -> drawTwoEmpty(glyphProgress, paints)
                 " _1" -> drawEmptyOne(glyphProgress, paints)
                 ":" -> drawSeparator(glyphProgress, paints)
-                " " -> drawSpace(glyphProgress, paints)
-                "_" -> drawUnderscore(glyphProgress, paints)
+                " ", "_" -> drawSpace(glyphProgress, paints)
                 "#" -> drawHash(glyphProgress, paints)
                 else -> throw Exception("Unhandled glyph key '${key}'")
             }
         }
+    }
+
+    fun Canvas<*>.drawNotImplemented(glyphProgress: Float, paints: Paints) {
+        val (width, height) = companion.maxSize
+        drawLine(Color.Red, 0f, 0f, width, height)
+        drawLine(Color.Red, width, 0f, 0f, height)
     }
 
     abstract fun Canvas<*>.drawZeroOne(glyphProgress: Float, paints: Paints)
@@ -229,6 +235,5 @@ abstract class BaseClockGlyph(
     abstract fun Canvas<*>.drawEmptyOne(glyphProgress: Float, paints: Paints)
     abstract fun Canvas<*>.drawSeparator(glyphProgress: Float, paints: Paints)
     abstract fun Canvas<*>.drawSpace(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawUnderscore(glyphProgress: Float, paints: Paints)
     abstract fun Canvas<*>.drawHash(glyphProgress: Float, paints: Paints)
 }

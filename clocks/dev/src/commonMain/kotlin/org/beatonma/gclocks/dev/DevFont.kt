@@ -8,7 +8,6 @@ import org.beatonma.gclocks.core.ClockFont
 import org.beatonma.gclocks.core.GlyphCompanion
 import org.beatonma.gclocks.core.geometry.FloatSize
 import org.beatonma.gclocks.core.geometry.Size
-import org.beatonma.gclocks.core.graphics.Stroke
 import org.beatonma.gclocks.core.options.HorizontalAlignment
 import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.Options
@@ -88,7 +87,7 @@ class DevGlyph : BaseClockGlyph(GlyphRole.Default) {
         glyphProgress: Float,
         paints: Paints,
     ) {
-        drawCircle(paints.colors.first(), 60f, 60f, 60f, Stroke())
+        drawCircle(paints.colors.first(), 60f, 60f, 60f)
     }
 
     override fun Canvas<*>.drawZeroOne(
@@ -218,13 +217,6 @@ class DevGlyph : BaseClockGlyph(GlyphRole.Default) {
     }
 
     override fun Canvas<*>.drawSpace(
-        glyphProgress: Float,
-        paints: Paints,
-    ) {
-        drawPlaceholder(glyphProgress, paints)
-    }
-
-    override fun Canvas<*>.drawUnderscore(
         glyphProgress: Float,
         paints: Paints,
     ) {

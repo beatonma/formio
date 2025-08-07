@@ -14,6 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
@@ -24,14 +27,27 @@ import org.beatonma.gclocks.core.geometry.Size
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.util.getTime
+import org.beatonma.gclocks.core.util.progress
 
 
-private val AnimationDurationSeconds = 3f
+private const val AnimationDurationSeconds = 2f
 
 @Composable
-fun GlyphPreview(glyph: Glyph, paints: Paints, modifier: Modifier = Modifier) {
+fun GlyphPreview(
+    glyph: Glyph,
+    paints: Paints,
+    modifier: Modifier = Modifier,
+    animPosition: Float? = null,
+) {
     val preview = remember { GlyphPreview(glyph) }
-    var animProgress by remember { mutableFloatStateOf(0f) }
+    var animProgress: Float by remember(animPosition) {
+        mutableFloatStateOf(
+            when {
+                (animPosition == null) -> 0f
+                else -> progress(animPosition, 0f, 1f)
+            }
+        )
+    }
 
     Box {
         Canvas(
@@ -44,12 +60,15 @@ fun GlyphPreview(glyph: Glyph, paints: Paints, modifier: Modifier = Modifier) {
                             size.height.toFloat()
                         )
                     )
-                }) {
+                }//.gridlines()
+        ) {
             ComposeCanvas.withScope(this) {
                 preview.draw(this, animProgress, paints)
             }
-            animProgress = getTime().run {
-                (((second % AnimationDurationSeconds) * 1000) + millisecond) / (AnimationDurationSeconds * 1000)
+            if (animPosition == null) {
+                animProgress = getTime().run {
+                    (((second % AnimationDurationSeconds) * 1000) + millisecond) / (AnimationDurationSeconds * 1000)
+                }
             }
         }
 
@@ -76,6 +95,23 @@ private class GlyphPreview(
     fun draw(canvas: Canvas<*>, glyphProgress: Float, paints: Paints) {
         canvas.withScale(glyph.scale) {
             glyph.draw(canvas, glyphProgress, paints)
+        }
+    }
+}
+
+private fun Modifier.gridlines(): Modifier = composed {
+    val color = Color.Black.copy(alpha = 0.4f)
+    this.drawWithContent {
+        drawContent()
+
+        val (w, h) = size
+        for (i in 0 until 10) {
+            val x = i * w / 10f
+            drawLine(color, Offset(x, 0f), Offset(x, h))
+        }
+        for (i in 0 until 10) {
+            val y = i * h / 10f
+            drawLine(color, Offset(0f, y), Offset(w, y))
         }
     }
 }

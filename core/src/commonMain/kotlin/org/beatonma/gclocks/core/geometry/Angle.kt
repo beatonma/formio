@@ -23,6 +23,13 @@ value class Angle internal constructor(override val value: Float) : Scalar {
     operator fun unaryMinus(): Angle = Angle(-value)
 
     override fun toString(): String = "$asDegrees°"
+
+    companion object {
+        val Zero = Angle(0f)
+        val Ninety = 90f.degrees
+        val OneEighty = 180f.degrees
+        val TwoSeventy = 270f.degrees
+    }
 }
 
 /** Normalise the value to the range 0 <= n <= 2pi*/

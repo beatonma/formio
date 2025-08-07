@@ -30,6 +30,10 @@ class Stroke(
     val cap: StrokeCap = StrokeCap.Square,
     val join: StrokeJoin = StrokeJoin.Miter,
 ) : DrawStyle() {
+    companion object {
+        val Default = Stroke()
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Stroke) return false
@@ -90,7 +94,7 @@ interface Canvas<T> : CanvasPath {
         y1: Float,
         x2: Float,
         y2: Float,
-        style: Stroke,
+        style: Stroke = Stroke.Default,
         alpha: Float = DefaultAlpha,
     )
 
@@ -98,7 +102,7 @@ interface Canvas<T> : CanvasPath {
         color: Color,
         start: Position,
         end: Position,
-        style: Stroke,
+        style: Stroke = Stroke.Default,
         alpha: Float = DefaultAlpha,
     ) = drawLine(
         x1 = start.x,
@@ -165,8 +169,8 @@ interface Canvas<T> : CanvasPath {
         top: Float,
         right: Float,
         bottom: Float,
-        startAngle: Angle = (-90f).degrees,
-        sweepAngle: Angle = 180f.degrees,
+        startAngle: Angle = Angle.TwoSeventy,
+        sweepAngle: Angle = Angle.OneEighty,
         style: DrawStyle = Fill,
         alpha: Float = DefaultAlpha,
     ) {

@@ -30,18 +30,20 @@ interface ClockRenderer<G : BaseClockGlyph> {
     }
 
     fun drawGlyphBoundary(canvas: Canvas<*>, paints: Paints, boundary: Rect<Float>) {
-        canvas.drawRect(paints.colors.first(), boundary, Stroke())
+        canvas.drawRect(paints.colors.first(), boundary)
         canvas.drawLine(
             paints.colors.first(),
-            boundary.left, boundary.top,
-            boundary.right, boundary.bottom,
-            Stroke()
+            boundary.left,
+            boundary.top,
+            boundary.right,
+            boundary.bottom
         )
         canvas.drawLine(
             paints.colors.first(),
-            boundary.right, boundary.top,
-            boundary.left, boundary.bottom,
-            Stroke()
+            boundary.right,
+            boundary.top,
+            boundary.left,
+            boundary.bottom
         )
     };
 
