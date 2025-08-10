@@ -1,9 +1,10 @@
 package org.beatonma.gclocks.core
 
 import org.beatonma.gclocks.core.geometry.Size
-import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Color
+import org.beatonma.gclocks.core.graphics.GenericCanvas
 import org.beatonma.gclocks.core.graphics.Paints
+import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 
 enum class GlyphState {
     Inactive,
@@ -51,7 +52,7 @@ interface Glyph {
     var scale: Float
     var onStateChange: OnStateChange?
 
-    fun draw(canvas: Canvas<*>, glyphProgress: Float, paints: Paints)
+    fun draw(canvas: GenericCanvas, glyphProgress: Float, paints: Paints)
     fun getWidthAtProgress(glyphProgress: Float): Float
 
     val canonicalStartGlyph: Char
@@ -64,16 +65,18 @@ private typealias GlyphStateSetter = (queue: Boolean) -> Unit
 abstract class BaseGlyph : Glyph {
     final override var state: GlyphState = GlyphState.Appearing
         private set(value) {
+            if (field != value) {
+                stateChangedAt = getCurrentTimeMillis()
+            }
             field = value
             onStateChange?.invoke(value)
         }
-    private var queuedState: GlyphState? = null
+//    private var queuedState: GlyphState? = null
 
     override var lock = GlyphStateLock.None
     override var onStateChange: OnStateChange? = null
 
-    var stateAnimationTime = 0
-    var deactivationStartedTime = 0
+    var stateChangedAt: Long = getCurrentTimeMillis()
 
     override var key: String = " "
         set(value) {
@@ -86,6 +89,10 @@ abstract class BaseGlyph : Glyph {
         private set
     final override var canonicalEndGlyph: Char = key.first()
         private set
+
+    override fun toString(): String {
+        return key
+    }
 
     fun setState(newState: GlyphState, force: Boolean = false, queue: Boolean = false) {
         if (force) {
@@ -113,7 +120,7 @@ abstract class BaseGlyph : Glyph {
         if (state == GlyphState.Inactive) {
             state = GlyphState.Activating
         } else if (queue) {
-            queuedState = GlyphState.Activating
+//            queuedState = GlyphState.Activating
         }
     }
 
@@ -121,7 +128,7 @@ abstract class BaseGlyph : Glyph {
         if (state == GlyphState.Active) {
             state = GlyphState.Deactivating
         } else if (queue) {
-            queuedState = GlyphState.Deactivating
+//            queuedState = GlyphState.Deactivating
         }
     }
 
@@ -145,7 +152,7 @@ abstract class BaseGlyph : Glyph {
         if (state == GlyphState.Disappeared) {
             state = GlyphState.Appearing
         } else if (queue) {
-            queuedState = GlyphState.Appearing
+//            queuedState = GlyphState.Appearing
         }
     }
 
@@ -155,7 +162,7 @@ abstract class BaseGlyph : Glyph {
         } else if (state == GlyphState.Inactive) {
             state = GlyphState.DisappearingFromInactive
         } else if (queue) {
-            queuedState = GlyphState.Disappearing
+//            queuedState = GlyphState.Disappearing
         }
     }
 
@@ -168,12 +175,8 @@ abstract class BaseGlyph : Glyph {
         ) {
             state = GlyphState.Disappeared
         } else if (queue) {
-            queuedState = GlyphState.Disappearing
+//            queuedState = GlyphState.Disappearing
         }
-    }
-
-    override fun toString(): String {
-        return key
     }
 }
 
@@ -182,7 +185,7 @@ abstract class BaseClockGlyph(
     override val role: GlyphRole,
     override var scale: Float = 1f,
 ) : BaseGlyph() {
-    override fun draw(canvas: Canvas<*>, glyphProgress: Float, paints: Paints) {
+    override fun draw(canvas: GenericCanvas, glyphProgress: Float, paints: Paints) {
         with(canvas) {
             when (key) {
                 "0", "0_1" -> drawZeroOne(glyphProgress, paints)
@@ -210,30 +213,41 @@ abstract class BaseClockGlyph(
         }
     }
 
-    fun Canvas<*>.drawNotImplemented(glyphProgress: Float, paints: Paints) {
+    fun GenericCanvas.drawNotImplemented(glyphProgress: Float, paints: Paints) {
         val (width, height) = companion.maxSize
         drawLine(Color.Red, 0f, 0f, width, height)
         drawLine(Color.Red, width, 0f, 0f, height)
     }
 
-    abstract fun Canvas<*>.drawZeroOne(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawOneTwo(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawTwoThree(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawThreeFour(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawFourFive(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawFiveSix(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawSixSeven(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawSevenEight(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawEightNine(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawNineZero(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawOneZero(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawTwoZero(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawThreeZero(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawFiveZero(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawOneEmpty(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawTwoEmpty(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawEmptyOne(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawSeparator(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawSpace(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas<*>.drawHash(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawZeroOne(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawOneTwo(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawTwoThree(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawThreeFour(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawFourFive(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawFiveSix(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawSixSeven(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawSevenEight(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawEightNine(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawNineZero(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawOneZero(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawTwoZero(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawThreeZero(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawFiveZero(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawOneEmpty(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawTwoEmpty(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawEmptyOne(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawSeparator(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawSpace(glyphProgress: Float, paints: Paints)
+    abstract fun GenericCanvas.drawHash(glyphProgress: Float, paints: Paints)
+}
+
+
+interface GlyphRenderer<G : Glyph> {
+    fun draw(glyph: G, canvas: GenericCanvas, glyphProgress: Float, paints: Paints) {
+        glyph.draw(canvas, glyphProgress, paints)
+    }
+
+    companion object {
+        fun <G : Glyph> Default() = object : GlyphRenderer<G> {}
+    }
 }

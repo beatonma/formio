@@ -3,6 +3,16 @@ package org.beatonma.gclocks.core.geometry
 import org.beatonma.gclocks.core.util.warn
 import kotlin.math.sqrt
 
+interface PackedFloats2 {
+    fun unpackX(value: Long): Float = Float.fromBits((value shr 32).toInt())
+    fun unpackY(value: Long): Float = Float.fromBits(((value shr 32) and 0x7fffffff).toInt())
+}
+
+private fun Float.longBits() = toRawBits().toLong()
+internal fun packFloats(value1: Float, value2: Float): Long {
+    return (value1.longBits() shl 32) or (value2.longBits() and 0xFFFFFFFF)
+}
+
 interface Vector2<T : Number> : Comparable<Vector2<T>> {
     val x: T
     val y: T
@@ -16,23 +26,8 @@ interface Vector2<T : Number> : Comparable<Vector2<T>> {
     }
 }
 
-interface IntVector2 : Vector2<Int> {
-    override val magnitude get() = sqrt((x * x).toFloat() + (y * y).toFloat())
 
-    override fun compareTo(other: Vector2<Int>): Int {
-        if (this::class != other::class) {
-            throw IllegalArgumentException(
-                "Cannot compare different Vector2 implementations: ${this::class} vs ${other::class}"
-            )
-        }
-        warn("Default Vector2D compareTo is only intended for use in tests.")
-
-        return (this.magnitude - other.magnitude).toInt()
-    }
-}
-
-
-interface FloatVector2 : Vector2<Float> {
+interface FloatVector2 : Vector2<Float>, PackedFloats2 {
     override val magnitude get() = sqrt((x * x) + (y * y))
 
     override fun compareTo(other: Vector2<Float>): Int {

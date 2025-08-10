@@ -70,8 +70,9 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(project(":core"))
-            implementation(project(":clocks:dev"))
+//            implementation(project(":clocks:dev"))
             implementation(project(":clocks:form"))
+            implementation(project(":clocks:io16"))
 //            implementation(project(":clocks:io18"))
         }
         commonTest.dependencies {

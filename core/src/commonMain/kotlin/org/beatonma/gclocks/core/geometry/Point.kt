@@ -12,3 +12,12 @@ interface MutablePoint<T : Number> : Point<T> {
     override var x: T
     override var y: T
 }
+
+
+@JvmInline
+value class FloatPoint private constructor(val packedValue: Long) : Point<Float>, FloatVector2 {
+    constructor(x: Float, y: Float) : this(packFloats(x, y))
+
+    override inline val x get() = unpackX(packedValue)
+    override inline val y get() = unpackY(packedValue)
+}

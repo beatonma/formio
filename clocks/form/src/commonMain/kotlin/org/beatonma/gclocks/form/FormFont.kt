@@ -2,7 +2,6 @@ package org.beatonma.gclocks.form
 
 import org.beatonma.gclocks.core.BaseClockGlyph
 import org.beatonma.gclocks.core.GlyphRole
-import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.ClockFont
 import org.beatonma.gclocks.core.GlyphCompanion
@@ -10,6 +9,7 @@ import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.geometry.FloatSize
 import org.beatonma.gclocks.core.geometry.Size
 import org.beatonma.gclocks.core.geometry.degrees
+import org.beatonma.gclocks.core.graphics.GenericCanvas
 import org.beatonma.gclocks.core.options.HorizontalAlignment
 import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.Options
@@ -22,7 +22,6 @@ import org.beatonma.gclocks.core.util.progress
 
 
 private const val FormGlyphHeight = 144f
-private const val SecondScale = 0.5f
 private const val TwoThirds = 2f / 3f
 
 data class FormOptions(
@@ -32,14 +31,18 @@ data class FormOptions(
     override val format: TimeFormat = TimeFormat.HH_MM_SS_24,
     override val spacingPx: Int = 8,
     override val glyphMorphMillis: Int = 800,
+    override val secondsGlyphScale: Float = Options.DefaultSecondsGlyphScale,
 ) : Options
 
 
 class FormFont : ClockFont<FormGlyph> {
-    override fun getGlyphAt(index: Int, format: TimeFormat): FormGlyph {
+    override fun getGlyphAt(
+        index: Int, format: TimeFormat,
+        secondsGlyphScale: Float,
+    ): FormGlyph {
         val role = format.roles.getOrNull(index) ?: GlyphRole.Default
         val scale = when (role) {
-            GlyphRole.Second -> SecondScale
+            GlyphRole.Second -> secondsGlyphScale
             else -> 1f
         }
         return FormGlyph(role, scale)
@@ -49,6 +52,7 @@ class FormFont : ClockFont<FormGlyph> {
         format: TimeFormat,
         layout: Layout,
         spacingPx: Int,
+        secondsGlyphScale: Float,
     ): Size<Float> {
         val hasSeconds = format.resolution == TimeResolution.Seconds
 
@@ -59,7 +63,8 @@ class FormFont : ClockFont<FormGlyph> {
         return when (layout) {
             Layout.Horizontal -> {
                 val digitsWidth = 816f
-                val spacingWidth = spacingPx.toFloat() * (if (hasSeconds) 5f + SecondScale else 4f)
+                val spacingWidth =
+                    spacingPx.toFloat() * (if (hasSeconds) 5f + secondsGlyphScale else 4f)
                 return FloatSize(
                     digitsWidth + separatorWidth + spacingWidth, lineHeight
                 )
@@ -67,12 +72,12 @@ class FormFont : ClockFont<FormGlyph> {
 
             Layout.Vertical -> FloatSize(
                 (pairWidth + spacingPx).toFloat(),
-                lineHeight * (2f + (if (hasSeconds) SecondScale else 0f) + (spacingPx.toFloat() * 2f))
+                lineHeight * (2f + (if (hasSeconds) secondsGlyphScale else 0f) + (spacingPx.toFloat() * 2f))
             )
 
             Layout.Wrapped -> FloatSize(
                 (pairWidth * 2f) + (spacingPx * 4f),
-                (lineHeight * (1f + (if (hasSeconds) SecondScale else 0f))) + spacingPx.toFloat()
+                (lineHeight * (1f + (if (hasSeconds) secondsGlyphScale else 0f))) + spacingPx.toFloat()
             )
         }
     }
@@ -93,7 +98,7 @@ class FormGlyph(
 
     override val companion: GlyphCompanion = FormGlyph
 
-    override fun Canvas<*>.drawZeroOne(
+    override fun GenericCanvas.drawZeroOne(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -102,37 +107,35 @@ class FormGlyph(
         val d2 = decelerate5(progress(glyphProgress, 0.5f, 1f))
 
         // 0
-        withCheckpoint {
-            val stretchX = interpolate(d1, 0f, interpolate(d2, 72f, -36f))
+        val stretchX = interpolate(d1, 0f, interpolate(d2, 72f, -36f))
 
-            withTranslation(
-                interpolate(d1, interpolate(d1, 0f, 24f), interpolate(d2, 24f, 0f)), 0f
-            ) {
-                withScale(interpolate(d1, 1f, TwoThirds), 72f, 144f) {
-                    withScale(interpolate(d2, 1f, 0.7f), 72f, 96f) {
-                        withRotation(interpolate(d1, 45f, 0f).degrees, 72f, 72f) {
-                            drawPath(color2) {
-                                moveTo(72f - stretchX, 144f)
-                                boundedArc(
-                                    -stretchX,
-                                    0f,
-                                    144f - stretchX,
-                                    144f,
-                                    Angle.Ninety,
-                                )
-                                lineTo(72f + stretchX, 0f)
-                                lineTo(72f + stretchX, 144f)
-                                lineTo(72f - stretchX, 144f)
-                            }
-
-                            drawBoundedArc(
-                                color3,
-                                stretchX,
+        withTranslation(
+            interpolate(d1, interpolate(d1, 0f, 24f), interpolate(d2, 24f, 0f)), 0f
+        ) {
+            withScale(interpolate(d1, 1f, TwoThirds), 72f, 144f) {
+                withScale(interpolate(d2, 1f, 0.7f), 72f, 96f) {
+                    withRotation(interpolate(d1, 45f, 0f).degrees, 72f, 72f) {
+                        drawPath(color2) {
+                            moveTo(72f - stretchX, 144f)
+                            boundedArc(
+                                -stretchX,
                                 0f,
-                                144f + stretchX,
+                                144f - stretchX,
                                 144f,
+                                Angle.Ninety,
                             )
+                            lineTo(72f + stretchX, 0f)
+                            lineTo(72f + stretchX, 144f)
+                            lineTo(72f - stretchX, 144f)
                         }
+
+                        drawBoundedArc(
+                            color3,
+                            stretchX,
+                            0f,
+                            144f + stretchX,
+                            144f,
+                        )
                     }
                 }
             }
@@ -151,7 +154,7 @@ class FormGlyph(
         }
     }
 
-    override fun Canvas<*>.drawOneTwo(
+    override fun GenericCanvas.drawOneTwo(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -197,7 +200,7 @@ class FormGlyph(
         }
     }
 
-    override fun Canvas<*>.drawTwoThree(
+    override fun GenericCanvas.drawTwoThree(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -288,7 +291,7 @@ class FormGlyph(
         }
     }
 
-    override fun Canvas<*>.drawThreeFour(
+    override fun GenericCanvas.drawThreeFour(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -385,7 +388,7 @@ class FormGlyph(
         }
     }
 
-    override fun Canvas<*>.drawFourFive(
+    override fun GenericCanvas.drawFourFive(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -463,7 +466,7 @@ class FormGlyph(
         }
     }
 
-    override fun Canvas<*>.drawFiveSix(
+    override fun GenericCanvas.drawFiveSix(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -522,7 +525,7 @@ class FormGlyph(
         }
     }
 
-    override fun Canvas<*>.drawSixSeven(
+    override fun GenericCanvas.drawSixSeven(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -552,7 +555,7 @@ class FormGlyph(
         }
     }
 
-    override fun Canvas<*>.drawSevenEight(
+    override fun GenericCanvas.drawSevenEight(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -656,7 +659,7 @@ class FormGlyph(
         }
     }
 
-    override fun Canvas<*>.drawEightNine(
+    override fun GenericCanvas.drawEightNine(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -735,7 +738,7 @@ class FormGlyph(
         }
     }
 
-    override fun Canvas<*>.drawNineZero(
+    override fun GenericCanvas.drawNineZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -766,14 +769,14 @@ class FormGlyph(
         }
     }
 
-    override fun Canvas<*>.drawOneZero(
+    override fun GenericCanvas.drawOneZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
         drawZeroOne(1f - glyphProgress, paints)
     }
 
-    override fun Canvas<*>.drawTwoZero(
+    override fun GenericCanvas.drawTwoZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -856,7 +859,7 @@ class FormGlyph(
         }
     }
 
-    override fun Canvas<*>.drawThreeZero(
+    override fun GenericCanvas.drawThreeZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -915,7 +918,7 @@ class FormGlyph(
         }
     }
 
-    override fun Canvas<*>.drawFiveZero(
+    override fun GenericCanvas.drawFiveZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -964,7 +967,7 @@ class FormGlyph(
         }
     }
 
-    override fun Canvas<*>.drawOneEmpty(
+    override fun GenericCanvas.drawOneEmpty(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -987,7 +990,7 @@ class FormGlyph(
         }
     }
 
-    override fun Canvas<*>.drawTwoEmpty(
+    override fun GenericCanvas.drawTwoEmpty(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -1027,7 +1030,7 @@ class FormGlyph(
         }
     }
 
-    override fun Canvas<*>.drawEmptyOne(
+    override fun GenericCanvas.drawEmptyOne(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -1051,7 +1054,7 @@ class FormGlyph(
         }
     }
 
-    override fun Canvas<*>.drawSeparator(
+    override fun GenericCanvas.drawSeparator(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -1060,14 +1063,14 @@ class FormGlyph(
         drawCircle(color3, 24f, 120f, 24f);
     }
 
-    override fun Canvas<*>.drawSpace(
+    override fun GenericCanvas.drawSpace(
         glyphProgress: Float,
         paints: Paints,
     ) {
         // Page intentionally blank
     }
 
-    override fun Canvas<*>.drawHash(
+    override fun GenericCanvas.drawHash(
         glyphProgress: Float,
         paints: Paints,
     ) {

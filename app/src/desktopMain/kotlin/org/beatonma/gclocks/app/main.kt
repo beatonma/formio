@@ -11,7 +11,7 @@ import androidx.compose.ui.window.rememberWindowState
 fun main() = application {
     val windowState = rememberWindowState(
         position = WindowPosition.Aligned(Alignment.TopEnd),
-        size = DpSize(300.dp, 800.dp),
+        size = DpSize(400.dp, 800.dp),
     )
 
     Window(

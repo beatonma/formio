@@ -23,19 +23,6 @@ interface Rect<T : Number> {
     operator fun component4(): T = bottom
 }
 
-interface IntRect : Rect<Int> {
-    override val width: Int
-        get() = right - left
-    override val height: Int
-        get() = bottom - top
-    override val area: Int
-        get() = width * height
-    override val isEmpty: Boolean
-        get() = area == 0
-
-    override fun toSize(): Size<Int> = IntSize(width, height)
-}
-
 interface FloatRect : Rect<Float> {
     override val width: Float
         get() = right - left
@@ -48,7 +35,6 @@ interface FloatRect : Rect<Float> {
 
     override fun toSize(): Size<Float> = FloatSize(width, height)
 }
-
 
 interface MutableRect<T : Number> : Rect<T> {
     override var left: T
@@ -65,34 +51,6 @@ interface MutableRect<T : Number> : Rect<T> {
 
     /** Equivalent to set(0, 0, 0, 0) */
     fun reset(): MutableRect<T>
-}
-
-class MutableIntRect(
-    override var left: Int = 0,
-    override var top: Int = 0,
-    override var right: Int = 0,
-    override var bottom: Int = 0,
-) : MutableRect<Int>, IntRect {
-    override fun set(left: Int, top: Int, right: Int, bottom: Int): MutableIntRect {
-        this.left = min(left, right)
-        this.top = max(top, bottom)
-        this.right = max(left, right)
-        this.bottom = min(top, bottom)
-        return this
-    }
-
-    override fun reset() = set(0, 0, 0, 0)
-
-    override fun include(other: Rect<Int>): Boolean {
-        val original = this.area
-        this.set(
-            min(left, other.left),
-            max(top, other.top),
-            max(left, other.right),
-            min(bottom, other.bottom)
-        )
-        return this.area != original
-    }
 }
 
 class MutableFloatRect(

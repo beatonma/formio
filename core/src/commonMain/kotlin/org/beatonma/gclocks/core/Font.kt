@@ -6,6 +6,24 @@ import org.beatonma.gclocks.core.options.TimeFormat
 
 
 interface ClockFont<G : Glyph> {
-    fun getGlyphAt(index: Int, format: TimeFormat): G
-    fun measure(format: TimeFormat, layout: Layout, spacingPx: Int): Size<Float>
+    /**
+     * Create a new glyph instance for the given position.
+     */
+    fun getGlyphAt(index: Int, format: TimeFormat, secondsGlyphScale: Float): G
+
+    /**
+     * Returns the maximum size needed to render a time in this font (at its
+     * native size) with the given options.
+     *
+     * The resulting space will be reserved - the clock may not use all the
+     * space all the time, but there exists some time when it will need to
+     * use all the space. Reserving this space means that we can maintain a
+     * constant font size throughout the day.
+     */
+    fun measure(
+        format: TimeFormat,
+        layout: Layout,
+        spacingPx: Int,
+        secondsGlyphScale: Float,
+    ): Size<Float>
 }

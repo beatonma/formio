@@ -2,58 +2,146 @@ package org.beatonma.gclocks.compose
 
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Rect as PlatformRect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap as ComposeStrokeCap
-import androidx.compose.ui.graphics.StrokeJoin as ComposeStrokeJoin
+import androidx.compose.ui.graphics.PathMeasure as PlatformPathMeasure
+import androidx.compose.ui.graphics.Path as PlatformPath
+import androidx.compose.ui.graphics.StrokeCap as PlatformStrokeCap
+import androidx.compose.ui.graphics.StrokeJoin as PlatformStrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.drawscope.withTransform
 import org.beatonma.gclocks.core.geometry.Angle
-import androidx.compose.ui.graphics.drawscope.Fill as ComposeFill
-import androidx.compose.ui.graphics.drawscope.Stroke as ComposeStroke
-import androidx.compose.ui.graphics.drawscope.DrawStyle as ComposeStyle
-import org.beatonma.gclocks.core.geometry.Vector2
+import org.beatonma.gclocks.core.geometry.FloatPoint
+import org.beatonma.gclocks.core.geometry.Point
+import androidx.compose.ui.graphics.drawscope.Fill as PlatformFill
+import androidx.compose.ui.graphics.drawscope.Stroke as PlatformStroke
+import androidx.compose.ui.graphics.drawscope.DrawStyle as PlatformStyle
 import org.beatonma.gclocks.core.graphics.Canvas
+import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.graphics.StrokeCap
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.DrawStyle
 import org.beatonma.gclocks.core.graphics.Fill
+import org.beatonma.gclocks.core.graphics.PathMeasure
+import org.beatonma.gclocks.core.graphics.Position
 import org.beatonma.gclocks.core.graphics.Stroke
 import org.beatonma.gclocks.core.graphics.StrokeJoin
-import androidx.compose.ui.graphics.Color as ComposeColor
+import androidx.compose.ui.graphics.Color as PlatformColor
 
-private val DefaultPivot = Offset.Zero // TODO not certain if pivot is correct
+private val DefaultPivot = Offset.Zero
 
-object ComposeCanvas : Canvas<DrawScope> {
-    private val path: Path = Path()
+class ComposePath : Path {
+    internal val composePath: PlatformPath = PlatformPath()
+
+    override fun moveTo(x: Float, y: Float) {
+        composePath.moveTo(x, y)
+    }
+
+    override fun lineTo(x: Float, y: Float) {
+        composePath.lineTo(x, y)
+    }
+
+    override fun cubicTo(x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float) {
+        composePath.cubicTo(x1, y1, x2, y2, x3, y3)
+    }
+
+    override fun boundedArc(
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        startAngle: Angle,
+        sweepAngle: Angle,
+    ) {
+        composePath.addArc(
+            PlatformRect(left, top, right, bottom),
+            startAngle.asDegrees,
+            sweepAngle.asDegrees,
+        )
+    }
+
+    override fun circle(
+        centerX: Float,
+        centerY: Float,
+        radius: Float,
+    ) {
+        composePath.addOval(
+            PlatformRect(
+                centerX - radius,
+                centerY - radius,
+                centerX + radius,
+                centerY + radius
+            )
+        )
+    }
+
+    override fun closePath() {
+        composePath.close()
+    }
+
+    override fun beginPath() {
+        composePath.reset()
+    }
+}
+
+class ComposePathMeasure(private val pathMeasure: PlatformPathMeasure = PlatformPathMeasure()) :
+    PathMeasure {
+    override val length: Float get() = pathMeasure.length
+
+    override fun setPath(path: Path, forceClosed: Boolean) {
+        pathMeasure.setPath((path as ComposePath).composePath, forceClosed = forceClosed)
+    }
+
+    override fun getSegment(
+        startDistance: Float,
+        endDistance: Float,
+        outPath: Path,
+        startsWithMoveTo: Boolean,
+    ): Path {
+        pathMeasure.getSegment(
+            startDistance,
+            endDistance,
+            (outPath as ComposePath).composePath,
+            startsWithMoveTo
+        )
+        return outPath
+    }
+
+    override fun getPosition(distance: Float): Position? {
+        return pathMeasure.getPosition(distance).toPosition()
+    }
+
+    override fun getTangent(distance: Float): Position? {
+        return pathMeasure.getTangent(distance).toPosition()
+    }
+}
+
+private typealias CanvasAction = Canvas<DrawScope>.() -> Unit
+
+class ComposeCanvas(
+    private val path: ComposePath = ComposePath(),
+) : Canvas<DrawScope>, Path by path {
     private var _drawScope: DrawScope? = null
     private val drawScope: DrawScope get() = _drawScope!!
+    override val pathMeasure: PathMeasure by lazy {
+        ComposePathMeasure().apply {
+            setPath(
+                path
+            )
+        }
+    }
+
+    override fun measure() {
+        pathMeasure.setPath(path)
+    }
 
     fun withScope(scope: DrawScope, block: ComposeCanvas.() -> Unit) {
         _drawScope = scope
         block()
         _drawScope = null
-    }
-
-    override fun withCheckpoint(block: Canvas<DrawScope>.() -> Unit) {
-        /**Based on [DrawScope.withTransform]*/
-        with(drawScope.drawContext) {
-            // Transformation can include inset calls which change the drawing area
-            // so cache the previous size before the transformation is done
-            // and reset it afterwards
-            val previousSize = size
-            canvas.save()
-            try {
-                block()
-            } finally {
-                canvas.restore()
-                size = previousSize
-            }
-        }
     }
 
     override fun drawCircle(
@@ -90,44 +178,17 @@ object ComposeCanvas : Canvas<DrawScope> {
         )
     }
 
-    override fun moveTo(x: Float, y: Float) {
-        path.moveTo(x, y)
-    }
-
-    override fun lineTo(x: Float, y: Float) {
-        path.lineTo(x, y)
-    }
-
-    override fun boundedArc(
-        left: Float,
-        top: Float,
-        right: Float,
-        bottom: Float,
-        startAngle: Angle,
-        sweepAngle: Angle,
-    ) {
-        path.addArc(
-            Rect(left, top, right, bottom),
-            startAngleDegrees = startAngle.asDegrees,
-            sweepAngleDegrees = sweepAngle.asDegrees,
-        )
-    }
-
-    override fun closePath() {
-        path.close()
-    }
-
-    override fun beginPath() {
-        path.reset()
-    }
-
     override fun drawPath(
         color: Color,
         style: DrawStyle,
         alpha: Float,
     ) {
+        drawPath(path, color, style, alpha)
+    }
+
+    override fun drawPath(path: Path, color: Color, style: DrawStyle, alpha: Float) {
         drawScope.drawPath(
-            path,
+            (path as ComposePath).composePath,
             color = color.toCompose(),
             alpha = alpha,
             style = style.toCompose(),
@@ -158,7 +219,7 @@ object ComposeCanvas : Canvas<DrawScope> {
         angle: Angle,
         pivotX: Float,
         pivotY: Float,
-        block: Canvas<DrawScope>.() -> Unit,
+        block: CanvasAction,
     ) {
         drawScope.rotate(angle.asDegrees, Offset(pivotX, pivotY)) {
             block()
@@ -167,7 +228,7 @@ object ComposeCanvas : Canvas<DrawScope> {
 
     override fun withScale(
         scale: Float,
-        block: Canvas<DrawScope>.() -> Unit,
+        block: CanvasAction,
     ) {
         drawScope.scale(scale, pivot = DefaultPivot) {
             block()
@@ -184,7 +245,7 @@ object ComposeCanvas : Canvas<DrawScope> {
         scale: Float,
         pivotX: Float,
         pivotY: Float,
-        block: Canvas<DrawScope>.() -> Unit,
+        block: CanvasAction,
     ) {
         drawScope.scale(scale, pivot = Offset(pivotX, pivotY)) {
             block()
@@ -196,7 +257,7 @@ object ComposeCanvas : Canvas<DrawScope> {
         scaleY: Float,
         pivotX: Float,
         pivotY: Float,
-        block: Canvas<DrawScope>.() -> Unit,
+        block: CanvasAction,
     ) {
         drawScope.scale(scaleX, scaleY, pivot = Offset(pivotX, pivotY)) {
             block()
@@ -206,7 +267,7 @@ object ComposeCanvas : Canvas<DrawScope> {
     override fun withTranslation(
         x: Float,
         y: Float,
-        block: Canvas<DrawScope>.() -> Unit,
+        block: CanvasAction,
     ) {
         drawScope.translate(x, y) {
             block()
@@ -217,7 +278,7 @@ object ComposeCanvas : Canvas<DrawScope> {
         x: Float,
         y: Float,
         scale: Float,
-        block: Canvas<DrawScope>.() -> Unit,
+        block: CanvasAction,
     ) {
         drawScope.withTransform({
             translate(x, y)
@@ -238,36 +299,33 @@ object ComposeCanvas : Canvas<DrawScope> {
     override fun clear() {}
 }
 
-@JvmName("intVectorToOffset")
-fun Vector2<Int>.toOffset() = Offset(x.toFloat(), y.toFloat())
 
-@JvmName("floatVectorToOffset")
-fun Vector2<Float>.toOffset() = Offset(x, y)
-
-fun Color.toCompose(): ComposeColor = ComposeColor(
+fun Color.toCompose(): PlatformColor = PlatformColor(
     red = red,
     green = green,
     blue = blue,
     alpha = alpha,
 )
 
-fun DrawStyle.toCompose(): ComposeStyle = when (this) {
-    Fill -> ComposeFill
-    is Stroke -> ComposeStroke(
+private fun DrawStyle.toCompose(): PlatformStyle = when (this) {
+    Fill -> PlatformFill
+    is Stroke -> PlatformStroke(
         width = width,
         cap = cap.toCompose(),
         join = join.toCompose()
     )
 }
 
-fun StrokeCap.toCompose(): ComposeStrokeCap = when (this) {
-    StrokeCap.Round -> ComposeStrokeCap.Round
-    StrokeCap.Square -> ComposeStrokeCap.Square
-    StrokeCap.Butt -> ComposeStrokeCap.Butt
+private fun StrokeCap.toCompose(): PlatformStrokeCap = when (this) {
+    StrokeCap.Round -> PlatformStrokeCap.Round
+    StrokeCap.Square -> PlatformStrokeCap.Square
+    StrokeCap.Butt -> PlatformStrokeCap.Butt
 }
 
-fun StrokeJoin.toCompose(): ComposeStrokeJoin = when (this) {
-    StrokeJoin.Miter -> ComposeStrokeJoin.Miter
-    StrokeJoin.Round -> ComposeStrokeJoin.Round
-    StrokeJoin.Bevel -> ComposeStrokeJoin.Bevel
+private fun StrokeJoin.toCompose(): PlatformStrokeJoin = when (this) {
+    StrokeJoin.Miter -> PlatformStrokeJoin.Miter
+    StrokeJoin.Round -> PlatformStrokeJoin.Round
+    StrokeJoin.Bevel -> PlatformStrokeJoin.Bevel
 }
+
+private fun Offset.toPosition(): Point<Float> = FloatPoint(x, y)

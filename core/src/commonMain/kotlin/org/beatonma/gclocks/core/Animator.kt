@@ -2,6 +2,7 @@ package org.beatonma.gclocks.core
 
 import org.beatonma.gclocks.core.geometry.Size
 import org.beatonma.gclocks.core.graphics.Canvas
+import org.beatonma.gclocks.core.graphics.GenericCanvas
 import org.beatonma.gclocks.core.util.TimeOfDay
 import org.beatonma.gclocks.core.util.fastForEach
 import org.beatonma.gclocks.core.util.getTime
@@ -22,7 +23,7 @@ interface ClockAnimator<G : BaseClockGlyph> {
         layout.update(time)
     }
 
-    fun render(canvas: Canvas<*>) {
+    fun render(canvas: GenericCanvas) {
         canvas.clear()
         renderers.fastForEach { it.draw(canvas, layout) }
 

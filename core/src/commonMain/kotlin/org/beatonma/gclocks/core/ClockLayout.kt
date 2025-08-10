@@ -11,7 +11,6 @@ import org.beatonma.gclocks.core.util.nextSecond
 import kotlin.math.min
 import org.beatonma.gclocks.core.util.progress
 
-private typealias LayoutPassCallback = (glyph: Glyph, glyphAnimationProgress: Float, rect: Rect<Float>) -> Unit
 
 enum class MeasureStrategy {
     Fit, // Respect the existing boundaries of the container
@@ -52,6 +51,10 @@ enum class MeasureStrategy {
             }
         }
     }
+}
+
+fun interface LayoutPassCallback<G> {
+    fun callback(glyph: G, glyphAnimationProgress: Float, rect: Rect<Float>)
 }
 
 class ClockLayout<G : BaseClockGlyph>(
@@ -115,10 +118,18 @@ class ClockLayout<G : BaseClockGlyph>(
         nativeSize = font.measure(
             value.format,
             value.layout,
-            value.spacingPx
+            value.spacingPx,
+            value.secondsGlyphScale,
         )
         stringLength = value.format.stringLength
-        glyphs = MutableList(stringLength) { i -> font.getGlyphAt(i, value.format) }
+        glyphs =
+            MutableList(stringLength) { i ->
+                font.getGlyphAt(
+                    i,
+                    value.format,
+                    value.secondsGlyphScale
+                )
+            }
         locks = List(stringLength) { GlyphStateLock.None }
     }
 
@@ -163,6 +174,7 @@ class ClockLayout<G : BaseClockGlyph>(
      * This is required for correct application of alignment relative to the
      * drawable space available for each row/component of the clock.
      */
+
     fun onDraw(draw: (translationX: Float, translationY: Float, scale: Float) -> Unit) {
         onDraw_drawBounds.reset()
         onDraw_currentLine.reset()
@@ -198,7 +210,7 @@ class ClockLayout<G : BaseClockGlyph>(
         onDraw_currentNativeSize.clear()
     }
 
-    fun layoutPass(callback: LayoutPassCallback) {
+    fun layoutPass(callback: LayoutPassCallback<G>) {
         return when (options.layout) {
             Layout.Horizontal -> layoutPassHorizontal(callback)
             Layout.Vertical -> layoutPassVertical(callback)
@@ -206,7 +218,7 @@ class ClockLayout<G : BaseClockGlyph>(
         }
     }
 
-    private fun layoutPassHorizontal(visitGlyph: LayoutPassCallback) {
+    private fun layoutPassHorizontal(visitGlyph: LayoutPassCallback<G>) {
         val spacingPx = options.spacingPx
         val verticalAlignment = options.verticalAlignment
 
@@ -228,7 +240,7 @@ class ClockLayout<G : BaseClockGlyph>(
             val right = left + glyphWidth
             val bottom = top + glyphHeight
 
-            visitGlyph(
+            visitGlyph.callback(
                 glyph,
                 glyphState.progress,
                 layoutPassRect.set(left, top, right, bottom)
@@ -241,7 +253,7 @@ class ClockLayout<G : BaseClockGlyph>(
     private fun newLineX(index: Int, maxLineWidth: Float): Float =
         options.horizontalAlignment.apply(onDraw_currentNativeSize[index].x, maxLineWidth)
 
-    private fun layoutPassVertical(visitGlyph: LayoutPassCallback) {
+    private fun layoutPassVertical(visitGlyph: LayoutPassCallback<G>) {
         val spacingPx = options.spacingPx
 
         var currentLineIndex = 0
@@ -264,7 +276,7 @@ class ClockLayout<G : BaseClockGlyph>(
             }
             if (!glyphState.isVisible) continue
 
-            visitGlyph(
+            visitGlyph.callback(
                 glyph,
                 glyphState.progress,
                 layoutPassRect.set(x, y, x + glyphWidth, y + glyphHeight)
@@ -273,7 +285,7 @@ class ClockLayout<G : BaseClockGlyph>(
         }
     }
 
-    private fun layoutPassWrapped(visitGlyph: LayoutPassCallback) {
+    private fun layoutPassWrapped(visitGlyph: LayoutPassCallback<G>) {
         val spacingPx = options.spacingPx
         val alignment = options.horizontalAlignment
         val maxLineWidth = maxLineWidth()
@@ -299,7 +311,7 @@ class ClockLayout<G : BaseClockGlyph>(
 
             if (!glyphState.isVisible) continue
 
-            visitGlyph(
+            visitGlyph.callback(
                 glyph,
                 glyphState.progress,
                 layoutPassRect.set(x, y, x + glyphWidth, y + glyphHeight)

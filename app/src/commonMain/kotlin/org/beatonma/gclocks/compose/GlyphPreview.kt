@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -21,10 +22,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
 import org.beatonma.gclocks.core.Glyph
+import org.beatonma.gclocks.core.GlyphRenderer
 import org.beatonma.gclocks.core.MeasureStrategy
 import org.beatonma.gclocks.core.geometry.FloatSize
 import org.beatonma.gclocks.core.geometry.Size
-import org.beatonma.gclocks.core.graphics.Canvas
+import org.beatonma.gclocks.core.graphics.GenericCanvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.util.getTime
 import org.beatonma.gclocks.core.util.progress
@@ -33,13 +35,14 @@ import org.beatonma.gclocks.core.util.progress
 private const val AnimationDurationSeconds = 2f
 
 @Composable
-fun GlyphPreview(
-    glyph: Glyph,
+fun <G : Glyph> GlyphPreview(
+    glyph: G,
     paints: Paints,
     modifier: Modifier = Modifier,
+    renderer: GlyphRenderer<G> = GlyphRenderer.Default(),
     animPosition: Float? = null,
 ) {
-    val preview = remember { GlyphPreview(glyph) }
+    val preview = remember { GlyphPreview(glyph, renderer) }
     var animProgress: Float by remember(animPosition) {
         mutableFloatStateOf(
             when {
@@ -48,6 +51,8 @@ fun GlyphPreview(
             }
         )
     }
+    val canvas = remember(::ComposeCanvas)
+    var flag by remember { mutableStateOf(false) }
 
     Box {
         Canvas(
@@ -62,7 +67,7 @@ fun GlyphPreview(
                     )
                 }//.gridlines()
         ) {
-            ComposeCanvas.withScope(this) {
+            canvas.withScope(this) {
                 preview.draw(this, animProgress, paints)
             }
             if (animPosition == null) {
@@ -70,6 +75,8 @@ fun GlyphPreview(
                     (((second % AnimationDurationSeconds) * 1000) + millisecond) / (AnimationDurationSeconds * 1000)
                 }
             }
+
+            flag = !flag // re-render even when time is 'stopped' for io16 segment animation
         }
 
         Text(
@@ -81,8 +88,9 @@ fun GlyphPreview(
 }
 
 
-private class GlyphPreview(
-    val glyph: Glyph,
+private class GlyphPreview<G : Glyph>(
+    val glyph: G,
+    val renderer: GlyphRenderer<G>,
 ) {
     private var measuredSize: Size<Float> = FloatSize()
 
@@ -92,9 +100,9 @@ private class GlyphPreview(
         measuredSize = glyph.maxSize.scaledBy(scale)
     }
 
-    fun draw(canvas: Canvas<*>, glyphProgress: Float, paints: Paints) {
+    fun draw(canvas: GenericCanvas, glyphProgress: Float, paints: Paints) {
         canvas.withScale(glyph.scale) {
-            glyph.draw(canvas, glyphProgress, paints)
+            renderer.draw(glyph, canvas, glyphProgress, paints)
         }
     }
 }

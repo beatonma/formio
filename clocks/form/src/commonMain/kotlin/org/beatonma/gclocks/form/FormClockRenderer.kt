@@ -1,6 +1,7 @@
 package org.beatonma.gclocks.form
 
 import org.beatonma.gclocks.core.ClockRenderer
+import org.beatonma.gclocks.core.GlyphRenderer
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Paints
 
@@ -13,6 +14,7 @@ class FormPaints : Paints {
         )
 }
 
-class FormRenderer(
+class FormClockRenderer(
     override var paints: Paints = FormPaints(),
+    override val renderer: GlyphRenderer<FormGlyph> = GlyphRenderer.Default(),
 ) : ClockRenderer<FormGlyph>

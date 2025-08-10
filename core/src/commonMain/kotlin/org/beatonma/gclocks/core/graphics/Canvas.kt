@@ -3,7 +3,6 @@ package org.beatonma.gclocks.core.graphics
 import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.geometry.Point
 import org.beatonma.gclocks.core.geometry.Rect
-import org.beatonma.gclocks.core.geometry.degrees
 
 private const val DefaultAlpha = 1f
 
@@ -62,8 +61,13 @@ class Stroke(
 
 typealias Position = Point<Float>
 private typealias CanvasAction<T> = Canvas<T>.() -> Unit
+typealias GenericCanvas = Canvas<*>
 
-interface Canvas<T> : CanvasPath {
+interface Canvas<T> : Path {
+    val pathMeasure: PathMeasure
+
+    fun measure()
+
     fun drawCircle(
         color: Color,
         centerX: Float,
@@ -196,22 +200,22 @@ interface Canvas<T> : CanvasPath {
     )
 
     fun drawPath(
+        path: Path,
+        color: Color,
+        style: DrawStyle = Fill,
+        alpha: Float = DefaultAlpha,
+    )
+
+    fun drawPath(
         color: Color,
         style: DrawStyle = Fill,
         alpha: Float = DefaultAlpha,
         block: CanvasAction<T>,
     ) {
         beginPath()
-
         block()
         drawPath(color, style, alpha)
         closePath()
-    }
-
-    fun withCheckpoint(block: CanvasAction<T>) {
-        save()
-        block()
-        restore()
     }
 
     fun save()
@@ -264,34 +268,4 @@ interface Canvas<T> : CanvasPath {
     )
 
     fun clear()
-}
-
-
-interface CanvasPath {
-    fun moveTo(x: Float, y: Float)
-    fun moveTo(position: Position) {
-        moveTo(position.x, position.y)
-    }
-
-    fun lineTo(x: Float, y: Float)
-    fun lineTo(position: Position) {
-        lineTo(position.x, position.y)
-    }
-
-    fun boundedArc(
-        left: Float,
-        top: Float,
-        right: Float,
-        bottom: Float,
-        startAngle: Angle = (-90f).degrees,
-        sweepAngle: Angle = 180f.degrees,
-    )
-
-    fun beginPath()
-    fun closePath()
-}
-
-inline fun <T> Canvas<T>.withPath(block: CanvasAction<T>) {
-    block()
-    closePath()
 }

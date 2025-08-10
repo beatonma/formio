@@ -36,7 +36,7 @@ plugins {
 
 include(":core")
 include(":test")
-include(":clocks:dev")
 include(":clocks:form")
+include(":clocks:io16")
 include(":clocks:io18")
 include(":app")

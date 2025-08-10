@@ -9,10 +9,15 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.Checkbox
@@ -30,17 +35,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import org.beatonma.gclocks.compose.Clock
+import org.beatonma.gclocks.compose.ComposePath
 import org.beatonma.gclocks.compose.GlyphPreview
 import org.beatonma.gclocks.core.GlyphRole
+import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.form.FormGlyph
 import org.beatonma.gclocks.form.FormPaints
+import org.beatonma.gclocks.io16.Io16Glyph
+import org.beatonma.gclocks.io16.Io16GlyphRenderer
+import org.beatonma.gclocks.io16.Io16Options
+import org.beatonma.gclocks.io16.Io16Paints
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
 fun App() {
-    val paints = FormPaints()
     val keys = remember {
         listOf(
             "0_1",
@@ -77,24 +88,12 @@ fun App() {
                     .background(Color.DarkGray),
                 contentPadding = WindowInsets.systemBars.asPaddingValues() + PaddingValues(bottom = 64.dp)
             ) {
-//                item(span = { GridItemSpan(maxLineSpan) }) {
-//                    Clock(Modifier.fillMaxWidth().wrapContentHeight())//.aspectRatio(16f / 9f))
-//                }
-
-                itemsIndexed(
-                    keys,
-                    key = { index, key -> key },
-                ) { index, key ->
-                    GlyphPreview(
-                        FormGlyph(GlyphRole.Hour).apply {
-                            this.key = key
-                        },
-                        paints,
-                        Modifier.fillMaxSize()
-                            .border(1.dp, Color.Black.copy(alpha = 0.33f)),
-                        animPosition = animationPosition,
-                    )
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Clock(Modifier.fillMaxWidth().wrapContentHeight().aspectRatio(16f / 9f))
                 }
+
+//                FormPreview(keys, animationPosition)
+                Io16Preview(keys, animationPosition)
             }
 
             Column(
@@ -125,5 +124,53 @@ fun App() {
                 )
             }
         }
+    }
+}
+
+
+private fun LazyGridScope.FormPreview(
+    keys: List<String>,
+    animationPosition: Float?,
+) {
+    itemsIndexed(
+        keys,
+        key = { index, key -> key },
+    ) { index, key ->
+        GlyphPreview(
+            FormGlyph(GlyphRole.Hour).apply {
+                this.key = key
+            },
+            FormPaints(),
+            Modifier.fillMaxSize()
+                .border(1.dp, Color.Black.copy(alpha = 0.33f)),
+            animPosition = animationPosition,
+        )
+    }
+}
+
+private fun LazyGridScope.Io16Preview(
+    keys: List<String>,
+    animationPosition: Float?,
+) {
+    itemsIndexed(
+        keys,
+        key = { index, key -> key },
+    ) { index, key ->
+        debug("GlyphPreview($key)")
+        GlyphPreview(
+            Io16Glyph(GlyphRole.Hour).apply {
+                this.key = key
+                debug("Io16Glyph")
+            },
+            Io16Paints().also { debug("Io16Paints") },
+            Modifier.fillMaxSize()
+                .border(1.dp, Color.Black.copy(alpha = 0.33f)),
+            renderer = Io16GlyphRenderer(
+                ComposePath(),
+                Io16Options().also { debug("Io16Options") },
+                updateOnDraw = true
+            ),
+            animPosition = animationPosition,
+        )
     }
 }

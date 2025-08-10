@@ -1,20 +1,20 @@
 package org.beatonma.gclocks.core
 
 import org.beatonma.gclocks.core.geometry.Rect
-import org.beatonma.gclocks.core.graphics.Canvas
+import org.beatonma.gclocks.core.graphics.GenericCanvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.graphics.Stroke
-import org.beatonma.gclocks.core.util.warn
+import org.beatonma.gclocks.core.util.debug
 
 interface ClockRenderer<G : BaseClockGlyph> {
+    val renderer: GlyphRenderer<G>
     var paints: Paints
 
-    fun draw(canvas: Canvas<*>, layout: ClockLayout<*>) {
+    fun draw(canvas: GenericCanvas, layout: ClockLayout<G>) {
         if (!layout.isDrawable) {
-            warn("layout is not drawable! ${layout}")
+            debug("layout is not drawable! $layout")
             return
         }
-        val paints = this.paints
 
         layout.onDraw { x, y, scale ->
             canvas.withTranslationAndScale(x, y, scale) {
@@ -29,8 +29,8 @@ interface ClockRenderer<G : BaseClockGlyph> {
         }
     }
 
-    fun drawGlyphBoundary(canvas: Canvas<*>, paints: Paints, boundary: Rect<Float>) {
-        canvas.drawRect(paints.colors.first(), boundary)
+    fun drawGlyphBoundary(canvas: GenericCanvas, paints: Paints, boundary: Rect<Float>) {
+        canvas.drawRect(paints.colors.first(), boundary, Stroke.Default)
         canvas.drawLine(
             paints.colors.first(),
             boundary.left,
@@ -48,11 +48,11 @@ interface ClockRenderer<G : BaseClockGlyph> {
     };
 
     fun drawGlyph(
-        glyph: Glyph,
-        canvas: Canvas<*>,
+        glyph: G,
+        canvas: GenericCanvas,
         glyphAnimationProgress: Float,
         paints: Paints,
     ) {
-        glyph.draw(canvas, glyphAnimationProgress, paints)
+        renderer.draw(glyph, canvas, glyphAnimationProgress, paints)
     }
 }
