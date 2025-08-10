@@ -156,18 +156,16 @@ private fun LazyGridScope.Io16Preview(
         keys,
         key = { index, key -> key },
     ) { index, key ->
-        debug("GlyphPreview($key)")
         GlyphPreview(
             Io16Glyph(GlyphRole.Hour).apply {
                 this.key = key
-                debug("Io16Glyph")
             },
-            Io16Paints().also { debug("Io16Paints") },
+            Io16Paints(),
             Modifier.fillMaxSize()
                 .border(1.dp, Color.Black.copy(alpha = 0.33f)),
             renderer = Io16GlyphRenderer(
                 ComposePath(),
-                Io16Options().also { debug("Io16Options") },
+                Io16Options(),
                 updateOnDraw = true
             ),
             animPosition = animationPosition,
