@@ -2,6 +2,7 @@ package org.beatonma.gclocks.core.geometry
 
 import kotlin.math.min
 import kotlin.math.max
+import kotlin.properties.Delegates
 
 
 interface Rect<T : Number> {
@@ -54,16 +55,25 @@ interface MutableRect<T : Number> : Rect<T> {
 }
 
 class MutableFloatRect(
-    override var left: Float = 0f,
-    override var top: Float = 0f,
-    override var right: Float = 0f,
-    override var bottom: Float = 0f,
+    left: Float = 0f,
+    top: Float = 0f,
+    right: Float = 0f,
+    bottom: Float = 0f,
 ) : MutableRect<Float>, FloatRect {
+    override var left by Delegates.notNull<Float>()
+    override var top by Delegates.notNull<Float>()
+    override var right by Delegates.notNull<Float>()
+    override var bottom by Delegates.notNull<Float>()
+
+    init {
+        set(left, top, right, bottom)
+    }
+
     override fun set(left: Float, top: Float, right: Float, bottom: Float): MutableFloatRect {
         this.left = min(left, right)
-        this.top = max(top, bottom)
+        this.top = min(top, bottom)
         this.right = max(left, right)
-        this.bottom = min(top, bottom)
+        this.bottom = max(top, bottom)
         return this
     }
 
@@ -73,10 +83,14 @@ class MutableFloatRect(
         val original = this.area
         this.set(
             min(left, other.left),
-            max(top, other.top),
-            max(left, other.right),
-            min(bottom, other.bottom)
+            min(top, other.top),
+            max(right, other.right),
+            max(bottom, other.bottom)
         )
         return this.area != original
+    }
+
+    override fun toString(): String {
+        return "MutableFloatRect($left, $top, $right, $bottom)"
     }
 }

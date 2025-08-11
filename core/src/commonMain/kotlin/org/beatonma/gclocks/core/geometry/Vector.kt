@@ -5,7 +5,7 @@ import kotlin.math.sqrt
 
 interface PackedFloats2 {
     fun unpackX(value: Long): Float = Float.fromBits((value shr 32).toInt())
-    fun unpackY(value: Long): Float = Float.fromBits(((value shr 32) and 0x7fffffff).toInt())
+    fun unpackY(value: Long): Float = Float.fromBits((value and 0xffffffff).toInt())
 }
 
 private fun Float.longBits() = toRawBits().toLong()

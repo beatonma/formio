@@ -48,6 +48,9 @@ kotlin {
         }
 
         val commonMain by getting {
+            dependencies {
+                implementation(libs.androidx.annotation)
+            }
             kotlin.srcDir(generatedSrcDir)
         }
     }
