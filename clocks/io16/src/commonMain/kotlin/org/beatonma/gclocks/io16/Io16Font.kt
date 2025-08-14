@@ -28,17 +28,16 @@ class Io16Font : ClockFont<Io16Glyph> {
         val hasSeconds = format.resolution == TimeResolution.Seconds
         val lineHeight = Io16Glyph.maxSize.y
         val separatorWidth = 16f
-
-        // TODO numbers here are from FORM clock implementation
-        val pairWidth = 352f // max width of a pair of digits
+        val pairWidth = Io16Glyph.maxSize.x * 2f // max width of a pair of digits
 
         return when (layout) {
             Layout.Horizontal -> {
-                val digitsWidth = 816f
+                val digitsWidth = pairWidth * 2f + (secondsGlyphScale * pairWidth)
                 val spacingWidth =
                     spacingPx.toFloat() * (if (hasSeconds) 5f + secondsGlyphScale else 4f)
                 return FloatSize(
-                    digitsWidth + separatorWidth + spacingWidth, lineHeight
+                    digitsWidth + separatorWidth + spacingWidth,
+                    lineHeight
                 )
             }
 

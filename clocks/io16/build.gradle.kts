@@ -2,12 +2,13 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
 }
 
-dependencies {
-    commonMainImplementation(project(":core"))
-}
-
 kotlin {
-    jvm {
+    jvm {}
 
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.androidx.annotation)
+            implementation(project(":core"))
+        }
     }
 }

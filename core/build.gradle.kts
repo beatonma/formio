@@ -3,8 +3,10 @@ plugins {
 }
 
 
-/* Inject Build.isDebug constant, `true` if build command includes `-Pdebug=true` flag. */
+/* Inject Build.isDebug constant, `true` if gradle.properties.debug=true. */
 val isDebugBuild = project.hasProperty("debug")
+        && project.properties["debug"]?.toString()?.lowercase() == "true"
+
 val pkg = "org.beatonma.gclocks.core"
 val generatedSrcDir =
     layout.buildDirectory.get().dir("generated/kmp/main/kotlin/${pkg.replace(".", "/")}")

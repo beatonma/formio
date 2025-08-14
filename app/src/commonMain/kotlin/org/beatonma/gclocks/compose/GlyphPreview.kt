@@ -51,7 +51,7 @@ fun <G : Glyph> GlyphPreview(
             }
         )
     }
-    val canvas = remember(::ComposeCanvas)
+    val canvas = rememberCanvas()
     var flag by remember { mutableStateOf(false) }
 
     Box {
@@ -65,7 +65,7 @@ fun <G : Glyph> GlyphPreview(
                             size.height.toFloat()
                         )
                     )
-                }//.gridlines()
+                }
         ) {
             canvas.withScope(this) {
                 preview.draw(this, animProgress, paints)

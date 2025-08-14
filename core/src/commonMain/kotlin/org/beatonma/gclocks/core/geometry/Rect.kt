@@ -50,8 +50,13 @@ interface MutableRect<T : Number> : Rect<T> {
     fun set(left: T, top: T, right: T, bottom: T): MutableRect<T>
     fun set(other: Rect<T>) = set(other.left, other.top, other.right, other.bottom)
 
+    /**
+     * Move the bounds of this rect towards its center by the given amounts.
+     */
+    fun inset(left: T, top: T = left, right: T = left, bottom: T = top): MutableRect<T>
+
     /** Equivalent to set(0, 0, 0, 0) */
-    fun reset(): MutableRect<T>
+    fun clear(): MutableRect<T>
 }
 
 class MutableFloatRect(
@@ -77,7 +82,17 @@ class MutableFloatRect(
         return this
     }
 
-    override fun reset() = set(0f, 0f, 0f, 0f)
+    override fun inset(
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+    ): MutableRect<Float> = set(
+        this.left + left,
+        this.top + top,
+        this.right - right,
+        this.bottom - bottom,
+    )
 
     override fun include(other: Rect<Float>): Boolean {
         val original = this.area
@@ -89,6 +104,8 @@ class MutableFloatRect(
         )
         return this.area != original
     }
+
+    override fun clear() = set(0f, 0f, 0f, 0f)
 
     override fun toString(): String {
         return "MutableFloatRect($left, $top, $right, $bottom)"

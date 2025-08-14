@@ -7,6 +7,7 @@ interface Options {
     val format: TimeFormat
     val spacingPx: Int
     val glyphMorphMillis: Int
+    val strokeWidth: Float
 
     /* Relative scale of glyphs with GlyphRole.Second */
     val secondsGlyphScale: Float

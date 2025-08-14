@@ -21,7 +21,6 @@ import org.beatonma.gclocks.core.util.interpolate
 import org.beatonma.gclocks.core.util.progress
 
 
-private const val FormGlyphHeight = 144f
 private const val TwoThirds = 2f / 3f
 
 data class FormOptions(
@@ -32,6 +31,7 @@ data class FormOptions(
     override val spacingPx: Int = 8,
     override val glyphMorphMillis: Int = 800,
     override val secondsGlyphScale: Float = Options.DefaultSecondsGlyphScale,
+    override val strokeWidth: Float = 0f,
 ) : Options
 
 
@@ -56,7 +56,7 @@ class FormFont : ClockFont<FormGlyph> {
     ): Size<Float> {
         val hasSeconds = format.resolution == TimeResolution.Seconds
 
-        val lineHeight = FormGlyphHeight
+        val lineHeight = FormGlyph.maxSize.y
         val separatorWidth = 48f
         val pairWidth = 352f // max width of a pair of digits
 
@@ -107,14 +107,14 @@ class FormGlyph(
         val d2 = decelerate5(progress(glyphProgress, 0.5f, 1f))
 
         // 0
-        val stretchX = interpolate(d1, 0f, interpolate(d2, 72f, -36f))
-
         withTranslation(
-            interpolate(d1, interpolate(d1, 0f, 24f), interpolate(d2, 24f, 0f)), 0f
+            interpolate(d1, interpolate(d1, 0f, 24f), interpolate(d2, 24f, 0f)),
+            0f
         ) {
             withScale(interpolate(d1, 1f, TwoThirds), 72f, 144f) {
                 withScale(interpolate(d2, 1f, 0.7f), 72f, 96f) {
                     withRotation(interpolate(d1, 45f, 0f).degrees, 72f, 72f) {
+                        val stretchX = interpolate(d1, 0f, interpolate(d2, 72f, -36f))
                         drawPath(color2) {
                             moveTo(72f - stretchX, 144f)
                             boundedArc(

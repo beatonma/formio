@@ -33,6 +33,9 @@ enum class GlyphRole {
     Second,
     SeparatorHoursMinutes,
     SeparatorMinutesSeconds,
+    ;
+
+    val isSeparator: Boolean get() = this == SeparatorMinutesSeconds || this == SeparatorHoursMinutes
 }
 
 private typealias OnStateChange = (newState: GlyphState) -> Unit

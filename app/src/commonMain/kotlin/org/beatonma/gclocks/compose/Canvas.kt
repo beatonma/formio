@@ -1,5 +1,7 @@
 package org.beatonma.gclocks.compose
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect as PlatformRect
@@ -13,6 +15,12 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
 import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.geometry.FloatPoint
 import org.beatonma.gclocks.core.geometry.Point
@@ -32,6 +40,13 @@ import org.beatonma.gclocks.core.graphics.StrokeJoin
 import androidx.compose.ui.graphics.Color as PlatformColor
 
 private val DefaultPivot = Offset.Zero
+
+@Composable
+fun rememberCanvas(): ComposeCanvas {
+    val textMeasurer = rememberTextMeasurer()
+    val canvas = remember { ComposeCanvas(textMeasurer) }
+    return canvas
+}
 
 class ComposePath : Path {
     internal val composePath: PlatformPath = PlatformPath()
@@ -122,19 +137,19 @@ class ComposePathMeasure(private val pathMeasure: PlatformPathMeasure = Platform
 private typealias CanvasAction = Canvas<DrawScope>.() -> Unit
 
 class ComposeCanvas(
+    private val textMeasurer: TextMeasurer,
     private val path: ComposePath = ComposePath(),
 ) : Canvas<DrawScope>, Path by path {
     private var _drawScope: DrawScope? = null
     private val drawScope: DrawScope get() = _drawScope!!
+
     override val pathMeasure: PathMeasure by lazy {
         ComposePathMeasure().apply {
-            setPath(
-                path
-            )
+            setPath(path)
         }
     }
 
-    override fun measure() {
+    override fun measurePath() {
         pathMeasure.setPath(path)
     }
 
@@ -195,6 +210,20 @@ class ComposeCanvas(
         )
     }
 
+    override fun drawPoint(
+        x: Float,
+        y: Float,
+        color: Color,
+        style: DrawStyle,
+    ) {
+        drawScope.drawCircle(
+            color.toCompose(),
+            radius = 8f,
+            center = Offset(x, y),
+            style = style.toCompose()
+        )
+    }
+
     override fun drawRoundRect(
         color: Color,
         left: Float,
@@ -212,6 +241,19 @@ class ComposeCanvas(
             cornerRadius = CornerRadius(radius),
             style = style.toCompose(),
             alpha = alpha,
+        )
+    }
+
+    override fun drawText(text: String) {
+        drawScope.drawText(
+            textMeasurer,
+            text,
+            Offset.Zero,
+            style = TextStyle(
+                fontSize = 6.sp,
+                color = PlatformColor.Green
+            ),
+            overflow = TextOverflow.Visible
         )
     }
 

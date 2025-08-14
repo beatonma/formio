@@ -66,7 +66,7 @@ typealias GenericCanvas = Canvas<*>
 interface Canvas<T> : Path {
     val pathMeasure: PathMeasure
 
-    fun measure()
+    fun measurePath()
 
     fun drawCircle(
         color: Color,
@@ -77,21 +77,6 @@ interface Canvas<T> : Path {
         alpha: Float = DefaultAlpha,
     )
 
-    fun drawCircle(
-        color: Color,
-        center: Position,
-        radius: Float,
-        style: DrawStyle = Fill,
-        alpha: Float = DefaultAlpha,
-    ) = drawCircle(
-        centerX = center.x,
-        centerY = center.y,
-        radius = radius,
-        color = color,
-        style = style,
-        alpha = alpha,
-    )
-
     fun drawLine(
         color: Color,
         x1: Float,
@@ -100,22 +85,6 @@ interface Canvas<T> : Path {
         y2: Float,
         style: Stroke = Stroke.Default,
         alpha: Float = DefaultAlpha,
-    )
-
-    fun drawLine(
-        color: Color,
-        start: Position,
-        end: Position,
-        style: Stroke = Stroke.Default,
-        alpha: Float = DefaultAlpha,
-    ) = drawLine(
-        x1 = start.x,
-        y1 = start.y,
-        x2 = end.x,
-        y2 = end.y,
-        color = color,
-        style = style,
-        alpha = alpha,
     )
 
     fun drawRect(
@@ -190,6 +159,21 @@ interface Canvas<T> : Path {
         }
     }
 
+    fun drawBoundedArc(
+        color: Color,
+        centerX: Float,
+        centerY: Float,
+        radius: Float,
+        startAngle: Angle = Angle.TwoSeventy,
+        sweepAngle: Angle = Angle.OneEighty,
+        style: DrawStyle = Fill,
+        alpha: Float = DefaultAlpha,
+    ) {
+        drawPath(color, style, alpha) {
+            boundedArc(centerX, centerY, radius, startAngle, sweepAngle)
+        }
+    }
+
     /**
      * Render the currently plotted path to the canvas.
      */
@@ -217,6 +201,15 @@ interface Canvas<T> : Path {
         drawPath(color, style, alpha)
         closePath()
     }
+
+    fun drawPoint(
+        x: Float,
+        y: Float,
+        color: Color = Color.Red,
+        style: DrawStyle = Fill,
+    )
+
+    fun drawText(text: String)
 
     fun save()
     fun restore()

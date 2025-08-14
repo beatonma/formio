@@ -9,11 +9,14 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.safeGesturesPadding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -26,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,10 +40,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.beatonma.gclocks.compose.Clock
+import org.beatonma.gclocks.compose.ClockType
 import org.beatonma.gclocks.compose.ComposePath
 import org.beatonma.gclocks.compose.GlyphPreview
+import org.beatonma.gclocks.compose.Platform
+import org.beatonma.gclocks.compose.onlyIf
+import org.beatonma.gclocks.compose.platform
 import org.beatonma.gclocks.core.GlyphRole
-import org.beatonma.gclocks.core.util.debug
+import org.beatonma.gclocks.core.util.TimeOfDay
+import org.beatonma.gclocks.core.util.getTime
+import org.beatonma.gclocks.core.util.interpolate
 import org.beatonma.gclocks.form.FormGlyph
 import org.beatonma.gclocks.form.FormPaints
 import org.beatonma.gclocks.io16.Io16Glyph
@@ -47,6 +57,7 @@ import org.beatonma.gclocks.io16.Io16GlyphRenderer
 import org.beatonma.gclocks.io16.Io16Options
 import org.beatonma.gclocks.io16.Io16Paints
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,29 +89,60 @@ fun App() {
         )
     }
     var animationPosition by remember { mutableStateOf<Float?>(null) }
+    var customTimeStr by remember { mutableStateOf("0:00:00") }
+    val timeFunc: () -> TimeOfDay by remember {
+        mutableStateOf({
+            parseTime(
+                customTimeStr,
+                interpolate(animationPosition ?: 0f, 0f, 1000f).roundToInt()
+            )
+        })
+    }
 
     MaterialTheme {
         Box {
             LazyVerticalGrid(
                 GridCells.Adaptive(220.dp),
-//                GridCells.Fixed(1),
                 modifier = Modifier.fillMaxSize()
                     .background(Color.DarkGray),
-                contentPadding = WindowInsets.systemBars.asPaddingValues() + PaddingValues(bottom = 64.dp)
+                contentPadding = when (platform) {
+                    Platform.Android -> WindowInsets.systemBars.asPaddingValues() + PaddingValues(
+                        bottom = 256.dp
+                    )
+
+                    else -> PaddingValues()
+                }
             ) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    Clock(Modifier.fillMaxWidth().wrapContentHeight().aspectRatio(16f / 9f))
+                    Clock(
+                        ClockType.Form,
+                        Modifier.fillMaxWidth()
+                            .wrapContentHeight(),
+                        getTickTime = timeFunc
+                    )
+                }
+
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Clock(
+                        ClockType.Io16,
+                        Modifier.fillMaxWidth()
+                            .wrapContentHeight(),
+                        getTickTime = timeFunc
+                    )
                 }
 
 //                FormPreview(keys, animationPosition)
-                Io16Preview(keys, animationPosition)
+//                Io16Preview(keys, animationPosition)
             }
 
             Column(
                 Modifier.align(Alignment.BottomCenter)
                     .background(colorScheme.surface)
                     .padding(8.dp)
+                    .systemBarsPadding()
             ) {
+                TextField(customTimeStr, { customTimeStr = it })
+
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -171,4 +213,20 @@ private fun LazyGridScope.Io16Preview(
             animPosition = animationPosition,
         )
     }
+}
+
+private fun parseTime(str: String, millis: Int): TimeOfDay {
+    Regex("(\\d{1,2}):?(\\d{2})?:?(\\d{2})?").find(str)?.let {
+        val h = it.groups[1]?.value?.toInt() ?: 0
+        val m = it.groups[2]?.value?.toInt() ?: 0
+        val s = it.groups[3]?.value?.toInt() ?: 0
+
+        return object : TimeOfDay {
+            override val hour: Int = h
+            override val minute: Int = m
+            override val second: Int = s
+            override val millisecond: Int = millis
+        }
+    }
+    return getTime()
 }

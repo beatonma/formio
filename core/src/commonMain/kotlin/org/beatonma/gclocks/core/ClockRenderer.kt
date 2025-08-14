@@ -1,6 +1,7 @@
 package org.beatonma.gclocks.core
 
 import org.beatonma.gclocks.core.geometry.Rect
+import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.GenericCanvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.graphics.Stroke
@@ -16,9 +17,10 @@ interface ClockRenderer<G : BaseClockGlyph> {
             return
         }
 
-        layout.onDraw { x, y, scale ->
+        layout.measure { x, y, scale ->
             canvas.withTranslationAndScale(x, y, scale) {
                 layout.layoutPass { glyph, glyphAnimationProgress, rect ->
+                    if (rect.isEmpty) return@layoutPass
                     drawGlyphBoundary(canvas, paints, rect)
 
                     canvas.withTranslationAndScale(rect.left, rect.top, glyph.scale) {
@@ -30,16 +32,16 @@ interface ClockRenderer<G : BaseClockGlyph> {
     }
 
     fun drawGlyphBoundary(canvas: GenericCanvas, paints: Paints, boundary: Rect<Float>) {
-        canvas.drawRect(paints.colors.first(), boundary, Stroke.Default)
+        canvas.drawRect(Color.Red, boundary, Stroke.Default)
         canvas.drawLine(
-            paints.colors.first(),
+            Color.Red,
             boundary.left,
             boundary.top,
             boundary.right,
             boundary.bottom
         )
         canvas.drawLine(
-            paints.colors.first(),
+            Color.Red,
             boundary.right,
             boundary.top,
             boundary.left,

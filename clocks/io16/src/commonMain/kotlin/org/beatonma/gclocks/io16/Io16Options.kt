@@ -14,6 +14,7 @@ data class Io16Options(
     override val spacingPx: Int = 8,
     override val glyphMorphMillis: Int = 600,
     override val secondsGlyphScale: Float = Options.Companion.DefaultSecondsGlyphScale,
+    override val strokeWidth: Float = 2f,
 
     // How long a path segment takes to complete a circuit
     val colorCycleDurationMillis: Int = 5000,
@@ -23,6 +24,4 @@ data class Io16Options(
 
     // How long the transition between active/inactive takes
     val stateChangeDurationMillis: Int = 1200,
-
-    val strokeWidth: Float = 2f,
 ) : Options

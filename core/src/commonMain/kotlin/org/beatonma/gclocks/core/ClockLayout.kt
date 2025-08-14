@@ -2,60 +2,20 @@ package org.beatonma.gclocks.core
 
 import org.beatonma.gclocks.core.geometry.FloatSize
 import org.beatonma.gclocks.core.geometry.MutableFloatRect
+import org.beatonma.gclocks.core.geometry.MutableRect
 import org.beatonma.gclocks.core.geometry.Rect
 import org.beatonma.gclocks.core.geometry.Size
 import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.TimeOfDay
 import org.beatonma.gclocks.core.util.nextSecond
-import kotlin.math.min
 import org.beatonma.gclocks.core.util.progress
 
-
-enum class MeasureStrategy {
-    Fit, // Respect the existing boundaries of the container
-    FillWidth, // Use existing value for width to determine the height
-    ;
-
-    fun measureScale(
-        nativeSize: Size<Float>,
-        availableSize: Size<Float>,
-    ): Float = measureScale(
-        nativeSize.x, nativeSize.y,
-        availableSize.x, availableSize.y
-    )
-
-    fun measureScale(
-        nativeWidth: Float, nativeHeight: Float,
-        availableWidth: Float, availableHeight: Float,
-    ): Float {
-        val strategy = when (availableHeight) {
-            0f -> FillWidth
-            else -> this
-        }
-
-        return when (strategy) {
-            Fit -> {
-                val widthRatio = availableWidth / nativeWidth
-                val heightRatio = availableHeight / nativeHeight
-
-                min(widthRatio, heightRatio)
-            }
-
-            FillWidth -> {
-                if (availableWidth > 0f) {
-                    availableWidth / nativeWidth
-                } else {
-                    availableHeight / nativeHeight
-                }
-            }
-        }
-    }
-}
 
 fun interface LayoutPassCallback<G> {
     fun callback(glyph: G, glyphAnimationProgress: Float, rect: Rect<Float>)
 }
+private typealias DrawWithTransform = (translationX: Float, translationY: Float, scale: Float) -> Unit
 
 class ClockLayout<G : BaseClockGlyph>(
     val font: ClockFont<G>,
@@ -67,6 +27,7 @@ class ClockLayout<G : BaseClockGlyph>(
             field = value
             onOptionsChange(value)
         }
+    private val glyphStatus: GlyphStatus<G> = GlyphStatus()
 
     init {
         onOptionsChange(options)
@@ -102,12 +63,11 @@ class ClockLayout<G : BaseClockGlyph>(
     var measuredSize: Size<Float> = FloatSize()
         private set
 
-    private val layoutPassRect = MutableFloatRect()
-
     var scale: Float = 1f
         private set
 
-    val isDrawable: Boolean get() = scale > 0f && !measuredSize.isEmpty
+    var isDrawable: Boolean = false
+        private set
 
     var animationTimeMillis = 0
         private set
@@ -122,14 +82,13 @@ class ClockLayout<G : BaseClockGlyph>(
             value.secondsGlyphScale,
         )
         stringLength = value.format.stringLength
-        glyphs =
-            MutableList(stringLength) { i ->
-                font.getGlyphAt(
-                    i,
-                    value.format,
-                    value.secondsGlyphScale
-                )
-            }
+        glyphs = MutableList(stringLength) { i ->
+            font.getGlyphAt(
+                i,
+                value.format,
+                value.secondsGlyphScale
+            )
+        }
         locks = List(stringLength) { GlyphStateLock.None }
     }
 
@@ -142,30 +101,34 @@ class ClockLayout<G : BaseClockGlyph>(
         }
 
         return setScale(
-            measureStrategy.measureScale(
-                nativeSize,
-                availableSize
-            )
+            measureStrategy.measureScale(nativeSize, availableSize)
         )
     }
 
     private fun setScale(scale: Float): Size<Float> {
         this.scale = scale
         measuredSize = nativeSize.scaledBy(scale)
+        isDrawable = scale > 0f && !measuredSize.isEmpty
         return measuredSize
     }
 
-    /* Only for use during onDraw */
-    private val onDraw_drawBounds = MutableFloatRect()
-    private val onDraw_currentLine = MutableFloatRect()
-
     /**
-     * The size of *each line* of the *current* time.
-     * Only valid for a single animation frame.
-     *
-     * This must be <= measuredSize
+     * Values used during measurement of each frame.
+     * Mutable classes used to minimise per-frame object creation.
      */
-    private var onDraw_currentNativeSize: MutableList<Size<Float>> = mutableListOf()
+    private object MeasureProps {
+        val rowSizes: MutableList<Size<Float>> = mutableListOf()
+        val drawBounds: MutableRect<Float> = MutableFloatRect()
+        val currentRowSize: MutableRect<Float> = MutableFloatRect()
+        val tempRect = MutableFloatRect()
+
+        fun reset() {
+            rowSizes.clear()
+            drawBounds.clear()
+            currentRowSize.clear()
+            tempRect.clear()
+        }
+    }
 
     /**
      * Measure the size of the clock for the current animation frame and
@@ -174,40 +137,37 @@ class ClockLayout<G : BaseClockGlyph>(
      * This is required for correct application of alignment relative to the
      * drawable space available for each row/component of the clock.
      */
-
-    fun onDraw(draw: (translationX: Float, translationY: Float, scale: Float) -> Unit) {
-        onDraw_drawBounds.reset()
-        onDraw_currentLine.reset()
-        onDraw_currentNativeSize.clear()
+    fun measure(draw: DrawWithTransform) {
+        MeasureProps.reset()
 
         layoutPass { glyph, glyphAnimationProgress, rect ->
-            onDraw_drawBounds.include(rect)
+            MeasureProps.drawBounds.include(rect)
 
-            if (rect.top != onDraw_currentLine.top) {
-                if (!onDraw_currentLine.isEmpty) {
-                    onDraw_currentNativeSize.add(onDraw_currentLine.toSize())
+            if (rect.top != MeasureProps.currentRowSize.top) {
+                if (!MeasureProps.currentRowSize.isEmpty) {
+                    MeasureProps.rowSizes.add(MeasureProps.currentRowSize.toSize())
                 }
-                onDraw_currentLine.set(rect)
+                MeasureProps.currentRowSize.set(rect)
             } else {
-                onDraw_currentLine.include(rect)
+                MeasureProps.currentRowSize.include(rect)
             }
         }
 
-        if (!onDraw_currentLine.isEmpty) {
-            onDraw_currentNativeSize.add(onDraw_currentLine.toSize())
+        if (!MeasureProps.currentRowSize.isEmpty) {
+            MeasureProps.rowSizes.add(MeasureProps.currentRowSize.toSize())
         }
 
         val translationX: Float = this.options.horizontalAlignment.apply(
-            onDraw_drawBounds.width * scale,
+            MeasureProps.drawBounds.width * scale,
             measuredSize.x
         )
         val translationY: Float = this.options.verticalAlignment.apply(
-            onDraw_drawBounds.height * scale,
+            MeasureProps.drawBounds.height * scale,
             measuredSize.y
         )
 
         draw(translationX, translationY, scale)
-        onDraw_currentNativeSize.clear()
+        MeasureProps.rowSizes.clear()
     }
 
     fun layoutPass(callback: LayoutPassCallback<G>) {
@@ -243,15 +203,15 @@ class ClockLayout<G : BaseClockGlyph>(
             visitGlyph.callback(
                 glyph,
                 glyphState.progress,
-                layoutPassRect.set(left, top, right, bottom)
+                MeasureProps.tempRect.set(left, top, right, bottom)
             )
             x += glyphWidth + spacingPx * glyph.scale
         }
     }
 
-    private fun maxLineWidth(): Float = onDraw_currentNativeSize.maxOfOrNull { it.x } ?: 0f
+    private fun maxLineWidth(): Float = MeasureProps.rowSizes.maxOfOrNull { it.x } ?: 0f
     private fun newLineX(index: Int, maxLineWidth: Float): Float =
-        options.horizontalAlignment.apply(onDraw_currentNativeSize[index].x, maxLineWidth)
+        options.horizontalAlignment.apply(MeasureProps.rowSizes[index].x, maxLineWidth)
 
     private fun layoutPassVertical(visitGlyph: LayoutPassCallback<G>) {
         val spacingPx = options.spacingPx
@@ -268,7 +228,7 @@ class ClockLayout<G : BaseClockGlyph>(
             val glyphWidth = glyphState.width
             val glyphHeight = glyphState.height
 
-            if (glyph.key == ":") {
+            if (glyph.role.isSeparator) {
                 currentLineIndex += 1
                 x = newLineX(index, maxLineWidth)
                 y += glyph.maxSize.y + spacingPx
@@ -279,7 +239,7 @@ class ClockLayout<G : BaseClockGlyph>(
             visitGlyph.callback(
                 glyph,
                 glyphState.progress,
-                layoutPassRect.set(x, y, x + glyphWidth, y + glyphHeight)
+                MeasureProps.tempRect.set(x, y, x + glyphWidth, y + glyphHeight)
             )
             x += glyphWidth + spacingPx * glyph.scale
         }
@@ -304,7 +264,7 @@ class ClockLayout<G : BaseClockGlyph>(
             if (glyph.role == GlyphRole.SeparatorMinutesSeconds) {
                 currentLineIndex += 1
 
-                x = alignment.apply(onDraw_currentNativeSize[currentLineIndex].x, maxLineWidth)
+                x = alignment.apply(MeasureProps.rowSizes[currentLineIndex].x, maxLineWidth)
                 y += glyph.maxSize.y + spacingPx
                 continue
             }
@@ -314,7 +274,7 @@ class ClockLayout<G : BaseClockGlyph>(
             visitGlyph.callback(
                 glyph,
                 glyphState.progress,
-                layoutPassRect.set(x, y, x + glyphWidth, y + glyphHeight)
+                MeasureProps.tempRect.set(x, y, x + glyphWidth, y + glyphHeight)
             )
         }
     }
@@ -322,8 +282,8 @@ class ClockLayout<G : BaseClockGlyph>(
     private fun updateGlyph(index: Int): GlyphStatus<G> {
         val glyph = glyphs.get(index)
 
-        if (glyph.scale == 0f) {
-            return GlyphStatus(glyph, isVisible = false)
+        if (glyph.scale == 0f || glyph.role == GlyphRole.SeparatorMinutesSeconds) {
+            return glyphStatus.set(glyph, isVisible = false)
         }
 
         var glyphProgress = getGlyphAnimationProgress(index)
@@ -344,10 +304,10 @@ class ClockLayout<G : BaseClockGlyph>(
             }
         }
 
-        val width = glyph.getWidthAtProgress(glyphProgress) * glyph.scale
-        val height = glyph.maxSize.y * glyph.scale
+        val width = (glyph.getWidthAtProgress(glyphProgress) * glyph.scale)
+        val height = (glyph.maxSize.y * glyph.scale)
 
-        return GlyphStatus(
+        return glyphStatus.set(
             glyph,
             isVisible = true,
             progress = glyphProgress,
@@ -398,7 +358,7 @@ class ClockLayout<G : BaseClockGlyph>(
                 glyph.setState(GlyphState.Activating)
             } else {
                 animatedGlyphCount++
-                animatedGlyphIndices.add(index) //[animatedGlyphCount++] = index
+                animatedGlyphIndices.add(index)
                 glyph.key = "${fromChar}_${nextChar}"
                 glyph.setState(GlyphState.Deactivating)
             }
@@ -410,9 +370,30 @@ class ClockLayout<G : BaseClockGlyph>(
 
 
 private class GlyphStatus<G : Glyph>(
-    val glyph: G,
-    val isVisible: Boolean,
-    val progress: Float = 0f,
-    val width: Float = 0f,
-    val height: Float = 0f,
-)
+) {
+    lateinit var glyph: G
+        private set
+    var isVisible: Boolean = false
+        private set
+    var progress: Float = 0f
+        private set
+    var width: Float = 0f
+        private set
+    var height: Float = 0f
+        private set
+
+    fun set(
+        glyph: G,
+        isVisible: Boolean,
+        progress: Float = 0f,
+        width: Float = 0f,
+        height: Float = 0f,
+    ): GlyphStatus<G> {
+        this.glyph = glyph
+        this.isVisible = isVisible
+        this.progress = progress
+        this.width = width
+        this.height = height
+        return this
+    }
+}

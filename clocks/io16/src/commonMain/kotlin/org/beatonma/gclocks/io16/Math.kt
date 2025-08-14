@@ -8,4 +8,4 @@ fun overshoot(value: Float): Float {
 }
 
 fun accelerateDecelerate(t: Float): Float = 1.0f - (1.0f - t) * (1.0f - t)
-fun anticipate(t: Float, tension: Float = 0.4f): Float = t * t * (tension + 1f) * t - tension
+fun anticipate(t: Float, tension: Float = 0.2f): Float = t * t * ((tension + 1f) * t - tension)

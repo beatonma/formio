@@ -31,6 +31,23 @@ interface Path {
         sweepAngle: Angle = 180f.degrees,
     )
 
+    fun boundedArc(
+        centerX: Float,
+        centerY: Float,
+        radius: Float,
+        startAngle: Angle = (-90f).degrees,
+        sweepAngle: Angle = 180f.degrees,
+    ) {
+        boundedArc(
+            left = centerX - radius,
+            top = centerY - radius,
+            right = centerX + radius,
+            bottom = centerY + radius,
+            startAngle = startAngle,
+            sweepAngle = sweepAngle
+        )
+    }
+
     fun circle(
         centerX: Float,
         centerY: Float,
