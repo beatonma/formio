@@ -15,13 +15,10 @@ data class Io16Options(
     override val glyphMorphMillis: Int = 600,
     override val secondsGlyphScale: Float = Options.Companion.DefaultSecondsGlyphScale,
     override val strokeWidth: Float = 2f,
+    override val activeStateDurationMillis: Int = 5000,
+    override val stateChangeDurationMillis: Int = 1200,
 
     // How long a path segment takes to complete a circuit
     val colorCycleDurationMillis: Int = 5000,
 
-    // How long a glyph remains in the active state
-    val activeStateDurationMillis: Int = 5000,
-
-    // How long the transition between active/inactive takes
-    val stateChangeDurationMillis: Int = 1200,
-) : Options
+    ) : Options

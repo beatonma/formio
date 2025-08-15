@@ -207,6 +207,7 @@ interface Canvas<T> : Path {
         y: Float,
         color: Color = Color.Red,
         style: DrawStyle = Fill,
+        alpha: Float = 1f,
     )
 
     fun drawText(text: String)

@@ -281,6 +281,7 @@ class ClockLayout<G : BaseClockGlyph>(
 
     private fun updateGlyph(index: Int): GlyphStatus<G> {
         val glyph = glyphs.get(index)
+        glyph.tickState(options)
 
         if (glyph.scale == 0f || glyph.role == GlyphRole.SeparatorMinutesSeconds) {
             return glyphStatus.set(glyph, isVisible = false)
@@ -294,12 +295,12 @@ class ClockLayout<G : BaseClockGlyph>(
         }
 
         if (glyphProgress != 0f) {
-            glyph.setState(GlyphState.Activating)
+            glyph.setState(GlyphState.Active)
             if (index > 0) {
                 val previousGlyph = this.glyphs[index - 1]
                 val previousCanonical = previousGlyph.canonicalStartGlyph
                 if (previousCanonical != '#' && previousCanonical != ':') {
-                    previousGlyph.setState(GlyphState.Activating)
+                    previousGlyph.setState(GlyphState.Active)
                 }
             }
         }
@@ -355,12 +356,11 @@ class ClockLayout<G : BaseClockGlyph>(
 
             if (fromChar == nextChar) {
                 glyph.key = fromChar.toString()
-                glyph.setState(GlyphState.Activating)
             } else {
                 animatedGlyphCount++
                 animatedGlyphIndices.add(index)
                 glyph.key = "${fromChar}_${nextChar}"
-                glyph.setState(GlyphState.Deactivating)
+                glyph.setState(GlyphState.Active)
             }
             glyphs[glyphCount++] = glyph
         }

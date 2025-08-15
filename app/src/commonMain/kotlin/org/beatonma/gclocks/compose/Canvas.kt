@@ -215,12 +215,14 @@ class ComposeCanvas(
         y: Float,
         color: Color,
         style: DrawStyle,
+        alpha: Float,
     ) {
         drawScope.drawCircle(
             color.toCompose(),
             radius = 8f,
             center = Offset(x, y),
-            style = style.toCompose()
+            style = style.toCompose(),
+            alpha = alpha,
         )
     }
 

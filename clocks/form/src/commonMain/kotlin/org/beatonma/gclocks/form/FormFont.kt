@@ -32,7 +32,10 @@ data class FormOptions(
     override val glyphMorphMillis: Int = 800,
     override val secondsGlyphScale: Float = Options.DefaultSecondsGlyphScale,
     override val strokeWidth: Float = 0f,
-) : Options
+) : Options {
+    override val activeStateDurationMillis: Int = 0
+    override val stateChangeDurationMillis: Int = 0
+}
 
 
 class FormFont : ClockFont<FormGlyph> {
