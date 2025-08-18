@@ -3,8 +3,8 @@ package org.beatonma.gclocks.core.util
 import org.beatonma.gclocks.core.Build
 import kotlin.time.measureTime
 
-inline fun debug(block: () -> Unit) {
-    if (Build.isDebug) {
+inline fun debug(enabled: Boolean = true, block: () -> Unit) {
+    if (enabled && Build.isDebug) {
         run(block)
     }
 }

@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.geometry.FloatPoint
 import org.beatonma.gclocks.core.geometry.Point
+import org.beatonma.gclocks.core.geometry.Position
 import androidx.compose.ui.graphics.drawscope.Fill as PlatformFill
 import androidx.compose.ui.graphics.drawscope.Stroke as PlatformStroke
 import androidx.compose.ui.graphics.drawscope.DrawStyle as PlatformStyle
@@ -34,7 +35,7 @@ import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.DrawStyle
 import org.beatonma.gclocks.core.graphics.Fill
 import org.beatonma.gclocks.core.graphics.PathMeasure
-import org.beatonma.gclocks.core.graphics.Position
+import org.beatonma.gclocks.core.graphics.PathMeasureScope
 import org.beatonma.gclocks.core.graphics.Stroke
 import org.beatonma.gclocks.core.graphics.StrokeJoin
 import androidx.compose.ui.graphics.Color as PlatformColor
@@ -82,6 +83,7 @@ class ComposePath : Path {
         centerX: Float,
         centerY: Float,
         radius: Float,
+        direction: Path.Direction,
     ) {
         composePath.addOval(
             PlatformRect(
@@ -89,7 +91,8 @@ class ComposePath : Path {
                 centerY - radius,
                 centerX + radius,
                 centerY + radius
-            )
+            ),
+            direction = direction.toCompose()
         )
     }
 
@@ -102,8 +105,9 @@ class ComposePath : Path {
     }
 }
 
-class ComposePathMeasure(private val pathMeasure: PlatformPathMeasure = PlatformPathMeasure()) :
-    PathMeasure {
+class ComposePathMeasure(
+    private val pathMeasure: PlatformPathMeasure = PlatformPathMeasure(),
+) : PathMeasure {
     override val length: Float get() = pathMeasure.length
 
     override fun setPath(path: Path, forceClosed: Boolean) {
@@ -134,23 +138,24 @@ class ComposePathMeasure(private val pathMeasure: PlatformPathMeasure = Platform
     }
 }
 
-private typealias CanvasAction = Canvas<DrawScope>.() -> Unit
+private typealias CanvasAction = Canvas.() -> Unit
 
 class ComposeCanvas(
     private val textMeasurer: TextMeasurer,
     private val path: ComposePath = ComposePath(),
-) : Canvas<DrawScope>, Path by path {
+) : Canvas, Path by path {
     private var _drawScope: DrawScope? = null
     private val drawScope: DrawScope get() = _drawScope!!
 
-    override val pathMeasure: PathMeasure by lazy {
+    private val pathMeasure: PathMeasure by lazy {
         ComposePathMeasure().apply {
             setPath(path)
         }
     }
 
-    override fun measurePath() {
+    override fun measurePath(block: PathMeasureScope.() -> Unit) {
         pathMeasure.setPath(path)
+        pathMeasure.apply { block() }
     }
 
     fun withScope(scope: DrawScope, block: ComposeCanvas.() -> Unit) {
@@ -279,7 +284,7 @@ class ComposeCanvas(
         }
     }
 
-    override fun withScale(scaleX: Float, scaleY: Float, block: Canvas<DrawScope>.() -> Unit) {
+    override fun withScale(scaleX: Float, scaleY: Float, block: Canvas.() -> Unit) {
         drawScope.scale(scaleX, scaleY, pivot = DefaultPivot) {
             block()
         }
@@ -373,3 +378,8 @@ private fun StrokeJoin.toCompose(): PlatformStrokeJoin = when (this) {
 }
 
 private fun Offset.toPosition(): Point<Float> = FloatPoint(x, y)
+
+private fun Path.Direction.toCompose(): PlatformPath.Direction = when (this) {
+    Path.Direction.Clockwise -> PlatformPath.Direction.Clockwise
+    Path.Direction.AntiClockwise -> PlatformPath.Direction.CounterClockwise
+}

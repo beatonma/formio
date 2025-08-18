@@ -21,7 +21,9 @@ interface ClockRenderer<G : BaseClockGlyph> {
             canvas.withTranslationAndScale(x, y, scale) {
                 layout.layoutPass { glyph, glyphAnimationProgress, rect ->
                     if (rect.isEmpty) return@layoutPass
-                    drawGlyphBoundary(canvas, paints, rect)
+                    debug {
+                        drawGlyphBoundary(canvas, paints, rect)
+                    }
 
                     canvas.withTranslationAndScale(rect.left, rect.top, glyph.scale) {
                         drawGlyph(glyph, canvas, glyphAnimationProgress, paints)
@@ -32,16 +34,16 @@ interface ClockRenderer<G : BaseClockGlyph> {
     }
 
     fun drawGlyphBoundary(canvas: GenericCanvas, paints: Paints, boundary: Rect<Float>) {
-        canvas.drawRect(Color.Red, boundary, Stroke.Default)
+        canvas.drawRect(Color.Grey, boundary, Stroke.Default)
         canvas.drawLine(
-            Color.Red,
+            Color.Grey,
             boundary.left,
             boundary.top,
             boundary.right,
             boundary.bottom
         )
         canvas.drawLine(
-            Color.Red,
+            Color.Grey,
             boundary.right,
             boundary.top,
             boundary.left,

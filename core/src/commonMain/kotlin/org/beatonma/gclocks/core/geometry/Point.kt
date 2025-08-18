@@ -21,3 +21,4 @@ value class FloatPoint private constructor(val packedValue: Long) : Point<Float>
     override inline val x get() = unpackX(packedValue)
     override inline val y get() = unpackY(packedValue)
 }
+typealias Position = Point<Float>

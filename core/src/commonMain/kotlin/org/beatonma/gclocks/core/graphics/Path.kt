@@ -1,9 +1,8 @@
 package org.beatonma.gclocks.core.graphics
 
 import org.beatonma.gclocks.core.geometry.Angle
+import org.beatonma.gclocks.core.geometry.Position
 import org.beatonma.gclocks.core.geometry.degrees
-
-class PathError(message: String? = null) : Exception(message)
 
 
 interface Path {
@@ -52,14 +51,20 @@ interface Path {
         centerX: Float,
         centerY: Float,
         radius: Float,
+        direction: Direction,
     )
 
     fun beginPath()
     fun closePath()
+
+    enum class Direction {
+        Clockwise,
+        AntiClockwise,
+        ;
+    }
 }
 
-
-interface PathMeasure {
+interface PathMeasureScope {
     val length: Float
     fun getSegment(
         startDistance: Float,
@@ -68,7 +73,10 @@ interface PathMeasure {
         startsWithMoveTo: Boolean = true,
     ): Path
 
-    fun setPath(path: Path, forceClosed: Boolean = true)
     fun getPosition(distance: Float): Position?
     fun getTangent(distance: Float): Position?
+}
+
+interface PathMeasure : PathMeasureScope {
+    fun setPath(path: Path, forceClosed: Boolean = true)
 }

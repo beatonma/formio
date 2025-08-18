@@ -59,14 +59,11 @@ class Stroke(
 }
 
 
-typealias Position = Point<Float>
-private typealias CanvasAction<T> = Canvas<T>.() -> Unit
-typealias GenericCanvas = Canvas<*>
+private typealias CanvasAction = Canvas.() -> Unit
+typealias GenericCanvas = Canvas
 
-interface Canvas<T> : Path {
-    val pathMeasure: PathMeasure
-
-    fun measurePath()
+interface Canvas : Path {
+    fun measurePath(block: (scope: PathMeasureScope) -> Unit)
 
     fun drawCircle(
         color: Color,
@@ -194,7 +191,7 @@ interface Canvas<T> : Path {
         color: Color,
         style: DrawStyle = Fill,
         alpha: Float = DefaultAlpha,
-        block: CanvasAction<T>,
+        block: CanvasAction,
     ) {
         beginPath()
         block()
@@ -217,20 +214,20 @@ interface Canvas<T> : Path {
 
     fun withScale(
         scale: Float,
-        block: CanvasAction<T>,
+        block: CanvasAction,
     )
 
     fun withScale(
         scaleX: Float,
         scaleY: Float,
-        block: CanvasAction<T>,
+        block: CanvasAction,
     )
 
     fun withScale(
         scale: Float,
         pivotX: Float,
         pivotY: Float,
-        block: CanvasAction<T>,
+        block: CanvasAction,
     )
 
     fun withScale(
@@ -238,27 +235,27 @@ interface Canvas<T> : Path {
         scaleY: Float,
         pivotX: Float,
         pivotY: Float,
-        block: CanvasAction<T>,
+        block: CanvasAction,
     )
 
     fun withRotation(
         angle: Angle,
         pivotX: Float,
         pivotY: Float,
-        block: CanvasAction<T>,
+        block: CanvasAction,
     )
 
     fun withTranslation(
         x: Float,
         y: Float,
-        block: CanvasAction<T>,
+        block: CanvasAction,
     )
 
     fun withTranslationAndScale(
         x: Float,
         y: Float,
         scale: Float,
-        block: CanvasAction<T>,
+        block: CanvasAction,
     )
 
     fun clear()

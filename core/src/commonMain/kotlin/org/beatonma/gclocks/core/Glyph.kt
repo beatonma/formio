@@ -5,6 +5,7 @@ import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.GenericCanvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 
 enum class GlyphState {
@@ -102,16 +103,20 @@ abstract class BaseGlyph : Glyph {
         if (lock != GlyphStateLock.None) return
 
         return when (newState) {
-            GlyphState.Activating -> setActivating()
-            GlyphState.Active -> setActive()
-            GlyphState.Deactivating -> setDeactivating()
-            GlyphState.Inactive -> setInactive()
+            GlyphState.Activating,
+            GlyphState.Active,
+                -> setActive()
+
+            GlyphState.Deactivating,
+            GlyphState.Inactive,
+                -> setInactive()
+
             GlyphState.Appearing -> setAppearing()
-            GlyphState.Disappeared -> setDisappeared()
+            GlyphState.Disappeared,
             GlyphState.Disappearing,
             GlyphState.DisappearingFromActive,
             GlyphState.DisappearingFromInactive,
-                -> setDisappearing()
+                -> setDisappeared()
         }
     }
 
@@ -125,41 +130,27 @@ abstract class BaseGlyph : Glyph {
 
             GlyphState.Active -> {
                 if (millisSinceChange > options.activeStateDurationMillis) {
-                    setState(GlyphState.Deactivating)
+                    state = GlyphState.Deactivating
                 }
             }
 
             GlyphState.Appearing, GlyphState.Activating -> {
                 if (transitionStateExpired) {
-                    setState(GlyphState.Active)
+                    state = GlyphState.Active
                 }
             }
 
             GlyphState.Deactivating -> {
                 if (transitionStateExpired) {
-                    setState(GlyphState.Inactive)
+                    state = GlyphState.Inactive
                 }
             }
 
             GlyphState.Disappearing, GlyphState.DisappearingFromActive, GlyphState.DisappearingFromInactive -> {
                 if (transitionStateExpired) {
-                    setState(GlyphState.Disappeared)
+                    state = GlyphState.Disappeared
                 }
             }
-        }
-    }
-
-    private fun setActivating() {
-        when (state) {
-            GlyphState.Active -> state = GlyphState.Active
-            GlyphState.Inactive -> state = GlyphState.Activating
-            else -> {}
-        }
-    }
-
-    private fun setDeactivating() {
-        if (state == GlyphState.Active) {
-            state = GlyphState.Deactivating
         }
     }
 
@@ -170,33 +161,33 @@ abstract class BaseGlyph : Glyph {
             }
 
             GlyphState.Activating, GlyphState.Appearing -> {
-                state = GlyphState.Active
+                // State will be updated directly via tickState
             }
 
-            else -> state = GlyphState.Activating
+            GlyphState.Inactive, GlyphState.Deactivating -> state = GlyphState.Activating
+
+            else -> {}
         }
     }
 
     private fun setInactive() {
-        if (state == GlyphState.Deactivating) {
-            state = GlyphState.Inactive
+        when (state) {
+            GlyphState.Active, GlyphState.Activating -> {
+                state = GlyphState.Deactivating
+            }
+
+            else -> {}
         }
     }
 
     private fun setAppearing() {
-        if (state == GlyphState.Disappeared) {
-            state = GlyphState.Appearing
-        }
-    }
-
-    private fun setDisappearing() {
         when (state) {
-            GlyphState.Active -> {
-                state = GlyphState.DisappearingFromActive
-            }
-
-            GlyphState.Inactive -> {
-                state = GlyphState.DisappearingFromInactive
+            GlyphState.Disappeared,
+            GlyphState.Disappearing,
+            GlyphState.DisappearingFromActive,
+            GlyphState.DisappearingFromInactive,
+                -> {
+                state = GlyphState.Appearing
             }
 
             else -> {}
@@ -282,16 +273,10 @@ abstract class BaseClockGlyph(
 interface GlyphRenderer<G : Glyph> {
     fun draw(glyph: G, canvas: GenericCanvas, glyphProgress: Float, paints: Paints) {
         glyph.draw(canvas, glyphProgress, paints)
-        val color = when (glyph.state) {
-            GlyphState.Active -> Color.Green
-            GlyphState.Activating -> Color.Yellow
-            GlyphState.Deactivating -> Color.Orange
-            GlyphState.Inactive -> Color.Red
-            GlyphState.Appearing -> Color.Cyan
-            else -> Color.Magenta
+
+        debug(false) {
+            canvas.drawText(glyph.state.name)
         }
-        canvas.drawPoint(10f, 10f, color, alpha = .7f)
-        canvas.drawText(glyph.state.name)
     }
 
     companion object {

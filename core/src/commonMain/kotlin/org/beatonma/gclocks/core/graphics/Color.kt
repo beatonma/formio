@@ -103,6 +103,7 @@ value class Color(val value: ULong) {
         }
 
         val Black = Color(0xff000000UL)
+        val Grey = Color(0xff333333UL)
         val White = Color(0xffffffffUL)
         val Red = Color(0xffff0000UL)
         val Green = Color(0xff00ff00UL)
@@ -110,6 +111,7 @@ value class Color(val value: ULong) {
         val Yellow = Color(0xffffff00L)
         val Magenta = Color(0xffff00ffL)
         val Cyan = Color(0xff00ffffL)
+        val Orange = Color(0xffff8400)
     }
 }
 

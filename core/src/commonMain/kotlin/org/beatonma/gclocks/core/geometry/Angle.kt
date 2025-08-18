@@ -27,6 +27,7 @@ value class Angle(val degrees: Float) {
         val Ninety = 90f.degrees
         val OneEighty = 180f.degrees
         val TwoSeventy = 270f.degrees
+        val ThreeSixty = 360f.degrees
     }
 }
 
