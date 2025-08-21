@@ -30,7 +30,11 @@ fun progress(value: Float, min: Float, max: Float): Float =
  * Convert progress (0..1) to a value in the range defined my min..max.
  */
 fun interpolate(@FloatRange(0.0, 1.0) progress: Float, min: Float, max: Float): Float =
-    min + (max - min) * progress
+    when (progress) {
+        0f -> min
+        1f -> max
+        else -> min + (max - min) * progress
+    }
 
 fun accelerate(value: Float, power: Int) = (1f - value).pow(power)
 fun decelerate(value: Float, power: Int) = 1f - accelerate(value, power)

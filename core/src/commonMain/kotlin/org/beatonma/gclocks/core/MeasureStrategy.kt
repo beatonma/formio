@@ -1,5 +1,6 @@
 package org.beatonma.gclocks.core
 
+import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.geometry.Size
 import kotlin.math.min
 
@@ -9,7 +10,7 @@ enum class MeasureStrategy {
     ;
 
     fun measureScale(
-        nativeSize: Size<Float>,
+        nativeSize: NativeSize,
         availableSize: Size<Float>,
     ): Float = measureScale(
         nativeSize.x, nativeSize.y,

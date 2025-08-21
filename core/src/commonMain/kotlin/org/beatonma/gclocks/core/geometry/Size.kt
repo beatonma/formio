@@ -3,14 +3,38 @@ package org.beatonma.gclocks.core.geometry
 import androidx.annotation.FloatRange
 
 interface Size<T : Number> : Vector2<T> {
+    val width: T
+    val height: T
     val isEmpty: Boolean
-    fun scaledBy(factor: Float): Size<Float>
     fun aspectRatio(): Float
+
+    operator fun times(factor: Float): Size<Float>
+    fun toRect(): Rect<T>
+}
+
+/**
+ * We use [Size]<Float> for tracking several different kinds of size in
+ * close proximity to each other, and it's easy to confuse them.
+ * Here we have several equivalent implementations, different only in their names,
+ * to help avoid accidentally passing around the wrong kind of measurement.
+ *
+ * - [FloatSize]: General-use
+ * - [NativeSize]: Size defined using some internal coordinate system.
+ *   Used by [org.beatonma.gclocks.core.Glyph]s and
+ *   [org.beatonma.gclocks.core.ClockFont]s to define their 'default' size.
+ *   [ScaledSize]: The result of scaling a [NativeSize] to fit some
+ *   externally-defined space.
+ */
+interface SizeF : Size<Float>, FloatVector2 {
+    override fun aspectRatio(): Float = x / y
+    override val isEmpty: Boolean get() = x == 0f && y == 0f
+    override fun toRect(): MutableRect<Float> = MutableRectF(0f, 0f, width, height)
 }
 
 
+/** General-purpose implementation of [Size]<Float>. */
 @JvmInline
-value class FloatSize private constructor(val packedValue: Long) : Size<Float>, FloatVector2 {
+value class FloatSize private constructor(val packedValue: Long) : SizeF {
     constructor(
         @FloatRange(from = 0.0) x: Float = 0f,
         @FloatRange(from = 0.0) y: Float = 0f,
@@ -19,19 +43,75 @@ value class FloatSize private constructor(val packedValue: Long) : Size<Float>, 
     override inline val x: Float get() = unpackX(packedValue)
     override inline val y: Float get() = unpackY(packedValue)
 
-    override val isEmpty: Boolean
-        get() = x == 0f && y == 0f
+    override val width: Float inline get() = x
+    override val height: Float inline get() = y
 
-    override fun scaledBy(@FloatRange(from = 0.0) factor: Float): Size<Float> = FloatSize(
+    override fun times(factor: Float): FloatSize = FloatSize(
         x * factor,
         y * factor,
     )
 
-    override fun aspectRatio(): Float = x / y
+    override fun toString(): String = Vector2.toString(this)
+
+    companion object {
+        val Init: Size<Float> = FloatSize(Float.NaN, Float.NaN)
+        val Zero: Size<Float> = FloatSize(0f, 0f)
+    }
+}
+
+
+/** Implementation of [Size]<Float> for storing sizes with an internal coordinate system.
+ * Entirely equivalent to FloatSize except for its name. */
+@JvmInline
+value class NativeSize private constructor(val packedValue: Long) : SizeF {
+    constructor(
+        @FloatRange(from = 0.0) x: Float = 0f,
+        @FloatRange(from = 0.0) y: Float = 0f,
+    ) : this(packFloats(x, y))
+
+    override inline val x: Float get() = unpackX(packedValue)
+    override inline val y: Float get() = unpackY(packedValue)
+
+    override val width: Float inline get() = x
+    override val height: Float inline get() = y
+
+    override fun times(factor: Float): ScaledSize = ScaledSize(
+        x * factor,
+        y * factor,
+    )
 
     override fun toString(): String = Vector2.toString(this)
 
     companion object {
-        val Zero: Size<Float> = FloatSize(0f, 0f)
+        val Init: NativeSize = NativeSize(Float.NaN, Float.NaN)
+        val Zero: NativeSize = NativeSize(0f, 0f)
+    }
+}
+
+/** Implementation of [Size]<Float> for storing sizes with an internal coordinate system.
+ * Entirely equivalent to FloatSize except for its name. */
+@JvmInline
+value class ScaledSize private constructor(val packedValue: Long) : SizeF {
+    constructor(
+        @FloatRange(from = 0.0) x: Float = 0f,
+        @FloatRange(from = 0.0) y: Float = 0f,
+    ) : this(packFloats(x, y))
+
+    override inline val x: Float get() = unpackX(packedValue)
+    override inline val y: Float get() = unpackY(packedValue)
+
+    override val width: Float inline get() = x
+    override val height: Float inline get() = y
+
+    override fun times(factor: Float): ScaledSize = ScaledSize(
+        x * factor,
+        y * factor,
+    )
+
+    override fun toString(): String = Vector2.toString(this)
+
+    companion object {
+        val Init: ScaledSize = ScaledSize(Float.NaN, Float.NaN)
+        val Zero: ScaledSize = ScaledSize(0f, 0f)
     }
 }

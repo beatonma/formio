@@ -25,6 +25,7 @@ import org.beatonma.gclocks.core.Glyph
 import org.beatonma.gclocks.core.GlyphRenderer
 import org.beatonma.gclocks.core.MeasureStrategy
 import org.beatonma.gclocks.core.geometry.FloatSize
+import org.beatonma.gclocks.core.geometry.ScaledSize
 import org.beatonma.gclocks.core.geometry.Size
 import org.beatonma.gclocks.core.graphics.GenericCanvas
 import org.beatonma.gclocks.core.graphics.Paints
@@ -92,12 +93,12 @@ private class GlyphPreview<G : Glyph>(
     val glyph: G,
     val renderer: GlyphRenderer<G>,
 ) {
-    private var measuredSize: Size<Float> = FloatSize()
+    private var measuredSize: ScaledSize = ScaledSize.Init
 
     fun setAvailableSize(available: Size<Float>) {
         val scale = MeasureStrategy.Fit.measureScale(glyph.maxSize, available)
         glyph.scale = scale
-        measuredSize = glyph.maxSize.scaledBy(scale)
+        measuredSize = glyph.maxSize * scale
     }
 
     fun draw(canvas: GenericCanvas, glyphProgress: Float, paints: Paints) {

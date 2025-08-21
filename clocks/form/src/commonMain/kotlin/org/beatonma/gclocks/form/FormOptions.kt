@@ -1,4 +1,4 @@
-package org.beatonma.gclocks.io16
+package org.beatonma.gclocks.form
 
 import org.beatonma.gclocks.core.options.GlyphOptions
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
@@ -8,22 +8,21 @@ import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
 
-data class Io16Options(
-    override val glyph: Io16GlyphOptions = Io16GlyphOptions(),
-    override val layout: Io16LayoutOptions = Io16LayoutOptions(),
-    override val strokeWidth: Float = 2f,
+
+data class FormOptions(
+    override val glyph: FormGlyphOptions = FormGlyphOptions(),
+    override val layout: FormLayoutOptions = FormLayoutOptions(),
+    override val strokeWidth: Float = 0f,
 ) : Options
 
-data class Io16GlyphOptions(
-    override val activeStateDurationMillis: Int = 5000,
-    override val stateChangeDurationMillis: Int = 1200,
-    override val glyphMorphMillis: Int = 600,
-    // How long a path segment takes to complete a circuit
-    val colorCycleDurationMillis: Int = 5000,
+data class FormGlyphOptions(
+    override val activeStateDurationMillis: Int = 0,
+    override val stateChangeDurationMillis: Int = 0,
+    override val glyphMorphMillis: Int = 800,
 ) : GlyphOptions
 
-data class Io16LayoutOptions(
-    override val horizontalAlignment: HorizontalAlignment = HorizontalAlignment.Center,
+data class FormLayoutOptions(
+    override val horizontalAlignment: HorizontalAlignment = HorizontalAlignment.End,
     override val verticalAlignment: VerticalAlignment = VerticalAlignment.Top,
     override val layout: Layout = Layout.Vertical,
     override val format: TimeFormat = TimeFormat.HH_MM_SS_24,

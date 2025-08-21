@@ -22,7 +22,7 @@ interface Vector2<T : Number> : Comparable<Vector2<T>> {
     operator fun component2() = y
 
     companion object {
-        val toString: (v: Vector2<*>) -> String = { v -> "[${v.x}, ${v.y}]" }
+        inline fun toString(v: Vector2<*>): String = "[${v.x}, ${v.y}]"
     }
 }
 

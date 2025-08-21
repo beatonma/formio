@@ -1,7 +1,7 @@
 package org.beatonma.gclocks.io16
 
 import androidx.annotation.FloatRange
-import org.beatonma.gclocks.core.ClockLayout
+import org.beatonma.gclocks.core.layout.ClockLayout
 import org.beatonma.gclocks.core.ClockRenderer
 import org.beatonma.gclocks.core.GlyphRenderer
 import org.beatonma.gclocks.core.GlyphState
@@ -40,8 +40,8 @@ class Io16Paints(
 
 class Io16ClockRenderer<P : Path>(
     override val renderer: Io16GlyphRenderer<P>,
-    override var paints: Paints = Io16Paints(),
-) : ClockRenderer<Io16Glyph> {
+    override var paints: Io16Paints,
+) : ClockRenderer<Io16Glyph, Io16Paints> {
     override fun draw(canvas: GenericCanvas, layout: ClockLayout<Io16Glyph>) {
         renderer.now = getCurrentTimeMillis()
         super.draw(canvas, layout)
@@ -51,7 +51,7 @@ class Io16ClockRenderer<P : Path>(
 
 class Io16GlyphRenderer<P : Path>(
     private val segmentPath: P,
-    private val options: Io16Options = Io16Options(),
+    options: Io16Options,
     private val updateOnDraw: Boolean = false,
 ) : GlyphRenderer<Io16Glyph> {
     private var previousNow: Long = getCurrentTimeMillis()
@@ -76,6 +76,7 @@ class Io16GlyphRenderer<P : Path>(
     private var segmentOffsetProgress: Float = 0f
 
     private val style: Stroke = Stroke(options.strokeWidth)
+    private val options: Io16GlyphOptions = options.glyph
 
     override fun draw(
         glyph: Io16Glyph,

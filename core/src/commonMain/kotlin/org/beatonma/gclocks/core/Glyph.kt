@@ -1,10 +1,10 @@
 package org.beatonma.gclocks.core
 
-import org.beatonma.gclocks.core.geometry.Size
+import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.GenericCanvas
 import org.beatonma.gclocks.core.graphics.Paints
-import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.options.GlyphOptions
 import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 
@@ -43,13 +43,13 @@ enum class GlyphRole {
 private typealias OnStateChange = (newState: GlyphState) -> Unit
 
 interface GlyphCompanion {
-    val maxSize: Size<Float>
+    val maxSize: NativeSize
     val aspectRatio: Float
 }
 
 interface Glyph {
     val companion: GlyphCompanion
-    val maxSize: Size<Float> get() = companion.maxSize
+    val maxSize: NativeSize get() = companion.maxSize
     val role: GlyphRole
     var key: String
     val state: GlyphState
@@ -59,6 +59,7 @@ interface Glyph {
 
     fun draw(canvas: GenericCanvas, glyphProgress: Float, paints: Paints)
     fun getWidthAtProgress(glyphProgress: Float): Float
+    fun setState(newState: GlyphState, force: Boolean = false)
 
     val canonicalStartGlyph: Char
     val canonicalEndGlyph: Char
@@ -95,7 +96,7 @@ abstract class BaseGlyph : Glyph {
         return key
     }
 
-    fun setState(newState: GlyphState, force: Boolean = false) {
+    override fun setState(newState: GlyphState, force: Boolean) {
         if (force) {
             state = newState
             return
@@ -120,7 +121,7 @@ abstract class BaseGlyph : Glyph {
         }
     }
 
-    fun tickState(options: Options) {
+    fun tickState(options: GlyphOptions) {
         val now = getCurrentTimeMillis()
         val millisSinceChange = now - stateChangedAt
         val transitionStateExpired = millisSinceChange > options.stateChangeDurationMillis

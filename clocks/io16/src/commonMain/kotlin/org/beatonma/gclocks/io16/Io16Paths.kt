@@ -1,12 +1,13 @@
 import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.graphics.Canvas
+import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.graphics.PathDefinition
 
 
 private const val Io16Height = 118f
 
 
-enum class Io16GlyphPath {
+internal enum class Io16GlyphPath {
     ZeroOne {
         override val canonical = Zero_Canonical
         override val start = ZeroOne_Zero
@@ -118,6 +119,12 @@ enum class Io16GlyphPath {
     Nine {
         override val canonical = Nine_Canonical
     },
+    Separator {
+        override val canonical = PathDefinition(16f, Io16Height) {
+            circle(8f, 48f, 8f, Path.Direction.Clockwise)
+            circle(8f, 96f, 8f, Path.Direction.Clockwise)
+        }
+    }
     ;
 
     abstract val canonical: PathDefinition
@@ -150,17 +157,9 @@ enum class Io16GlyphPath {
     }
 }
 
-
-//private const val Width0 = 118f
-//private const val Width1 = 35.4f
-//private const val Width2 = 80f
-//private const val Width3 = 79.9f
-//private const val Width4 = 90.9f
-//private const val Width5 = 84.1f
-//private const val Width6 = 81.1f
-//private const val Width7 = 81.1f
-//private const val Width8 = 74.8f
-//private const val Width9 = 82.4f
+/*
+ * Canonical (non-animated) glyphs
+ */
 private val Zero_Canonical = PathDefinition(118f, Io16Height) {
     boundedArc(0f, 0f, 118f, 118f, startAngle = Angle.OneEighty, sweepAngle = Angle.ThreeSixty)
 }
@@ -279,6 +278,20 @@ private val Nine_Canonical = PathDefinition(82.4f, Io16Height) {
     cubicTo(-16.9f, -6.57f, -8.97f, 74.4f, 39.1f, 62.4f)
     closePath()
 }
+
+
+/*
+ * Animated glyphs
+ *
+ * Glyphs that are related should be named with StartEnd_Name format, where:
+ * - Start is the starting glyph name,
+ * - End is the ending glyph name,
+ * - Name is either Start or End, depending on the part being defined.
+ * e.g. Transition from zero to one is defined in two paths: `ZeroOne_Zero` and `ZeroOne_One`.
+ *
+ * All parts must share the same number and sequence of path commands so the
+ * command values can be transitioned between via interpolation.
+ */
 
 private val ZeroOne_Zero = PathDefinition(Zero_Canonical.width, Io16Height) {
     // M 0,59 C 3.93,21.6 23.7,2.04 59.1,0 C 94,2.93 114,22.6 118,59 C 115,93.4 94,114 59.1,118 C 23.7,114 3.93,93.4 0,59 Z

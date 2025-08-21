@@ -1,5 +1,6 @@
 package org.beatonma.gclocks.core.geometry
 
+import org.beatonma.gclocks.core.util.debug
 import kotlin.math.min
 import kotlin.math.max
 import kotlin.properties.Delegates
@@ -15,6 +16,9 @@ interface Rect<T : Number> {
     val height: T
     val area: T
     val isEmpty: Boolean
+
+    /** Return false if any of the boundaries are unset/NaN */
+    val isValid: Boolean
 
     fun toSize(): Size<T>
 
@@ -32,7 +36,9 @@ interface FloatRect : Rect<Float> {
     override val area: Float
         get() = width * height
     override val isEmpty: Boolean
-        get() = area == 0f
+        get() = !isValid || area == 0f
+    override val isValid: Boolean
+        get() = !(left.isNaN() || top.isNaN() || right.isNaN() || bottom.isNaN())
 
     override fun toSize(): Size<Float> = FloatSize(width, height)
 }
@@ -55,26 +61,34 @@ interface MutableRect<T : Number> : Rect<T> {
      */
     fun inset(left: T, top: T = left, right: T = left, bottom: T = top): MutableRect<T>
 
-    /** Equivalent to set(0, 0, 0, 0) */
+    /**
+     * Move the boundaries of the Rect while keeping the same size and shape.
+     */
+    fun translate(x: T, y: T): MutableRect<T>
+
+    /** Equivalent to set(Nan, NaN, NaN, NaN) */
     fun clear(): MutableRect<T>
 }
 
-class MutableFloatRect(
-    left: Float = 0f,
-    top: Float = 0f,
-    right: Float = 0f,
-    bottom: Float = 0f,
+
+class MutableRectF(
+    left: Float = Float.NaN,
+    top: Float = Float.NaN,
+    right: Float = Float.NaN,
+    bottom: Float = Float.NaN,
 ) : MutableRect<Float>, FloatRect {
     override var left by Delegates.notNull<Float>()
     override var top by Delegates.notNull<Float>()
     override var right by Delegates.notNull<Float>()
     override var bottom by Delegates.notNull<Float>()
 
+    constructor(other: Rect<Float>) : this(other.left, other.top, other.right, other.bottom)
+
     init {
         set(left, top, right, bottom)
     }
 
-    override fun set(left: Float, top: Float, right: Float, bottom: Float): MutableFloatRect {
+    override fun set(left: Float, top: Float, right: Float, bottom: Float): MutableRect<Float> {
         this.left = min(left, right)
         this.top = min(top, bottom)
         this.right = max(left, right)
@@ -94,18 +108,33 @@ class MutableFloatRect(
         this.bottom - bottom,
     )
 
+    override fun translate(
+        x: Float,
+        y: Float,
+    ): MutableRect<Float> =
+        set(left + x, top + y, right + x, bottom + y)
+
     override fun include(other: Rect<Float>): Boolean {
-        val original = this.area
-        this.set(
+        if (!isValid) {
+            set(other)
+            return isValid
+        }
+        if (!other.isValid) {
+            debug("Rect.include with invalid rect")
+            return false
+        }
+
+        val original = area
+        set(
             min(left, other.left),
             min(top, other.top),
             max(right, other.right),
             max(bottom, other.bottom)
         )
-        return this.area != original
+        return area != original
     }
 
-    override fun clear() = set(0f, 0f, 0f, 0f)
+    override fun clear(): MutableRect<Float> = set(Float.NaN, Float.NaN, Float.NaN, Float.NaN)
 
     override fun toString(): String {
         return "MutableFloatRect($left, $top, $right, $bottom)"

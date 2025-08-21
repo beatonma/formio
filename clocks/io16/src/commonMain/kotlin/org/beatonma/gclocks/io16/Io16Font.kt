@@ -2,14 +2,23 @@ package org.beatonma.gclocks.io16
 
 import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.ClockFont
-import org.beatonma.gclocks.core.geometry.FloatSize
-import org.beatonma.gclocks.core.geometry.Size
-import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.TimeFormat
-import org.beatonma.gclocks.core.options.TimeResolution
+
+
+private val ZeroWidth = Io16GlyphPath.Zero.canonical.width
 
 
 class Io16Font : ClockFont<Io16Glyph> {
+    override val lineHeight: Float = Io16Glyph.maxSize.y
+    override val separatorWidth: Float = Io16GlyphPath.Separator.canonical.width
+    override val maxHours24ZeroPaddedWidth: Float = ZeroWidth * 2f // 00:xx
+    override val maxHours12ZeroPaddedWidth: Float =
+        ZeroWidth + Io16GlyphPath.Four.canonical.width // 04:xx
+    override val maxHours24Width: Float = Io16GlyphPath.Two.canonical.width + ZeroWidth // 20:xx
+    override val maxHours12Width: Float = Io16GlyphPath.One.canonical.width + ZeroWidth // 10:xx
+    override val maxMinutesWidth: Float = ZeroWidth * 2f // :00:
+    override val maxSecondsWidth: Float = ZeroWidth * 2f // :00
+
     override fun getGlyphAt(index: Int, format: TimeFormat, secondsGlyphScale: Float): Io16Glyph {
         val role = format.roles.getOrNull(index) ?: GlyphRole.Default
         val scale = when (role) {
@@ -17,39 +26,5 @@ class Io16Font : ClockFont<Io16Glyph> {
             else -> 1f
         }
         return Io16Glyph(role, scale)
-    }
-
-    override fun measure(
-        format: TimeFormat,
-        layout: Layout,
-        spacingPx: Int,
-        secondsGlyphScale: Float,
-    ): Size<Float> {
-        val hasSeconds = format.resolution == TimeResolution.Seconds
-        val lineHeight = Io16Glyph.maxSize.y
-        val separatorWidth = 16f
-        val pairWidth = Io16Glyph.maxSize.x * 2f // max width of a pair of digits
-
-        return when (layout) {
-            Layout.Horizontal -> {
-                val digitsWidth = pairWidth * 2f + (secondsGlyphScale * pairWidth)
-                val spacingWidth =
-                    spacingPx.toFloat() * (if (hasSeconds) 5f + secondsGlyphScale else 4f)
-                return FloatSize(
-                    digitsWidth + separatorWidth + spacingWidth,
-                    lineHeight
-                )
-            }
-
-            Layout.Vertical -> FloatSize(
-                (pairWidth + spacingPx),
-                lineHeight * (2f + (if (hasSeconds) secondsGlyphScale else 0f) + (spacingPx.toFloat() * 2f))
-            )
-
-            Layout.Wrapped -> FloatSize(
-                (pairWidth * 2f) + (spacingPx * 4f),
-                (lineHeight * (1f + (if (hasSeconds) secondsGlyphScale else 0f))) + spacingPx.toFloat()
-            )
-        }
     }
 }

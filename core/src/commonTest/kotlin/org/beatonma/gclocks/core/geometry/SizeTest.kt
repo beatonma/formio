@@ -28,7 +28,7 @@ class SizeTest {
     }
 
     fun `FloatSize scaledBy is correct`() {
-        with(FloatSize(1f, 2f).scaledBy(2f)) {
+        with(FloatSize(1f, 2f) * 2f) {
             x shouldbe 2f
             y shouldbe 4f
         }

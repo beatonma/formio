@@ -3,10 +3,9 @@ package org.beatonma.gclocks.io16
 import org.beatonma.gclocks.core.BaseClockGlyph
 import org.beatonma.gclocks.core.GlyphCompanion
 import org.beatonma.gclocks.core.GlyphRole
-import org.beatonma.gclocks.core.geometry.FloatSize
+import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.graphics.GenericCanvas
 import org.beatonma.gclocks.core.graphics.Paints
-import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.util.interpolate
 
 private val Width0 = Io16GlyphPath.Zero.canonical.width
@@ -19,7 +18,7 @@ private val Width6 = Io16GlyphPath.Six.canonical.width
 private val Width7 = Io16GlyphPath.Seven.canonical.width
 private val Width8 = Io16GlyphPath.Eight.canonical.width
 private val Width9 = Io16GlyphPath.Nine.canonical.width
-private const val WidthSeparator = 16f
+private val WidthSeparator = Io16GlyphPath.Separator.canonical.width
 
 
 private fun ease(t: Float) = accelerateDecelerate(overshoot(anticipate(t)))
@@ -30,9 +29,9 @@ class Io16Glyph(
     scale: Float = 1f,
 ) : BaseClockGlyph(role, scale) {
     companion object : GlyphCompanion {
-        override val maxSize = FloatSize(
-            x = 118f,
-            y = 118f,
+        override val maxSize = NativeSize(
+            x = Io16GlyphPath.Zero.canonical.width,
+            y = Io16GlyphPath.Zero.canonical.height,
         )
         override val aspectRatio: Float = maxSize.aspectRatio()
     }
@@ -177,8 +176,7 @@ class Io16Glyph(
         glyphProgress: Float,
         paints: Paints,
     ) {
-        circle(8f, 48f, 8f, Path.Direction.Clockwise)
-        circle(8f, 96f, 8f, Path.Direction.Clockwise)
+        Io16GlyphPath.Separator.plot(this, glyphProgress)
     }
 
     override fun GenericCanvas.drawSpace(

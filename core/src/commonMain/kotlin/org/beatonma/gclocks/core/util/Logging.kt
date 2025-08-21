@@ -1,8 +1,8 @@
 package org.beatonma.gclocks.core.util
 
 
-inline fun <T> T.dump(label: String? = null): T {
-    debug(if (label != null) "$label: $this" else "$this")
+inline fun <T> T.debug(label: String? = null): T {
+    org.beatonma.gclocks.core.util.debug(if (label != null) "$label: $this" else "$this")
     return this
 }
 

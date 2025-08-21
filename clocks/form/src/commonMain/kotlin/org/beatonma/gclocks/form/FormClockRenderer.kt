@@ -15,6 +15,6 @@ class FormPaints : Paints {
 }
 
 class FormClockRenderer(
-    override var paints: Paints = FormPaints(),
+    override var paints: FormPaints,
     override val renderer: GlyphRenderer<FormGlyph> = GlyphRenderer.Default(),
-) : ClockRenderer<FormGlyph>
+) : ClockRenderer<FormGlyph, FormPaints>

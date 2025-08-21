@@ -5,11 +5,16 @@ import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.GenericCanvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.graphics.Stroke
+import org.beatonma.gclocks.core.layout.ClockLayout
 import org.beatonma.gclocks.core.util.debug
 
-interface ClockRenderer<G : BaseClockGlyph> {
+
+/**
+ * Draws a [ClockLayout] to a [org.beatonma.gclocks.core.graphics.Canvas].
+ */
+interface ClockRenderer<G : BaseClockGlyph, P : Paints> {
     val renderer: GlyphRenderer<G>
-    var paints: Paints
+    var paints: P
 
     fun draw(canvas: GenericCanvas, layout: ClockLayout<G>) {
         if (!layout.isDrawable) {
@@ -17,10 +22,14 @@ interface ClockRenderer<G : BaseClockGlyph> {
             return
         }
 
-        layout.measure { x, y, scale ->
+        layout.measureFrame { x, y, scale ->
+            canvas.drawRect(Color.Cyan, nativeSize.toRect(), Stroke.Default)
+
             canvas.withTranslationAndScale(x, y, scale) {
+                canvas.drawRect(Color.Blue, nativeSize.toRect(), Stroke.Default)
                 layout.layoutPass { glyph, glyphAnimationProgress, rect ->
                     if (rect.isEmpty) return@layoutPass
+
                     debug {
                         drawGlyphBoundary(canvas, paints, rect)
                     }
