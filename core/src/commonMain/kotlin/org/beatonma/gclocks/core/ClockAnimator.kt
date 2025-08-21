@@ -1,7 +1,8 @@
 package org.beatonma.gclocks.core
 
+import org.beatonma.gclocks.core.geometry.ConstrainedLayout
+import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.ScaledSize
-import org.beatonma.gclocks.core.geometry.Size
 import org.beatonma.gclocks.core.graphics.GenericCanvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.layout.ClockLayout
@@ -10,7 +11,7 @@ import org.beatonma.gclocks.core.util.fastForEach
 import org.beatonma.gclocks.core.util.getTime
 import kotlin.math.max
 
-interface ClockAnimator<G : BaseClockGlyph, P : Paints> {
+interface ClockAnimator<G : BaseClockGlyph, P : Paints> : ConstrainedLayout {
     val layout: ClockLayout<G>
     val renderers: List<ClockRenderer<G, P>>
 
@@ -27,7 +28,6 @@ interface ClockAnimator<G : BaseClockGlyph, P : Paints> {
         scheduleNextFrame(max(0, 1000 - layout.animationTimeMillis))
     }
 
-    fun setAvailableSize(available: Size<Float>): ScaledSize {
-        return layout.setAvailableSize(available)
-    }
+    override fun setConstraints(constraints: MeasureConstraints): ScaledSize =
+        layout.setConstraints(constraints)
 }

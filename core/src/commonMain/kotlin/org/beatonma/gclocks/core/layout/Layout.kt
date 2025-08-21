@@ -6,8 +6,8 @@ import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.geometry.MutableRect
 import org.beatonma.gclocks.core.geometry.Rect
 import org.beatonma.gclocks.core.geometry.ScaledSize
-import org.beatonma.gclocks.core.geometry.Size
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
+import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.options.LayoutOptions
 import org.beatonma.gclocks.core.options.Layout as LayoutOption
 import org.beatonma.gclocks.core.util.fastForEach
@@ -80,7 +80,7 @@ internal sealed class Layout<G : BaseClockGlyph>(
 
     private var measuredSize: ScaledSize = ScaledSize.Init
 
-    lateinit var availableSize: Size<Float>
+    lateinit var constraints: MeasureConstraints
 
     abstract fun layoutPass(
         glyphs: List<GlyphStatus<G>>,
@@ -111,11 +111,11 @@ internal sealed class Layout<G : BaseClockGlyph>(
 
         val translationX: Float = options.outerHorizontalAlignment.apply(
             measuredSize.width,
-            availableSize.width
+            constraints.maxWidth
         )
         val translationY: Float = options.outerVerticalAlignment.apply(
             measuredSize.height,
-            availableSize.height,
+            constraints.maxHeight,
         )
 
         stage = LayoutPass.Rendering

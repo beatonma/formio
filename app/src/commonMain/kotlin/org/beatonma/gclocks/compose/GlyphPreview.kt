@@ -1,9 +1,7 @@
 package org.beatonma.gclocks.compose
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
@@ -19,14 +17,12 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
 import org.beatonma.gclocks.core.Glyph
 import org.beatonma.gclocks.core.GlyphRenderer
-import org.beatonma.gclocks.core.MeasureStrategy
-import org.beatonma.gclocks.core.geometry.FloatSize
+import org.beatonma.gclocks.core.geometry.ConstrainedLayout
+import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.ScaledSize
-import org.beatonma.gclocks.core.geometry.Size
 import org.beatonma.gclocks.core.graphics.GenericCanvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.util.getTime
@@ -55,19 +51,8 @@ fun <G : Glyph> GlyphPreview(
     val canvas = rememberCanvas()
     var flag by remember { mutableStateOf(false) }
 
-    Box {
-        Canvas(
-            modifier
-                .aspectRatio(glyph.companion.aspectRatio)
-                .onSizeChanged { size ->
-                    preview.setAvailableSize(
-                        FloatSize(
-                            size.width.toFloat(),
-                            size.height.toFloat()
-                        )
-                    )
-                }
-        ) {
+    Box(modifier) {
+        ConstrainedCanvas(preview) {
             canvas.withScope(this) {
                 preview.draw(this, animProgress, paints)
             }
@@ -92,13 +77,14 @@ fun <G : Glyph> GlyphPreview(
 private class GlyphPreview<G : Glyph>(
     val glyph: G,
     val renderer: GlyphRenderer<G>,
-) {
+) : ConstrainedLayout {
     private var measuredSize: ScaledSize = ScaledSize.Init
 
-    fun setAvailableSize(available: Size<Float>) {
-        val scale = MeasureStrategy.Fit.measureScale(glyph.maxSize, available)
+    override fun setConstraints(constraints: MeasureConstraints): ScaledSize {
+        val scale = constraints.measureScale(glyph.maxSize)
         glyph.scale = scale
         measuredSize = glyph.maxSize * scale
+        return measuredSize
     }
 
     fun draw(canvas: GenericCanvas, glyphProgress: Float, paints: Paints) {

@@ -2,20 +2,18 @@ package org.beatonma.gclocks.core.layout
 
 import org.beatonma.gclocks.core.BaseClockGlyph
 import org.beatonma.gclocks.core.ClockFont
-import org.beatonma.gclocks.core.MeasureStrategy
+import org.beatonma.gclocks.core.geometry.ConstrainedLayout
+import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.geometry.ScaledSize
-import org.beatonma.gclocks.core.geometry.Size
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.TimeOfDay
-import org.beatonma.gclocks.core.util.debug
 
 
 class ClockLayout<G : BaseClockGlyph>(
     private val font: ClockFont<G>,
     options: Options,
-    private val measureStrategy: MeasureStrategy,
-) {
+) : ConstrainedLayout {
     var options: Options = options
         set(value) {
             field = value
@@ -60,22 +58,17 @@ class ClockLayout<G : BaseClockGlyph>(
         glyphs.update(time)
     }
 
-    fun setAvailableSize(available: Size<Float>): ScaledSize {
-        layout.availableSize = available
-        debug("setAvailableSize $available")
-        if (available.isEmpty) {
-            setScale(0f)
-            return ScaledSize.Zero
-        }
+    override fun setConstraints(constraints: MeasureConstraints): ScaledSize {
+        layout.constraints = constraints
 
         return setScale(
-            measureStrategy.measureScale(nativeSize, available)
+            constraints.measureScale(nativeSize)
         )
     }
 
     private fun setScale(scale: Float): ScaledSize {
         val measuredSize = layout.setScale(scale)
-        isDrawable = scale > 0f && !measuredSize.isEmpty
+        isDrawable = scale > 0f && !measuredSize.isZeroArea
         return measuredSize
     }
 

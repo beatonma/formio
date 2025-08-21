@@ -1,11 +1,10 @@
 package org.beatonma.gclocks.core.layout
 
-import org.beatonma.gclocks.core.MeasureStrategy
 import org.beatonma.gclocks.core.fixtures.TestLayoutOptions
 import org.beatonma.gclocks.core.fixtures.TestOptions
 import org.beatonma.gclocks.core.fixtures.getTestLayout
-import org.beatonma.gclocks.core.geometry.FloatSize
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
+import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
 import org.beatonma.gclocks.core.options.Layout as LayoutOption
@@ -19,10 +18,9 @@ class LayoutTest {
     private val NativeHeight = 100f
 
     /* Height that is large enough to ensure that width will determine the scale */
-    private val UnboundHeight = NativeHeight * 100f
+    private val UnboundHeight = MeasureConstraints.Infinity
 
     private fun getLayout(
-        measureStrategy: MeasureStrategy,
         horizontalAlignment: HorizontalAlignment = HorizontalAlignment.Start,
         verticalAlignment: VerticalAlignment = VerticalAlignment.Top,
     ) = getTestLayout(
@@ -35,7 +33,6 @@ class LayoutTest {
                 spacingPx = 0,
             )
         ),
-        measureStrategy,
     ).apply {
         update(timeOfDay(12, 0, 0))
     }
@@ -43,34 +40,28 @@ class LayoutTest {
     @Test
     fun `measureFrame scale is correct`() {
         with(
-            getLayout(
-                MeasureStrategy.FillWidth,
-                HorizontalAlignment.Start,
-            )
+            getLayout(HorizontalAlignment.Start)
         ) {
-            setAvailableSize(FloatSize(NativeWidth, UnboundHeight))
+            setConstraints(MeasureConstraints(NativeWidth, UnboundHeight))
             measureFrame { _, _, scale ->
                 scale shouldbe 1f
             }
 
-            setAvailableSize(FloatSize(NativeWidth * 2f, UnboundHeight))
+            setConstraints(MeasureConstraints(NativeWidth * 2f, UnboundHeight))
             measureFrame { _, _, scale ->
                 scale shouldbe 2f
             }
 
-            setAvailableSize(FloatSize(NativeWidth * 0.5f, UnboundHeight))
+            setConstraints(MeasureConstraints(NativeWidth * 0.5f, UnboundHeight))
             measureFrame { _, _, scale ->
                 scale shouldbe 0.5f
             }
         }
 
         with(
-            getLayout(
-                MeasureStrategy.Fit,
-                HorizontalAlignment.Start,
-            )
+            getLayout(HorizontalAlignment.Start)
         ) {
-            setAvailableSize(FloatSize(NativeWidth * 2f, NativeHeight))
+            setConstraints(MeasureConstraints(NativeWidth * 2f, NativeHeight))
             measureFrame { _, _, scale ->
                 scale shouldbe 1f
             }
@@ -80,36 +71,27 @@ class LayoutTest {
     @Test
     fun `measureFrame horizontal alignment is correct`() {
         with(
-            getLayout(
-                MeasureStrategy.Fit,
-                HorizontalAlignment.Start, /* START alignment */
-            )
+            getLayout(HorizontalAlignment.Start)
         ) {
-            setAvailableSize(FloatSize(NativeWidth * 2f, NativeHeight))
+            setConstraints(MeasureConstraints(NativeWidth * 2f, NativeHeight))
             measureFrame { translationX, _, _ ->
                 translationX shouldbe 0f
             }
         }
 
         with(
-            getLayout(
-                MeasureStrategy.Fit,
-                HorizontalAlignment.Center, /* CENTER alignment */
-            )
+            getLayout(HorizontalAlignment.Center)
         ) {
-            setAvailableSize(FloatSize(NativeWidth * 2f, NativeHeight))
+            setConstraints(MeasureConstraints(NativeWidth * 2f, NativeHeight))
             measureFrame { translationX, _, _ ->
                 translationX shouldbe 250f
             }
         }
 
         with(
-            getLayout(
-                MeasureStrategy.Fit,
-                HorizontalAlignment.End, /* END alignment */
-            )
+            getLayout(HorizontalAlignment.End)
         ) {
-            setAvailableSize(FloatSize(NativeWidth * 2f, NativeHeight))
+            setConstraints(MeasureConstraints(NativeWidth * 2f, NativeHeight))
             measureFrame { translationX, _, _ ->
                 translationX shouldbe 500f
             }
@@ -119,47 +101,35 @@ class LayoutTest {
     @Test
     fun `measureFrame vertical alignment is correct`() {
         with(
-            getLayout(
-                MeasureStrategy.Fit,
-                verticalAlignment = VerticalAlignment.Top, /* TOP alignment */
-            )
+            getLayout(verticalAlignment = VerticalAlignment.Top)
         ) {
-            setAvailableSize(FloatSize(NativeWidth, UnboundHeight))
+            setConstraints(MeasureConstraints(NativeWidth, UnboundHeight))
             measureFrame { _, translationY, _ ->
                 translationY shouldbe 0f
             }
         }
 
         with(
-            getLayout(
-                MeasureStrategy.Fit,
-                verticalAlignment = VerticalAlignment.Center, /* CENTER alignment */
-            )
+            getLayout(verticalAlignment = VerticalAlignment.Center)
         ) {
-            setAvailableSize(FloatSize(NativeWidth, 1000f))
+            setConstraints(MeasureConstraints(NativeWidth, 1000f))
             measureFrame { _, translationY, _ ->
                 translationY shouldbe 450f
             }
         }
 
         with(
-            getLayout(
-                MeasureStrategy.Fit,
-                verticalAlignment = VerticalAlignment.Bottom, /* BOTTOM alignment */
-            )
+            getLayout(verticalAlignment = VerticalAlignment.Bottom)
         ) {
-            setAvailableSize(FloatSize(NativeWidth, 1000f)) /* 1x scale */
+            setConstraints(MeasureConstraints(NativeWidth, 1000f)) /* 1x scale */
             measureFrame { _, translationY, _ ->
                 translationY shouldbe 900f
             }
         }
         with(
-            getLayout(
-                MeasureStrategy.Fit,
-                verticalAlignment = VerticalAlignment.Bottom, /* BOTTOM alignment */
-            )
+            getLayout(verticalAlignment = VerticalAlignment.Bottom)
         ) {
-            setAvailableSize(FloatSize(NativeWidth * 2f, 1000f)) /* 2x scale */
+            setConstraints(MeasureConstraints(NativeWidth * 2f, 1000f)) /* 2x scale */
             measureFrame { _, translationY, scale ->
                 scale shouldbe 2f
                 translationY shouldbe 800f

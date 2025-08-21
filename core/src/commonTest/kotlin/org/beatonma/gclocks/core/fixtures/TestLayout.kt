@@ -1,6 +1,5 @@
 package org.beatonma.gclocks.core.fixtures
 
-import org.beatonma.gclocks.core.MeasureStrategy
 import org.beatonma.gclocks.core.layout.ClockLayout
 import org.beatonma.gclocks.core.options.GlyphOptions
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
@@ -35,10 +34,8 @@ data class TestGlyphOptions(
 
 fun getTestLayout(
     options: TestOptions = TestOptions(),
-    measureStrategy: MeasureStrategy = MeasureStrategy.FillWidth,
     font: TestFont = TestFont(),
 ) = ClockLayout(
     font,
     options,
-    measureStrategy
 )

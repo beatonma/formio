@@ -23,10 +23,7 @@ interface ClockRenderer<G : BaseClockGlyph, P : Paints> {
         }
 
         layout.measureFrame { x, y, scale ->
-            canvas.drawRect(Color.Cyan, nativeSize.toRect(), Stroke.Default)
-
             canvas.withTranslationAndScale(x, y, scale) {
-                canvas.drawRect(Color.Blue, nativeSize.toRect(), Stroke.Default)
                 layout.layoutPass { glyph, glyphAnimationProgress, rect ->
                     if (rect.isEmpty) return@layoutPass
 

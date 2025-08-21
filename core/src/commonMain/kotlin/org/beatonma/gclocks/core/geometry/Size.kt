@@ -5,7 +5,12 @@ import androidx.annotation.FloatRange
 interface Size<T : Number> : Vector2<T> {
     val width: T
     val height: T
-    val isEmpty: Boolean
+
+    /* Returns true if both width and height are zero. */
+    val isZero: Boolean
+
+    /* Returns true if either width and height is zero. */
+    val isZeroArea: Boolean
     fun aspectRatio(): Float
 
     operator fun times(factor: Float): Size<Float>
@@ -27,7 +32,8 @@ interface Size<T : Number> : Vector2<T> {
  */
 interface SizeF : Size<Float>, FloatVector2 {
     override fun aspectRatio(): Float = x / y
-    override val isEmpty: Boolean get() = x == 0f && y == 0f
+    override val isZero: Boolean get() = x == 0f && y == 0f
+    override val isZeroArea: Boolean get() = x == 0f || y == 0f
     override fun toRect(): MutableRect<Float> = MutableRectF(0f, 0f, width, height)
 }
 
