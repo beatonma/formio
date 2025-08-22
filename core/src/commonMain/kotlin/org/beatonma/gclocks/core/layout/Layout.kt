@@ -1,6 +1,7 @@
 package org.beatonma.gclocks.core.layout
 
 import org.beatonma.gclocks.core.BaseClockGlyph
+import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.geometry.MutableRect
@@ -45,7 +46,7 @@ internal fun <G : BaseClockGlyph> getLayout(
 ): Layout<G> = when (options.layout) {
     LayoutOption.Horizontal -> HorizontalLayout(options, paints, nativeSize)
     LayoutOption.Vertical -> VerticalLayout(options, paints, nativeSize)
-    LayoutOption.Wrapped -> TODO("WrappedLayout is not implemented")
+    LayoutOption.Wrapped -> WrappedLayout(options, paints, nativeSize)
 }
 
 
@@ -169,6 +170,23 @@ internal sealed class Layout<G : BaseClockGlyph>(
             }
         }
     }
+
+    /**
+     * During [LayoutPass.Rendering], returns the aligned 'zero-point' of the given line.
+     */
+    protected fun getAlignedXForRow(alignment: HorizontalAlignment, lineIndex: Int): Float =
+        when (stage) {
+            LayoutPass.Rendering -> alignment.apply(
+                rowSizes[lineIndex].width,
+                nativeSize.width
+            )
+
+            /*
+             * Alignment not possible (or necessary) yet - we need to know
+             * the current measured width before alignment can be applied.
+             */
+            LayoutPass.Measurement -> 0f
+        }
 }
 
 private class HorizontalLayout<G : BaseClockGlyph>(
@@ -183,7 +201,7 @@ private class HorizontalLayout<G : BaseClockGlyph>(
         val spacingPx = options.spacingPx
         val alignment = options.innerVerticalAlignment
 
-        var x = 0f
+        var x = getAlignedXForRow(options.innerHorizontalAlignment, 0)
 
         glyphs.fastForEach { status ->
             val glyph = status.glyph
@@ -214,26 +232,29 @@ private class HorizontalLayout<G : BaseClockGlyph>(
     }
 }
 
-
 private class VerticalLayout<G : BaseClockGlyph>(
     options: LayoutOptions, paints: Paints,
     nativeSize: NativeSize,
+) : MultilineLayout<G>(options, paints, nativeSize) {
+    override fun isLineBreak(glyph: G): Boolean = glyph.role.isSeparator
+}
+
+private class WrappedLayout<G : BaseClockGlyph>(
+    options: LayoutOptions, paints: Paints,
+    nativeSize: NativeSize,
+) : MultilineLayout<G>(options, paints, nativeSize) {
+    override fun isLineBreak(glyph: G): Boolean =
+        glyph.role == GlyphRole.SeparatorMinutesSeconds
+}
+
+
+private abstract class MultilineLayout<G : BaseClockGlyph>(
+    options: LayoutOptions, paints: Paints,
+    nativeSize: NativeSize,
 ) : Layout<G>(options, paints, nativeSize) {
-    private fun getAlignedXForRow(alignment: HorizontalAlignment, lineIndex: Int): Float =
-        when (stage) {
-            LayoutPass.Rendering -> alignment.apply(
-                rowSizes[lineIndex].width,
-                nativeSize.width
-            )
+    abstract fun isLineBreak(glyph: G): Boolean
 
-            /*
-             * Alignment not possible (or necessary) yet - we need to know
-             * the current measured width before alignment can be applied.
-             */
-            LayoutPass.Measurement -> 0f
-        }
-
-    override fun layoutPass(
+    final override fun layoutPass(
         glyphs: List<GlyphStatus<G>>,
         callback: GlyphCallback<G>,
     ) {
@@ -246,7 +267,7 @@ private class VerticalLayout<G : BaseClockGlyph>(
 
         glyphs.fastForEach { status ->
             val glyph = status.glyph
-            val isNewRow = glyph.role.isSeparator
+            val isNewRow = isLineBreak(glyph)
             val strokeWidth = this.strokeWidth * glyph.scale
             val halfStrokeWidth = this.halfStrokeWidth * glyph.scale
             val spacingPx = spacingPx * glyph.scale
@@ -276,7 +297,6 @@ private class VerticalLayout<G : BaseClockGlyph>(
             )
 
             if (!isNewRow) {
-//                x = tempRect.right + spacingPx
                 x = when (stage) {
                     LayoutPass.Measurement -> tempRect.right + spacingPx
                     LayoutPass.Rendering -> tempRect.right + halfStrokeWidth + spacingPx

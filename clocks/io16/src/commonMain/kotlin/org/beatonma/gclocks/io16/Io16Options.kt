@@ -27,9 +27,9 @@ data class Io16GlyphOptions(
 ) : GlyphOptions
 
 data class Io16LayoutOptions(
+    override val layout: Layout = Layout.Wrapped,
     override val horizontalAlignment: HorizontalAlignment = HorizontalAlignment.End,
     override val verticalAlignment: VerticalAlignment = VerticalAlignment.Top,
-    override val layout: Layout = Layout.Vertical,
     override val format: TimeFormat = TimeFormat.HH_MM_SS_24,
     override val spacingPx: Int = 8,
     override val secondsGlyphScale: Float = Options.DefaultSecondsGlyphScale,
