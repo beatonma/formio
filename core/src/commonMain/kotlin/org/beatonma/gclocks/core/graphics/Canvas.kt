@@ -1,7 +1,6 @@
 package org.beatonma.gclocks.core.graphics
 
 import org.beatonma.gclocks.core.geometry.Angle
-import org.beatonma.gclocks.core.geometry.Point
 import org.beatonma.gclocks.core.geometry.Rect
 
 private const val DefaultAlpha = 1f
@@ -11,6 +10,10 @@ enum class StrokeCap {
     Butt,
     Square,
     ;
+
+    companion object {
+        val Default = Square
+    }
 }
 
 enum class StrokeJoin {
@@ -18,43 +21,23 @@ enum class StrokeJoin {
     Round,
     Bevel,
     ;
+
+    companion object {
+        val Default = Miter
+    }
 }
 
 sealed class DrawStyle
 object Fill : DrawStyle()
 
-class Stroke(
+data class Stroke(
     val width: Float = 0f,
     val miter: Float = 0f,
-    val cap: StrokeCap = StrokeCap.Square,
-    val join: StrokeJoin = StrokeJoin.Miter,
+    val cap: StrokeCap = StrokeCap.Default,
+    val join: StrokeJoin = StrokeJoin.Default,
 ) : DrawStyle() {
     companion object {
         val Default = Stroke()
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Stroke) return false
-
-        if (width != other.width) return false
-        if (miter != other.miter) return false
-        if (cap != other.cap) return false
-        if (join != other.join) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = width.hashCode()
-        result = 31 * result + miter.hashCode()
-        result = 31 * result + cap.hashCode()
-        result = 31 * result + join.hashCode()
-        return result
-    }
-
-    override fun toString(): String {
-        return "Stroke(width=$width, miter=$miter, cap=$cap, join=$join"
     }
 }
 

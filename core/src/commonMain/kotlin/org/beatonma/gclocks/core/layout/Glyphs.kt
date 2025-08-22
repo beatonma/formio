@@ -12,11 +12,11 @@ import org.beatonma.gclocks.core.util.progress
 
 internal class Glyphs<G : BaseClockGlyph>(
     font: ClockFont<G>,
-    options: Options,
+    options: Options<*>,
 ) {
     private val stringLength = options.layout.format.stringLength
-    val glyphs: List<GlyphStatus<G>> = List(stringLength) { index ->
-        GlyphStatus(
+    private var mutableGlyphs: List<MutableGlyphStatus<G>> = List(stringLength) { index ->
+        MutableGlyphStatus(
             font.getGlyphAt(
                 index,
                 options.layout.format,
@@ -25,6 +25,7 @@ internal class Glyphs<G : BaseClockGlyph>(
             index
         )
     }
+    val glyphs: List<GlyphStatus<G>> get() = mutableGlyphs
 
     private val options = options.glyph
     private val format = options.layout.format
@@ -46,7 +47,7 @@ internal class Glyphs<G : BaseClockGlyph>(
             val fromChar = now[index]
             val nextChar = next[index]
 
-            val glyph = glyphs[index]
+            val glyph = mutableGlyphs[index]
 
             if (fromChar == nextChar) {
                 glyph.key = fromChar.toString()
@@ -60,7 +61,7 @@ internal class Glyphs<G : BaseClockGlyph>(
         }
     }
 
-    private fun updateGlyph(status: GlyphStatus<G>, isAnimated: Boolean): GlyphStatus<G> {
+    private fun updateGlyph(status: MutableGlyphStatus<G>, isAnimated: Boolean): GlyphStatus<G> {
         val glyph = status.glyph
         val index = status.index
         glyph.tickState(options)
@@ -85,7 +86,7 @@ internal class Glyphs<G : BaseClockGlyph>(
         if (progress != 0f) {
             glyph.setState(GlyphState.Active)
             if (index > 0) {
-                val previous = glyphs[index - 1]
+                val previous = mutableGlyphs[index - 1]
                 if (previous.glyph.canonicalStartGlyph.isDigit()) {
                     previous.setState(GlyphState.Active)
                 }
@@ -101,25 +102,36 @@ internal class Glyphs<G : BaseClockGlyph>(
 }
 
 
-internal class GlyphStatus<G : Glyph>(
-    val glyph: G,
+interface GlyphStatus<G : Glyph> {
+    val glyph: G
+    val key: String
+    val isVisible: Boolean
+    val progress: Float
+    val nativeWidth: Float
+    val scaledWidth: Float
+    val nativeHeight: Float
+    val scaledHeight: Float
+}
+
+private class MutableGlyphStatus<G : Glyph>(
+    override val glyph: G,
     val index: Int,
-) {
-    var isVisible: Boolean = false
+) : GlyphStatus<G> {
+    override var isVisible: Boolean = false
         private set
-    var progress: Float = 0f
+    override var progress: Float = 0f
         private set
-    var nativeWidth: Float = 0f
+    override var nativeWidth: Float = 0f
         private set(value) {
             field = value
             scaledWidth = value * glyph.scale
         }
-    var scaledWidth: Float = nativeWidth * glyph.scale
+    override var scaledWidth: Float = nativeWidth * glyph.scale
         private set
-    val nativeHeight: Float = glyph.maxSize.height
-    val scaledHeight: Float = nativeHeight * glyph.scale
+    override val nativeHeight: Float = glyph.maxSize.height
+    override val scaledHeight: Float = nativeHeight * glyph.scale
 
-    var key: String
+    override var key: String
         get() = glyph.key
         set(value) {
             glyph.key = value

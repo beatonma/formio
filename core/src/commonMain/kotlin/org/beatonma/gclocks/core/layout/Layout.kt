@@ -8,6 +8,7 @@ import org.beatonma.gclocks.core.geometry.Rect
 import org.beatonma.gclocks.core.geometry.ScaledSize
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
+import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.options.LayoutOptions
 import org.beatonma.gclocks.core.options.Layout as LayoutOption
 import org.beatonma.gclocks.core.util.fastForEach
@@ -20,7 +21,10 @@ internal typealias GlyphCallback<G> = (
 ) -> Unit
 
 
-/** Values made available via context of the [OnMeasure] callback. */
+/**
+ * Values made available via context of the [OnMeasure] callback,
+ * mostly for debugging purposes.
+ * */
 interface OnMeasureScope {
     val nativeSize: NativeSize
     val scale: Float
@@ -36,16 +40,18 @@ internal typealias OnMeasure = OnMeasureScope.(
 
 internal fun <G : BaseClockGlyph> getLayout(
     options: LayoutOptions,
+    paints: Paints,
     nativeSize: NativeSize,
 ): Layout<G> = when (options.layout) {
-    LayoutOption.Horizontal -> HorizontalLayout(options, nativeSize)
-    LayoutOption.Vertical -> VerticalLayout(options, nativeSize)
-    LayoutOption.Wrapped -> throw NotImplementedError()
+    LayoutOption.Horizontal -> HorizontalLayout(options, paints, nativeSize)
+    LayoutOption.Vertical -> VerticalLayout(options, paints, nativeSize)
+    LayoutOption.Wrapped -> TODO("WrappedLayout is not implemented")
 }
 
 
 internal sealed class Layout<G : BaseClockGlyph>(
     protected val options: LayoutOptions,
+    paints: Paints,
     final override val nativeSize: NativeSize,
 ) : OnMeasureScope {
     /* Size of each row in the current frame */
@@ -62,6 +68,10 @@ internal sealed class Layout<G : BaseClockGlyph>(
 
     /* Reusable Rect for GlyphCallback */
     protected val tempRect = MutableRectF()
+
+    private val paintStrokeWidth: Float = paints.strokeWidth
+    protected var strokeWidth: Float = paints.strokeWidth
+    protected var halfStrokeWidth: Float = paintStrokeWidth / 2f
 
     protected enum class LayoutPass {
         // Measure the current size of each glyph in the layout
@@ -139,10 +149,33 @@ internal sealed class Layout<G : BaseClockGlyph>(
         tempRect.clear()
         stage = LayoutPass.Measurement
     }
+
+    protected fun MutableRect<Float>.applyStrokeOffset(
+        glyphScaledStrokeWidth: Float,
+        glyphScaledHalfStrokeWidth: Float,
+    ): MutableRect<Float> = apply {
+        if (width > 0f) {
+            when (stage) {
+                LayoutPass.Measurement -> add(
+                    0f, 0f,
+                    right = glyphScaledStrokeWidth,
+                    bottom = glyphScaledStrokeWidth
+                )
+
+                LayoutPass.Rendering -> translate(
+                    glyphScaledHalfStrokeWidth,
+                    glyphScaledHalfStrokeWidth
+                )
+            }
+        }
+    }
 }
 
-private class HorizontalLayout<G : BaseClockGlyph>(options: LayoutOptions, nativeSize: NativeSize) :
-    Layout<G>(options, nativeSize) {
+private class HorizontalLayout<G : BaseClockGlyph>(
+    options: LayoutOptions,
+    paints: Paints,
+    nativeSize: NativeSize,
+) : Layout<G>(options, paints, nativeSize) {
     override fun layoutPass(
         glyphs: List<GlyphStatus<G>>,
         callback: GlyphCallback<G>,
@@ -154,6 +187,9 @@ private class HorizontalLayout<G : BaseClockGlyph>(options: LayoutOptions, nativ
 
         glyphs.fastForEach { status ->
             val glyph = status.glyph
+            val strokeWidth = this.strokeWidth * glyph.scale
+            val halfStrokeWidth = this.halfStrokeWidth * glyph.scale
+            val spacingPx = spacingPx * glyph.scale
 
             val left = x
             val top = alignment.apply(status.scaledHeight, nativeSize.height)
@@ -161,20 +197,28 @@ private class HorizontalLayout<G : BaseClockGlyph>(options: LayoutOptions, nativ
             val bottom = top + status.scaledHeight
 
             callback(
-                glyph,
+                status.glyph,
                 status.progress,
                 tempRect.set(left, top, right, bottom)
+                    .applyStrokeOffset(strokeWidth, halfStrokeWidth)
             )
-            x = right + (spacingPx * glyph.scale)
+
+            val width = right - left
+            if (width > 0f) {
+                x = when (stage) {
+                    LayoutPass.Measurement -> tempRect.right + spacingPx
+                    LayoutPass.Rendering -> tempRect.right + halfStrokeWidth + spacingPx
+                }
+            }
         }
     }
 }
 
 
 private class VerticalLayout<G : BaseClockGlyph>(
-    options: LayoutOptions,
+    options: LayoutOptions, paints: Paints,
     nativeSize: NativeSize,
-) : Layout<G>(options, nativeSize) {
+) : Layout<G>(options, paints, nativeSize) {
     private fun getAlignedXForRow(alignment: HorizontalAlignment, lineIndex: Int): Float =
         when (stage) {
             LayoutPass.Rendering -> alignment.apply(
@@ -203,12 +247,14 @@ private class VerticalLayout<G : BaseClockGlyph>(
         glyphs.fastForEach { status ->
             val glyph = status.glyph
             val isNewRow = glyph.role.isSeparator
-            val scaledSpacingPx = spacingPx * glyph.scale
+            val strokeWidth = this.strokeWidth * glyph.scale
+            val halfStrokeWidth = this.halfStrokeWidth * glyph.scale
+            val spacingPx = spacingPx * glyph.scale
 
             if (isNewRow) {
                 // New line
                 x = getAlignedXForRow(alignment, ++lineIndex)
-                y += status.scaledHeight + scaledSpacingPx
+                y += status.scaledHeight + spacingPx + strokeWidth
             }
 
             val left = x
@@ -217,17 +263,24 @@ private class VerticalLayout<G : BaseClockGlyph>(
                 true -> 0f
                 false -> status.scaledWidth
             }
-            val bottom = top + status.scaledHeight
+            val bottom = top + when (isNewRow) {
+                true -> 0f
+                false -> status.scaledHeight
+            }
 
             callback(
                 glyph,
                 status.progress,
                 tempRect.set(left, top, right, bottom)
+                    .applyStrokeOffset(strokeWidth, halfStrokeWidth)
             )
 
-            x = right + when (isNewRow) {
-                true -> 0f
-                false -> scaledSpacingPx
+            if (!isNewRow) {
+//                x = tempRect.right + spacingPx
+                x = when (stage) {
+                    LayoutPass.Measurement -> tempRect.right + spacingPx
+                    LayoutPass.Rendering -> tempRect.right + halfStrokeWidth + spacingPx
+                }
             }
         }
     }

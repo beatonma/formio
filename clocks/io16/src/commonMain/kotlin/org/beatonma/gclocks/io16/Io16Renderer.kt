@@ -17,27 +17,6 @@ import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 import org.beatonma.gclocks.core.util.progress
 
 
-class Io16Paints(
-    override val colors: Array<Color> = Default,
-) : Paints {
-    init {
-        require(colors.size == 5)
-    }
-
-    val active: Array<Color> = colors.copyOfRange(0, 4)
-    val inactive: Color = colors.last()
-
-    companion object {
-        val Default = arrayOf(
-            Color(0xffef5350), // Reddish
-            Color(0xff8cf2f2), // Cyanish
-            Color(0xff33c9dc), // DarkCyanish
-            Color(0xff5c6bc0), // Indigoish
-            Color(0xff78909c), // Inactive
-        )
-    }
-}
-
 class Io16ClockRenderer<P : Path>(
     override val renderer: Io16GlyphRenderer<P>,
     override var paints: Io16Paints,
@@ -75,7 +54,11 @@ class Io16GlyphRenderer<P : Path>(
     @FloatRange(0.0, 1.0)
     private var segmentOffsetProgress: Float = 0f
 
-    private val style: Stroke = Stroke(options.strokeWidth)
+    private val style: Stroke = Stroke(
+        options.paints.strokeWidth,
+        cap = options.paints.strokeCap,
+        join = options.paints.strokeJoin,
+    )
     private val options: Io16GlyphOptions = options.glyph
 
     override fun draw(

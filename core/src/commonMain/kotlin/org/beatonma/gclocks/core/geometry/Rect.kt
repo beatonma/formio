@@ -62,6 +62,13 @@ interface MutableRect<T : Number> : Rect<T> {
     fun inset(left: T, top: T = left, right: T = left, bottom: T = top): MutableRect<T>
 
     /**
+     * Move the bounds of this rect away from its center by the given amounts.
+     */
+    fun extrude(left: T, top: T = left, right: T = left, bottom: T = top): MutableRect<T>
+
+    fun add(left: T, top: T = left, right: T = left, bottom: T = top): MutableRect<T>
+
+    /**
      * Move the boundaries of the Rect while keeping the same size and shape.
      */
     fun translate(x: T, y: T): MutableRect<T>
@@ -107,6 +114,27 @@ class MutableRectF(
         this.right - right,
         this.bottom - bottom,
     )
+
+    override fun extrude(
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+    ): MutableRect<Float> = set(
+        this.left - left,
+        this.top - top,
+        this.right + right,
+        this.bottom + bottom,
+    )
+
+    override fun add(left: Float, top: Float, right: Float, bottom: Float): MutableRect<Float> =
+        set(
+            this.left + left,
+            this.top + top,
+            this.right + right,
+            this.bottom + bottom,
+        )
+
 
     override fun translate(
         x: Float,

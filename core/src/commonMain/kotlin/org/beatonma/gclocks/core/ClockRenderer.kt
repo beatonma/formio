@@ -14,7 +14,7 @@ import org.beatonma.gclocks.core.util.debug
  */
 interface ClockRenderer<G : BaseClockGlyph, P : Paints> {
     val renderer: GlyphRenderer<G>
-    var paints: P
+    val paints: P
 
     fun draw(canvas: GenericCanvas, layout: ClockLayout<G>) {
         if (!layout.isDrawable) {
@@ -27,7 +27,7 @@ interface ClockRenderer<G : BaseClockGlyph, P : Paints> {
                 layout.layoutPass { glyph, glyphAnimationProgress, rect ->
                     if (rect.isEmpty) return@layoutPass
 
-                    debug {
+                    debug(true) {
                         drawGlyphBoundary(canvas, paints, rect)
                     }
 
@@ -35,6 +35,18 @@ interface ClockRenderer<G : BaseClockGlyph, P : Paints> {
                         drawGlyph(glyph, canvas, glyphAnimationProgress, paints)
                     }
                 }
+
+                debug(false) {
+                    // Show scaled bounds
+                    canvas.drawRect(Color.Green, drawBounds, Stroke.Default)
+                    canvas.drawRect(Color.Yellow, nativeSize.toRect(), Stroke.Default)
+                }
+            }
+
+            debug(false) {
+                // Show bounds at native scale
+                canvas.drawRect(Color.Green, drawBounds, Stroke.Default)
+                canvas.drawRect(Color.Yellow, nativeSize.toRect(), Stroke.Default)
             }
         }
     }
@@ -64,5 +76,9 @@ interface ClockRenderer<G : BaseClockGlyph, P : Paints> {
         paints: Paints,
     ) {
         renderer.draw(glyph, canvas, glyphAnimationProgress, paints)
+
+        debug {
+            canvas.drawPath(Color.Black, Stroke.Default)
+        }
     }
 }

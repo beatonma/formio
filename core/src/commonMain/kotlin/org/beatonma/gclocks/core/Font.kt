@@ -2,6 +2,7 @@ package org.beatonma.gclocks.core
 
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.options.Layout
+import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.core.options.TimeResolution
 
@@ -11,6 +12,14 @@ interface ClockFont<G : Glyph> {
      * Create a new glyph instance for the given position.
      */
     fun getGlyphAt(index: Int, format: TimeFormat, secondsGlyphScale: Float): G
+
+    fun measure(options: Options<*>) = measure(
+        format = options.layout.format,
+        layout = options.layout.layout,
+        spacingPx = options.layout.spacingPx,
+        secondsGlyphScale = options.layout.secondsGlyphScale,
+        strokeWidth = options.paints.strokeWidth,
+    )
 
     /**
      * Returns the maximum size needed to render a time in this font (at its
@@ -26,17 +35,17 @@ interface ClockFont<G : Glyph> {
         layout: Layout,
         spacingPx: Int,
         secondsGlyphScale: Float,
+        strokeWidth: Float,
     ): NativeSize {
-        // TODO account for strokeWidth
-
         val hasSeconds = format.resolution == TimeResolution.Seconds
         val spacingPx = spacingPx.toFloat()
         val maxHourWidth = getMaxHoursWidth(format)
+        val lineHeight = this.lineHeight + strokeWidth
 
-        val separatorWithSpacingWidth = separatorWidth + (2f * spacingPx)
-        val hoursWidth = maxHourWidth + spacingPx
-        val minutesWidth = maxMinutesWidth + spacingPx
-        val secondsWidth = secondsGlyphScale * (maxSecondsWidth + spacingPx)
+        val separatorWithSpacingWidth = separatorWidth + strokeWidth + (2f * spacingPx)
+        val hoursWidth = maxHourWidth + spacingPx + (2f * strokeWidth)
+        val minutesWidth = maxMinutesWidth + spacingPx + (2f * strokeWidth)
+        val secondsWidth = secondsGlyphScale * ((maxSecondsWidth + spacingPx) + (2f * strokeWidth))
         val secondsHeight = secondsGlyphScale * lineHeight
 
         return when (layout) {

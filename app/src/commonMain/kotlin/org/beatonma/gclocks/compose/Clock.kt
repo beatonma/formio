@@ -25,12 +25,12 @@ import kotlin.time.Duration
 
 
 @Composable
-fun <Config : ClockConfig<*, *>> Clock(
-    config: Config,
+fun <Opts : Options<*>> Clock(
+    options: Opts,
     modifier: Modifier = Modifier,
     getTickTime: () -> TimeOfDay = ::getTime,
 ) {
-    val animator = rememberClockAnimator(config)
+    val animator = rememberClockAnimator(options)
     val frameDeltaMillis = currentFrameDelta()
     val canvas = rememberCanvas()
 
@@ -47,35 +47,20 @@ fun <Config : ClockConfig<*, *>> Clock(
 @Composable
 expect fun currentFrameDelta(): Duration
 
-sealed interface ClockConfig<O : Options, P : Paints> {
-    val options: O
-    val paints: P
-}
-
-data class Io16Config(
-    override val options: Io16Options,
-    override val paints: Io16Paints,
-) : ClockConfig<Io16Options, Io16Paints>
-
-data class FormConfig(
-    override val options: FormOptions,
-    override val paints: FormPaints,
-) : ClockConfig<FormOptions, FormPaints>
-
 
 @Composable
-private fun <Config : ClockConfig<*, *>> rememberClockAnimator(config: Config): ClockAnimator<*, *> {
+private fun <Opts : Options<*>> rememberClockAnimator(options: Opts): ClockAnimator<*, *> {
     return remember {
-        when (config) {
-            is Io16Config -> object : ClockAnimator<Io16Glyph, Io16Paints> {
+        when (options) {
+            is Io16Options -> object : ClockAnimator<Io16Glyph, Io16Paints> {
                 override val layout = ClockLayout(
                     font = Io16Font(),
-                    options = config.options,
+                    options = options,
                 )
                 override val renderers: List<ClockRenderer<Io16Glyph, Io16Paints>> = listOf(
                     Io16ClockRenderer(
-                        Io16GlyphRenderer(ComposePath(), config.options),
-                        config.paints
+                        Io16GlyphRenderer(ComposePath(), options),
+                        options.paints
                     ),
                 )
 
@@ -84,18 +69,22 @@ private fun <Config : ClockConfig<*, *>> rememberClockAnimator(config: Config): 
                 }
             }
 
-            is FormConfig -> object : ClockAnimator<FormGlyph, FormPaints> {
+            is FormOptions -> object : ClockAnimator<FormGlyph, FormPaints> {
                 override val layout = ClockLayout(
                     font = FormFont(),
-                    options = config.options,
+                    options = options,
                 )
                 override val renderers: List<ClockRenderer<FormGlyph, FormPaints>> = listOf(
-                    FormClockRenderer(config.paints),
+                    FormClockRenderer(options.paints),
                 )
 
                 override fun scheduleNextFrame(delayMillis: Int) {
                     // TODO
                 }
+            }
+
+            else -> {
+                throw IllegalStateException("Unhandled Option type: ${options.javaClass.simpleName}")
             }
         }
     }

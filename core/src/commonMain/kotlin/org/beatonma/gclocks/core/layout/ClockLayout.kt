@@ -12,9 +12,9 @@ import org.beatonma.gclocks.core.util.TimeOfDay
 
 class ClockLayout<G : BaseClockGlyph>(
     private val font: ClockFont<G>,
-    options: Options,
+    options: Options<*>,
 ) : ConstrainedLayout {
-    var options: Options = options
+    var options: Options<*> = options
         set(value) {
             field = value
             onOptionsChange(value)
@@ -40,16 +40,11 @@ class ClockLayout<G : BaseClockGlyph>(
     var isDrawable: Boolean = false
         private set
 
-    private fun onOptionsChange(value: Options) {
-        val layoutOptions = value.layout
+    private fun onOptionsChange(value: Options<*>) {
         layout = getLayout(
-            layoutOptions,
-            font.measure(
-                layoutOptions.format,
-                layoutOptions.layout,
-                layoutOptions.spacingPx,
-                layoutOptions.secondsGlyphScale,
-            )
+            value.layout,
+            value.paints,
+            font.measure(value)
         )
         glyphs = Glyphs(font, value)
     }

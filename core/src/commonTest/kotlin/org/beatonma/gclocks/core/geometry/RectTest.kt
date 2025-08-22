@@ -85,6 +85,40 @@ class MutableRectTest {
     }
 
     @Test
+    fun `extrude is correct`() {
+        with(MutableRectF(-100f, -100f, 100f, 100f)) {
+            extrude(10f)
+            left shouldbe -110f
+            top shouldbe -110f
+            right shouldbe 110f
+            bottom shouldbe 110f
+
+            extrude(1f, 2f, 3f, 4f)
+            left shouldbe -111f
+            top shouldbe -112f
+            right shouldbe 113f
+            bottom shouldbe 114f
+        }
+    }
+
+    @Test
+    fun `add is correct`() {
+        with(MutableRectF(-100f, -100f, 100f, 100f)) {
+            add(10f)
+            left shouldbe -90f
+            top shouldbe -90f
+            right shouldbe 110f
+            bottom shouldbe 110f
+
+            add(-9f)
+            left shouldbe -99f
+            top shouldbe -99f
+            right shouldbe 101f
+            bottom shouldbe 101f
+        }
+    }
+
+    @Test
     fun `validation is correct`() {
         with(MutableRectF()) {
             isValid shouldbe false

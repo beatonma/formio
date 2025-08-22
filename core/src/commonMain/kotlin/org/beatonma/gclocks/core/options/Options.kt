@@ -2,9 +2,10 @@ package org.beatonma.gclocks.core.options
 
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
+import org.beatonma.gclocks.core.graphics.Paints
 
-interface Options {
-    val strokeWidth: Float
+interface Options<P : Paints> {
+    val paints: P
     val layout: LayoutOptions
     val glyph: GlyphOptions
 

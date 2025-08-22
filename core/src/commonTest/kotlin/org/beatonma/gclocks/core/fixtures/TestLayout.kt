@@ -8,13 +8,24 @@ import org.beatonma.gclocks.core.options.LayoutOptions
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
+import org.beatonma.gclocks.core.graphics.Color
+import org.beatonma.gclocks.core.graphics.Paints
+import org.beatonma.gclocks.core.graphics.StrokeCap
+import org.beatonma.gclocks.core.graphics.StrokeJoin
 
+data class TestPaints(
+    override val colors: Array<Color> = emptyArray(),
+    override val strokeWidth: Float = 0f,
+) : Paints {
+    override val strokeCap: StrokeCap = StrokeCap.Default
+    override val strokeJoin: StrokeJoin = StrokeJoin.Default
+}
 
 data class TestOptions(
-    override val strokeWidth: Float = 0f,
+    override val paints: TestPaints = TestPaints(),
     override val layout: TestLayoutOptions = TestLayoutOptions(),
     override val glyph: TestGlyphOptions = TestGlyphOptions(),
-) : Options
+) : Options<TestPaints>
 
 data class TestLayoutOptions(
     override val horizontalAlignment: HorizontalAlignment = HorizontalAlignment.Start,
