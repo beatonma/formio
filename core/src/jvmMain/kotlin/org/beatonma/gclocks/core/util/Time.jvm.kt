@@ -9,7 +9,7 @@ actual fun getCurrentTimeMillis(): Long = System.currentTimeMillis()
 actual fun getTime(): TimeOfDay {
     val now = LocalDateTime.now()
 
-    return timeOfDay(
+    return TimeOfDay(
         hour = now.hour,
         minute = now.minute,
         second = now.second,
@@ -19,10 +19,16 @@ actual fun getTime(): TimeOfDay {
 
 actual fun TimeOfDay.nextSecond(): TimeOfDay {
     val second = (this.second + 1) % 60
-    val minute = if (second == 0) (minute + 1) % 60 else minute
-    val hour = if (minute == 0) (hour + 1) % 24 else hour
+    val minute = when (second) {
+        0 -> (minute + 1) % 60
+        else -> minute
+    }
+    val hour = when (minute) {
+        0 if second == 0 -> (hour + 1) % 24
+        else -> hour
+    }
 
-    return timeOfDay(
+    return TimeOfDay(
         hour = hour,
         minute = minute,
         second = second,

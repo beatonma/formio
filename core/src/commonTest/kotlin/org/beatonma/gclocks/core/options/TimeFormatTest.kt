@@ -78,19 +78,19 @@ class TimeFormatTest {
     fun `apply is correct with 24 hours and zero padding`() {
         assertEquals(
             "00:00:00",
-            TimeFormat.HH_MM_SS_24.apply(timeOfDay(0, 0, 0)),
+            TimeFormat.HH_MM_SS_24.apply(TimeOfDay(0, 0, 0)),
         )
         assertEquals(
             "01:02:03",
-            TimeFormat.HH_MM_SS_24.apply(timeOfDay(1, 2, 3)),
+            TimeFormat.HH_MM_SS_24.apply(TimeOfDay(1, 2, 3)),
         )
         assertEquals(
             "09:02",
-            TimeFormat.HH_MM_24.apply(timeOfDay(9, 2, 3)),
+            TimeFormat.HH_MM_24.apply(TimeOfDay(9, 2, 3)),
         )
         assertEquals(
             "23:02",
-            TimeFormat.HH_MM_24.apply(timeOfDay(23, 2, 57)),
+            TimeFormat.HH_MM_24.apply(TimeOfDay(23, 2, 57)),
         )
     }
 
@@ -98,19 +98,19 @@ class TimeFormatTest {
     fun `apply is correct with 12 hours and zero padding`() {
         assertEquals(
             "12:00:00",
-            TimeFormat.HH_MM_SS_12.apply(timeOfDay(0, 0, 0)),
+            TimeFormat.HH_MM_SS_12.apply(TimeOfDay(0, 0, 0)),
         )
         assertEquals(
             "01:02:03",
-            TimeFormat.HH_MM_SS_12.apply(timeOfDay(1, 2, 3)),
+            TimeFormat.HH_MM_SS_12.apply(TimeOfDay(1, 2, 3)),
         )
         assertEquals(
             "09:02",
-            TimeFormat.HH_MM_12.apply(timeOfDay(9, 2, 3)),
+            TimeFormat.HH_MM_12.apply(TimeOfDay(9, 2, 3)),
         )
         assertEquals(
             "11:02",
-            TimeFormat.HH_MM_12.apply(timeOfDay(23, 2, 57)),
+            TimeFormat.HH_MM_12.apply(TimeOfDay(23, 2, 57)),
         )
     }
 
@@ -118,19 +118,19 @@ class TimeFormatTest {
     fun `apply is correct with 24 hours and no padding`() {
         assertEquals(
             "0:00:00",
-            TimeFormat.H_MM_SS_24.apply(timeOfDay(0, 0, 0)),
+            TimeFormat.H_MM_SS_24.apply(TimeOfDay(0, 0, 0)),
         )
         assertEquals(
             "1:02:03",
-            TimeFormat.H_MM_SS_24.apply(timeOfDay(1, 2, 3)),
+            TimeFormat.H_MM_SS_24.apply(TimeOfDay(1, 2, 3)),
         )
         assertEquals(
             "9:02",
-            TimeFormat.H_MM_24.apply(timeOfDay(9, 2, 3)),
+            TimeFormat.H_MM_24.apply(TimeOfDay(9, 2, 3)),
         )
         assertEquals(
             "23:02",
-            TimeFormat.H_MM_24.apply(timeOfDay(23, 2, 57)),
+            TimeFormat.H_MM_24.apply(TimeOfDay(23, 2, 57)),
         )
     }
 
@@ -138,31 +138,23 @@ class TimeFormatTest {
     fun `apply is correct with 12 hours and no padding`() {
         assertEquals(
             "12:00:00",
-            TimeFormat.H_MM_SS_12.apply(timeOfDay(0, 0, 0)),
+            TimeFormat.H_MM_SS_12.apply(TimeOfDay(0, 0, 0)),
         )
         assertEquals(
             "1:02:03",
-            TimeFormat.H_MM_SS_12.apply(timeOfDay(1, 2, 3)),
+            TimeFormat.H_MM_SS_12.apply(TimeOfDay(1, 2, 3)),
         )
         assertEquals(
             "12:00:00",
-            TimeFormat.H_MM_SS_12.apply(timeOfDay(12, 0, 0)),
+            TimeFormat.H_MM_SS_12.apply(TimeOfDay(12, 0, 0)),
         )
         assertEquals(
             "9:02",
-            TimeFormat.H_MM_12.apply(timeOfDay(9, 2, 3)),
+            TimeFormat.H_MM_12.apply(TimeOfDay(9, 2, 3)),
         )
         assertEquals(
             "11:02",
-            TimeFormat.H_MM_12.apply(timeOfDay(23, 2, 57)),
+            TimeFormat.H_MM_12.apply(TimeOfDay(23, 2, 57)),
         )
     }
 }
-
-private fun timeOfDay(hour: Int, minute: Int, second: Int, millisecond: Int = 0) =
-    object : TimeOfDay {
-        override val hour = hour
-        override val minute = minute
-        override val second = second
-        override val millisecond = millisecond
-    }

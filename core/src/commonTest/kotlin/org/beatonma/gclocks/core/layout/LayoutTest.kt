@@ -7,8 +7,8 @@ import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
+import org.beatonma.gclocks.core.util.TimeOfDay
 import org.beatonma.gclocks.core.options.Layout as LayoutOption
-import org.beatonma.gclocks.core.util.timeOfDay
 import org.beatonma.gclocks.test.shouldbe
 import kotlin.test.Test
 
@@ -34,7 +34,7 @@ class LayoutTest {
             )
         ),
     ).apply {
-        update(timeOfDay(12, 0, 0))
+        update(TimeOfDay(12, 0, 0))
     }
 
     @Test

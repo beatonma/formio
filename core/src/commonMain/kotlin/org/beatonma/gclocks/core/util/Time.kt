@@ -2,24 +2,21 @@ package org.beatonma.gclocks.core.util
 
 expect fun getCurrentTimeMillis(): Long
 
-interface TimeOfDay {
-    val hour: Int
-    val minute: Int
-    val second: Int
-    val millisecond: Int
-
-    operator fun component1() = hour
-    operator fun component2() = minute
-    operator fun component3() = second
-    operator fun component4() = millisecond
+data class TimeOfDay(
+    val hour: Int,
+    val minute: Int,
+    val second: Int,
+    val millisecond: Int = 0,
+) {
+    init {
+        debug {
+            require(hour in 0..23) { "Invalid time: $this" }
+            require(minute in 0..59) { "Invalid time: $this" }
+            require(second in 0..59) { "Invalid time: $this" }
+            require(millisecond in 0..999) { "Invalid time: $this" }
+        }
+    }
 }
 
 expect fun getTime(): TimeOfDay
 expect fun TimeOfDay.nextSecond(): TimeOfDay
-
-fun timeOfDay(hour: Int, minute: Int, second: Int, millisecond: Int = 0) = object : TimeOfDay {
-    override val hour: Int = hour
-    override val minute: Int = minute
-    override val second: Int = second
-    override val millisecond: Int = millisecond
-}
