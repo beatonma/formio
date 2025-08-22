@@ -2,6 +2,7 @@ package org.beatonma.gclocks.io16
 
 import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.ClockFont
+import org.beatonma.gclocks.core.GlyphStateLock
 import org.beatonma.gclocks.core.options.TimeFormat
 
 
@@ -21,10 +22,14 @@ class Io16Font : ClockFont<Io16Glyph> {
 
     override fun getGlyphAt(index: Int, format: TimeFormat, secondsGlyphScale: Float): Io16Glyph {
         val role = format.roles.getOrNull(index) ?: GlyphRole.Default
+        val lock = when (role.isSeparator) {
+            true -> GlyphStateLock.AlwaysInactive
+            false -> GlyphStateLock.NotLocked
+        }
         val scale = when (role) {
             GlyphRole.Second -> secondsGlyphScale
             else -> 1f
         }
-        return Io16Glyph(role, scale)
+        return Io16Glyph(role, scale, lock)
     }
 }

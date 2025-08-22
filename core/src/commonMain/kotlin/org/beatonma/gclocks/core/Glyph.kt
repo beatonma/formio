@@ -19,13 +19,25 @@ enum class GlyphState {
     DisappearingFromInactive,
     Disappeared,
     ;
+
+    val isLockable: Boolean
+        get() = when (this) {
+            Active, Inactive, Disappeared -> true
+            else -> false
+        }
 }
 
 enum class GlyphStateLock {
-    None,
-    Active,
-    Inactive,
+    NotLocked,
+    AlwaysActive,
+    AlwaysInactive,
     ;
+
+    val isLocked: Boolean
+        get() = when (this) {
+            NotLocked -> false
+            else -> true
+        }
 }
 
 enum class GlyphRole {
@@ -51,22 +63,26 @@ interface Glyph {
     val companion: GlyphCompanion
     val maxSize: NativeSize get() = companion.maxSize
     val role: GlyphRole
-    var key: String
     val state: GlyphState
-    var lock: GlyphStateLock
-    var scale: Float
+    val lock: GlyphStateLock
+    val scale: Float
+    var key: String
     var onStateChange: OnStateChange?
+
+    val canonicalStartGlyph: Char
+    val canonicalEndGlyph: Char
 
     fun draw(canvas: Canvas, glyphProgress: Float, paints: Paints)
     fun getWidthAtProgress(glyphProgress: Float): Float
     fun setState(newState: GlyphState, force: Boolean = false)
-
-    val canonicalStartGlyph: Char
-    val canonicalEndGlyph: Char
 }
 
 
-abstract class BaseGlyph : Glyph {
+abstract class BaseGlyph(
+    override val role: GlyphRole,
+    override val scale: Float = 1f,
+    override val lock: GlyphStateLock = GlyphStateLock.NotLocked,
+) : Glyph {
     final override var state: GlyphState = GlyphState.Appearing
         private set(value) {
             stateChangedAt = getCurrentTimeMillis()
@@ -75,7 +91,6 @@ abstract class BaseGlyph : Glyph {
             onStateChange?.invoke(value)
         }
 
-    override var lock = GlyphStateLock.None
     override var onStateChange: OnStateChange? = null
 
     var stateChangedAt: Long = getCurrentTimeMillis()
@@ -101,7 +116,11 @@ abstract class BaseGlyph : Glyph {
             state = newState
             return
         }
-        if (lock != GlyphStateLock.None) return
+        if (lock.isLocked && state.isLockable) {
+            // Transitional states should tick-over into their end states even
+            // if the glyph is locked.
+            return
+        }
 
         return when (newState) {
             GlyphState.Activating,
@@ -131,25 +150,25 @@ abstract class BaseGlyph : Glyph {
 
             GlyphState.Active -> {
                 if (millisSinceChange > options.activeStateDurationMillis) {
-                    state = GlyphState.Deactivating
+                    setState(GlyphState.Deactivating)
                 }
             }
 
             GlyphState.Appearing, GlyphState.Activating -> {
                 if (transitionStateExpired) {
-                    state = GlyphState.Active
+                    setState(GlyphState.Active, force = true)
                 }
             }
 
             GlyphState.Deactivating -> {
                 if (transitionStateExpired) {
-                    state = GlyphState.Inactive
+                    setState(GlyphState.Inactive, force = true)
                 }
             }
 
             GlyphState.Disappearing, GlyphState.DisappearingFromActive, GlyphState.DisappearingFromInactive -> {
                 if (transitionStateExpired) {
-                    state = GlyphState.Disappeared
+                    setState(GlyphState.Disappeared, force = true)
                 }
             }
         }
@@ -163,6 +182,7 @@ abstract class BaseGlyph : Glyph {
 
             GlyphState.Activating, GlyphState.Appearing -> {
                 // State will be updated directly via tickState
+
             }
 
             GlyphState.Inactive, GlyphState.Deactivating -> state = GlyphState.Activating
@@ -211,9 +231,10 @@ abstract class BaseGlyph : Glyph {
 
 
 abstract class BaseClockGlyph(
-    override val role: GlyphRole,
-    override var scale: Float = 1f,
-) : BaseGlyph() {
+    role: GlyphRole,
+    scale: Float = 1f,
+    lock: GlyphStateLock = GlyphStateLock.NotLocked,
+) : BaseGlyph(role, scale, lock) {
     override fun draw(canvas: Canvas, glyphProgress: Float, paints: Paints) {
         with(canvas) {
             when (key) {

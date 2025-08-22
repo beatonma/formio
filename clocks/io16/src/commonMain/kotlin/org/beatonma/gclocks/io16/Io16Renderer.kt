@@ -5,6 +5,7 @@ import org.beatonma.gclocks.core.layout.ClockLayout
 import org.beatonma.gclocks.core.ClockRenderer
 import org.beatonma.gclocks.core.GlyphRenderer
 import org.beatonma.gclocks.core.GlyphState
+import org.beatonma.gclocks.core.GlyphStateLock
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.DrawStyle
 import org.beatonma.gclocks.core.graphics.Canvas
@@ -71,7 +72,7 @@ class Io16GlyphRenderer<P : Path>(
         super.draw(glyph, canvas, glyphProgress, paints)
         paints as Io16Paints
 
-        if (glyph.role.isSeparator) {
+        if (glyph.lock == GlyphStateLock.AlwaysInactive) {
             canvas.drawPath(paints.inactive, style)
             return
         }

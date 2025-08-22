@@ -1,6 +1,6 @@
 package org.beatonma.gclocks.core.layout
 
-import org.beatonma.gclocks.core.BaseClockGlyph
+import org.beatonma.gclocks.core.Glyph
 import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.geometry.MutableRectF
@@ -39,7 +39,7 @@ internal typealias OnMeasure = OnMeasureScope.(
 ) -> Unit
 
 
-internal fun <G : BaseClockGlyph> getLayout(
+fun <G : Glyph> getLayout(
     options: LayoutOptions,
     paints: Paints,
     nativeSize: NativeSize,
@@ -50,7 +50,7 @@ internal fun <G : BaseClockGlyph> getLayout(
 }
 
 
-internal sealed class Layout<G : BaseClockGlyph>(
+sealed class Layout<G : Glyph>(
     protected val options: LayoutOptions,
     paints: Paints,
     final override val nativeSize: NativeSize,
@@ -189,7 +189,7 @@ internal sealed class Layout<G : BaseClockGlyph>(
         }
 }
 
-private class HorizontalLayout<G : BaseClockGlyph>(
+private class HorizontalLayout<G : Glyph>(
     options: LayoutOptions,
     paints: Paints,
     nativeSize: NativeSize,
@@ -232,14 +232,14 @@ private class HorizontalLayout<G : BaseClockGlyph>(
     }
 }
 
-private class VerticalLayout<G : BaseClockGlyph>(
+private class VerticalLayout<G : Glyph>(
     options: LayoutOptions, paints: Paints,
     nativeSize: NativeSize,
 ) : MultilineLayout<G>(options, paints, nativeSize) {
     override fun isLineBreak(glyph: G): Boolean = glyph.role.isSeparator
 }
 
-private class WrappedLayout<G : BaseClockGlyph>(
+private class WrappedLayout<G : Glyph>(
     options: LayoutOptions, paints: Paints,
     nativeSize: NativeSize,
 ) : MultilineLayout<G>(options, paints, nativeSize) {
@@ -248,7 +248,7 @@ private class WrappedLayout<G : BaseClockGlyph>(
 }
 
 
-private abstract class MultilineLayout<G : BaseClockGlyph>(
+private abstract class MultilineLayout<G : Glyph>(
     options: LayoutOptions, paints: Paints,
     nativeSize: NativeSize,
 ) : Layout<G>(options, paints, nativeSize) {
