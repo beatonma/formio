@@ -3,7 +3,7 @@ package org.beatonma.gclocks.core
 import org.beatonma.gclocks.core.geometry.ConstrainedLayout
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.ScaledSize
-import org.beatonma.gclocks.core.graphics.GenericCanvas
+import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.layout.ClockLayout
 import org.beatonma.gclocks.core.util.TimeOfDay
@@ -21,7 +21,7 @@ interface ClockAnimator<G : BaseClockGlyph, P : Paints> : ConstrainedLayout {
         layout.update(time)
     }
 
-    fun render(canvas: GenericCanvas) {
+    fun render(canvas: Canvas) {
         canvas.clear()
         renderers.fastForEach { it.draw(canvas, layout) }
 

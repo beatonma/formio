@@ -2,7 +2,7 @@ package org.beatonma.gclocks.core
 
 import org.beatonma.gclocks.core.geometry.Rect
 import org.beatonma.gclocks.core.graphics.Color
-import org.beatonma.gclocks.core.graphics.GenericCanvas
+import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.graphics.Stroke
 import org.beatonma.gclocks.core.layout.ClockLayout
@@ -16,7 +16,7 @@ interface ClockRenderer<G : BaseClockGlyph, P : Paints> {
     val renderer: GlyphRenderer<G>
     val paints: P
 
-    fun draw(canvas: GenericCanvas, layout: ClockLayout<G>) {
+    fun draw(canvas: Canvas, layout: ClockLayout<G>) {
         if (!layout.isDrawable) {
             debug("layout is not drawable! $layout")
             return
@@ -51,7 +51,7 @@ interface ClockRenderer<G : BaseClockGlyph, P : Paints> {
         }
     }
 
-    fun drawGlyphBoundary(canvas: GenericCanvas, paints: Paints, boundary: Rect<Float>) {
+    fun drawGlyphBoundary(canvas: Canvas, paints: Paints, boundary: Rect<Float>) {
         canvas.drawRect(Color.Grey, boundary, Stroke.Default)
         canvas.drawLine(
             Color.Grey,
@@ -71,7 +71,7 @@ interface ClockRenderer<G : BaseClockGlyph, P : Paints> {
 
     fun drawGlyph(
         glyph: G,
-        canvas: GenericCanvas,
+        canvas: Canvas,
         glyphAnimationProgress: Float,
         paints: Paints,
     ) {

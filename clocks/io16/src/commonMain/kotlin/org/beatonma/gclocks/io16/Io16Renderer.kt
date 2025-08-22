@@ -7,7 +7,7 @@ import org.beatonma.gclocks.core.GlyphRenderer
 import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.DrawStyle
-import org.beatonma.gclocks.core.graphics.GenericCanvas
+import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.graphics.PathMeasureScope
@@ -21,7 +21,7 @@ class Io16ClockRenderer<P : Path>(
     override val renderer: Io16GlyphRenderer<P>,
     override var paints: Io16Paints,
 ) : ClockRenderer<Io16Glyph, Io16Paints> {
-    override fun draw(canvas: GenericCanvas, layout: ClockLayout<Io16Glyph>) {
+    override fun draw(canvas: Canvas, layout: ClockLayout<Io16Glyph>) {
         renderer.now = getCurrentTimeMillis()
         super.draw(canvas, layout)
     }
@@ -63,7 +63,7 @@ class Io16GlyphRenderer<P : Path>(
 
     override fun draw(
         glyph: Io16Glyph,
-        canvas: GenericCanvas,
+        canvas: Canvas,
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -161,7 +161,7 @@ class Io16GlyphRenderer<P : Path>(
 
     private fun drawSegment(
         pathMeasure: PathMeasureScope,
-        canvas: GenericCanvas,
+        canvas: Canvas,
         @FloatRange(0.0, 1.0) start: Float,
         @FloatRange(0.0, 1.0) segmentLength: Float,
         color: Color,

@@ -6,7 +6,7 @@ import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.geometry.degrees
-import org.beatonma.gclocks.core.graphics.GenericCanvas
+import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.util.decelerate5
 import org.beatonma.gclocks.core.util.interpolate
@@ -32,7 +32,7 @@ class FormGlyph(
 
     override val companion: GlyphCompanion = FormGlyph
 
-    override fun GenericCanvas.drawZeroOne(
+    override fun Canvas.drawZeroOne(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -88,7 +88,7 @@ class FormGlyph(
         }
     }
 
-    override fun GenericCanvas.drawOneTwo(
+    override fun Canvas.drawOneTwo(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -134,7 +134,7 @@ class FormGlyph(
         }
     }
 
-    override fun GenericCanvas.drawTwoThree(
+    override fun Canvas.drawTwoThree(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -225,7 +225,7 @@ class FormGlyph(
         }
     }
 
-    override fun GenericCanvas.drawThreeFour(
+    override fun Canvas.drawThreeFour(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -322,7 +322,7 @@ class FormGlyph(
         }
     }
 
-    override fun GenericCanvas.drawFourFive(
+    override fun Canvas.drawFourFive(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -400,7 +400,7 @@ class FormGlyph(
         }
     }
 
-    override fun GenericCanvas.drawFiveSix(
+    override fun Canvas.drawFiveSix(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -459,7 +459,7 @@ class FormGlyph(
         }
     }
 
-    override fun GenericCanvas.drawSixSeven(
+    override fun Canvas.drawSixSeven(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -489,7 +489,7 @@ class FormGlyph(
         }
     }
 
-    override fun GenericCanvas.drawSevenEight(
+    override fun Canvas.drawSevenEight(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -593,7 +593,7 @@ class FormGlyph(
         }
     }
 
-    override fun GenericCanvas.drawEightNine(
+    override fun Canvas.drawEightNine(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -672,7 +672,7 @@ class FormGlyph(
         }
     }
 
-    override fun GenericCanvas.drawNineZero(
+    override fun Canvas.drawNineZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -703,14 +703,14 @@ class FormGlyph(
         }
     }
 
-    override fun GenericCanvas.drawOneZero(
+    override fun Canvas.drawOneZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
         drawZeroOne(1f - glyphProgress, paints)
     }
 
-    override fun GenericCanvas.drawTwoZero(
+    override fun Canvas.drawTwoZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -793,7 +793,7 @@ class FormGlyph(
         }
     }
 
-    override fun GenericCanvas.drawThreeZero(
+    override fun Canvas.drawThreeZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -852,7 +852,7 @@ class FormGlyph(
         }
     }
 
-    override fun GenericCanvas.drawFiveZero(
+    override fun Canvas.drawFiveZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -901,7 +901,7 @@ class FormGlyph(
         }
     }
 
-    override fun GenericCanvas.drawOneEmpty(
+    override fun Canvas.drawOneEmpty(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -924,7 +924,7 @@ class FormGlyph(
         }
     }
 
-    override fun GenericCanvas.drawTwoEmpty(
+    override fun Canvas.drawTwoEmpty(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -964,7 +964,7 @@ class FormGlyph(
         }
     }
 
-    override fun GenericCanvas.drawEmptyOne(
+    override fun Canvas.drawEmptyOne(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -988,7 +988,7 @@ class FormGlyph(
         }
     }
 
-    override fun GenericCanvas.drawSeparator(
+    override fun Canvas.drawSeparator(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -997,14 +997,14 @@ class FormGlyph(
         drawCircle(color3, 24f, 120f, 24f);
     }
 
-    override fun GenericCanvas.drawSpace(
+    override fun Canvas.drawSpace(
         glyphProgress: Float,
         paints: Paints,
     ) {
         // Page intentionally blank
     }
 
-    override fun GenericCanvas.drawHash(
+    override fun Canvas.drawHash(
         glyphProgress: Float,
         paints: Paints,
     ) {

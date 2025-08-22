@@ -4,7 +4,7 @@ import org.beatonma.gclocks.core.BaseClockGlyph
 import org.beatonma.gclocks.core.GlyphCompanion
 import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.geometry.NativeSize
-import org.beatonma.gclocks.core.graphics.GenericCanvas
+import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.util.interpolate
 
@@ -39,7 +39,7 @@ class Io16Glyph(
     override val companion: GlyphCompanion = Io16Glyph
 
     override fun draw(
-        canvas: GenericCanvas,
+        canvas: Canvas,
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -47,7 +47,7 @@ class Io16Glyph(
         super.draw(canvas, ease(glyphProgress), paints)
     }
 
-    override fun GenericCanvas.drawZeroOne(
+    override fun Canvas.drawZeroOne(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -55,98 +55,98 @@ class Io16Glyph(
         Io16GlyphPath.ZeroOne.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawOneTwo(
+    override fun Canvas.drawOneTwo(
         glyphProgress: Float,
         paints: Paints,
     ) {
         Io16GlyphPath.OneTwo.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawTwoThree(
+    override fun Canvas.drawTwoThree(
         glyphProgress: Float,
         paints: Paints,
     ) {
         Io16GlyphPath.TwoThree.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawThreeFour(
+    override fun Canvas.drawThreeFour(
         glyphProgress: Float,
         paints: Paints,
     ) {
         Io16GlyphPath.ThreeFour.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawFourFive(
+    override fun Canvas.drawFourFive(
         glyphProgress: Float,
         paints: Paints,
     ) {
         Io16GlyphPath.FourFive.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawFiveSix(
+    override fun Canvas.drawFiveSix(
         glyphProgress: Float,
         paints: Paints,
     ) {
         Io16GlyphPath.FiveSix.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawSixSeven(
+    override fun Canvas.drawSixSeven(
         glyphProgress: Float,
         paints: Paints,
     ) {
         Io16GlyphPath.SixSeven.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawSevenEight(
+    override fun Canvas.drawSevenEight(
         glyphProgress: Float,
         paints: Paints,
     ) {
         Io16GlyphPath.SevenEight.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawEightNine(
+    override fun Canvas.drawEightNine(
         glyphProgress: Float,
         paints: Paints,
     ) {
         Io16GlyphPath.EightNine.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawNineZero(
+    override fun Canvas.drawNineZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
         Io16GlyphPath.NineZero.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawOneZero(
+    override fun Canvas.drawOneZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
         Io16GlyphPath.OneZero.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawTwoZero(
+    override fun Canvas.drawTwoZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
         Io16GlyphPath.TwoZero.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawThreeZero(
+    override fun Canvas.drawThreeZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
         Io16GlyphPath.ThreeZero.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawFiveZero(
+    override fun Canvas.drawFiveZero(
         glyphProgress: Float,
         paints: Paints,
     ) {
         Io16GlyphPath.FiveZero.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawOneEmpty(
+    override fun Canvas.drawOneEmpty(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -154,7 +154,7 @@ class Io16Glyph(
         Io16GlyphPath.One.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawTwoEmpty(
+    override fun Canvas.drawTwoEmpty(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -163,7 +163,7 @@ class Io16Glyph(
         Io16GlyphPath.Two.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawEmptyOne(
+    override fun Canvas.drawEmptyOne(
         glyphProgress: Float,
         paints: Paints,
     ) {
@@ -172,21 +172,21 @@ class Io16Glyph(
         Io16GlyphPath.One.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawSeparator(
+    override fun Canvas.drawSeparator(
         glyphProgress: Float,
         paints: Paints,
     ) {
         Io16GlyphPath.Separator.plot(this, glyphProgress)
     }
 
-    override fun GenericCanvas.drawSpace(
+    override fun Canvas.drawSpace(
         glyphProgress: Float,
         paints: Paints,
     ) {
         // Page intentionally blank
     }
 
-    override fun GenericCanvas.drawHash(
+    override fun Canvas.drawHash(
         glyphProgress: Float,
         paints: Paints,
     ) {

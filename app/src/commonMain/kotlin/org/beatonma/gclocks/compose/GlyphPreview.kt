@@ -23,7 +23,7 @@ import org.beatonma.gclocks.core.GlyphRenderer
 import org.beatonma.gclocks.core.geometry.ConstrainedLayout
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.ScaledSize
-import org.beatonma.gclocks.core.graphics.GenericCanvas
+import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.util.getTime
 import org.beatonma.gclocks.core.util.progress
@@ -87,7 +87,7 @@ private class GlyphPreview<G : Glyph>(
         return measuredSize
     }
 
-    fun draw(canvas: GenericCanvas, glyphProgress: Float, paints: Paints) {
+    fun draw(canvas: Canvas, glyphProgress: Float, paints: Paints) {
         canvas.withScale(glyph.scale) {
             renderer.draw(glyph, canvas, glyphProgress, paints)
         }

@@ -43,7 +43,6 @@ data class Stroke(
 
 
 private typealias CanvasAction = Canvas.() -> Unit
-typealias GenericCanvas = Canvas
 
 interface Canvas : Path {
     fun measurePath(block: (scope: PathMeasureScope) -> Unit)
