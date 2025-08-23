@@ -11,9 +11,9 @@ import org.beatonma.gclocks.core.util.fastForEach
 import org.beatonma.gclocks.core.util.getTime
 import kotlin.math.max
 
-interface ClockAnimator<G : BaseClockGlyph, P : Paints> : ConstrainedLayout {
-    val layout: ClockLayout<G>
-    val renderers: List<ClockRenderer<G, P>>
+interface ClockAnimator<P : Paints, G : BaseClockGlyph<P>> : ConstrainedLayout {
+    val layout: ClockLayout<P, G>
+    val renderers: List<ClockRenderer<P, G>>
 
     fun scheduleNextFrame(delayMillis: Int)
 

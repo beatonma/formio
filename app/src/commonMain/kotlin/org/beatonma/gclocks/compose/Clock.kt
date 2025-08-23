@@ -56,7 +56,7 @@ private fun <Opts : Options<*>> rememberClockAnimator(
 ): ClockAnimator<*, *> {
     return remember(forcedState) {
         when (options) {
-            is Io16Options -> object : ClockAnimator<Io16Glyph, Io16Paints> {
+            is Io16Options -> object : ClockAnimator<Io16Paints, Io16Glyph> {
                 override val layout = ClockLayout(
                     font = Io16Font(
                         debugGetGlyphAt = if (forcedState == null) null else ({ glyph ->
@@ -65,7 +65,7 @@ private fun <Opts : Options<*>> rememberClockAnimator(
                     ),
                     options = options,
                 )
-                override val renderers: List<ClockRenderer<Io16Glyph, Io16Paints>> = listOf(
+                override val renderers: List<ClockRenderer<Io16Paints, Io16Glyph>> = listOf(
                     Io16ClockRenderer(
                         Io16GlyphRenderer(ComposePath(), options),
                         options.paints
@@ -77,12 +77,12 @@ private fun <Opts : Options<*>> rememberClockAnimator(
                 }
             }
 
-            is FormOptions -> object : ClockAnimator<FormGlyph, FormPaints> {
+            is FormOptions -> object : ClockAnimator<FormPaints, FormGlyph> {
                 override val layout = ClockLayout(
                     font = FormFont(),
                     options = options,
                 )
-                override val renderers: List<ClockRenderer<FormGlyph, FormPaints>> = listOf(
+                override val renderers: List<ClockRenderer<FormPaints, FormGlyph>> = listOf(
                     FormClockRenderer(options.paints),
                 )
 

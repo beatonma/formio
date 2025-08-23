@@ -6,7 +6,7 @@ import org.beatonma.gclocks.core.options.TimeFormat
 import kotlin.Int
 
 
-class FormFont : ClockFont<FormGlyph> {
+class FormFont : ClockFont<FormPaints, FormGlyph> {
     override val lineHeight: Float = FormGlyph.maxSize.y
     override val separatorWidth: Float = 48f
 

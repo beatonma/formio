@@ -121,8 +121,10 @@ internal enum class Io16GlyphPath {
     },
     Separator {
         override val canonical = PathDefinition(16f, Io16Height) {
-            circle(8f, 48f, 8f, Path.Direction.Clockwise)
-            circle(8f, 96f, 8f, Path.Direction.Clockwise)
+            beginPath()
+            circle(8f, 48f, 8f, Path.Direction.AntiClockwise)
+            beginPath()
+            circle(8f, 96f, 8f, Path.Direction.AntiClockwise)
         }
     }
     ;
@@ -131,9 +133,12 @@ internal enum class Io16GlyphPath {
     open val start: PathDefinition? = null
     open val end: PathDefinition? = null
 
-    fun plot(canvas: Canvas, glyphProgress: Float) {
-        if (start == null || end == null || glyphProgress == 0f) return canonical.plot(canvas)
-        return start.plotInterpolated(canvas, end, glyphProgress)
+    fun plot(canvas: Canvas, glyphProgress: Float, render: ((Canvas) -> Unit)? = null) {
+        if (start == null || end == null || glyphProgress == 0f) {
+            canonical.plot(canvas, render)
+        } else {
+            start.plotInterpolated(canvas, end, glyphProgress, render)
+        }
     }
 
     companion object {

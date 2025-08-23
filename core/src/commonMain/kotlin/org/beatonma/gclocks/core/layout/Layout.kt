@@ -39,20 +39,20 @@ internal typealias OnMeasure = OnMeasureScope.(
 ) -> Unit
 
 
-fun <G : Glyph> getLayout(
+fun <P : Paints, G : Glyph<P>> getLayout(
     options: LayoutOptions,
-    paints: Paints,
+    paints: P,
     nativeSize: NativeSize,
-): Layout<G> = when (options.layout) {
+): Layout<P, G> = when (options.layout) {
     LayoutOption.Horizontal -> HorizontalLayout(options, paints, nativeSize)
     LayoutOption.Vertical -> VerticalLayout(options, paints, nativeSize)
     LayoutOption.Wrapped -> WrappedLayout(options, paints, nativeSize)
 }
 
 
-sealed class Layout<G : Glyph>(
+sealed class Layout<P : Paints, G : Glyph<P>>(
     protected val options: LayoutOptions,
-    paints: Paints,
+    paints: P,
     final override val nativeSize: NativeSize,
 ) : OnMeasureScope {
     /* Size of each row in the current frame */
@@ -189,11 +189,11 @@ sealed class Layout<G : Glyph>(
         }
 }
 
-private class HorizontalLayout<G : Glyph>(
+private class HorizontalLayout<P : Paints, G : Glyph<P>>(
     options: LayoutOptions,
-    paints: Paints,
+    paints: P,
     nativeSize: NativeSize,
-) : Layout<G>(options, paints, nativeSize) {
+) : Layout<P, G>(options, paints, nativeSize) {
     override fun layoutPass(
         glyphs: List<GlyphStatus<G>>,
         callback: GlyphCallback<G>,
@@ -232,26 +232,26 @@ private class HorizontalLayout<G : Glyph>(
     }
 }
 
-private class VerticalLayout<G : Glyph>(
-    options: LayoutOptions, paints: Paints,
+private class VerticalLayout<P : Paints, G : Glyph<P>>(
+    options: LayoutOptions, paints: P,
     nativeSize: NativeSize,
-) : MultilineLayout<G>(options, paints, nativeSize) {
+) : MultilineLayout<P, G>(options, paints, nativeSize) {
     override fun isLineBreak(glyph: G): Boolean = glyph.role.isSeparator
 }
 
-private class WrappedLayout<G : Glyph>(
-    options: LayoutOptions, paints: Paints,
+private class WrappedLayout<P : Paints, G : Glyph<P>>(
+    options: LayoutOptions, paints: P,
     nativeSize: NativeSize,
-) : MultilineLayout<G>(options, paints, nativeSize) {
+) : MultilineLayout<P, G>(options, paints, nativeSize) {
     override fun isLineBreak(glyph: G): Boolean =
         glyph.role == GlyphRole.SeparatorMinutesSeconds
 }
 
 
-private abstract class MultilineLayout<G : Glyph>(
-    options: LayoutOptions, paints: Paints,
+private abstract class MultilineLayout<P : Paints, G : Glyph<P>>(
+    options: LayoutOptions, paints: P,
     nativeSize: NativeSize,
-) : Layout<G>(options, paints, nativeSize) {
+) : Layout<P, G>(options, paints, nativeSize) {
     abstract fun isLineBreak(glyph: G): Boolean
 
     final override fun layoutPass(

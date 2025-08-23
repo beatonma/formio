@@ -12,7 +12,7 @@ private val ZeroWidth = Io16GlyphPath.Zero.canonical.width
 
 class Io16Font(
     private val debugGetGlyphAt: ((defaultGlyph: Io16Glyph) -> Io16Glyph)? = null,
-) : ClockFont<Io16Glyph> {
+) : ClockFont<Io16Paints, Io16Glyph> {
     override val lineHeight: Float = Io16Glyph.maxSize.y
     override val separatorWidth: Float = Io16GlyphPath.Separator.canonical.width
     override val maxHours24ZeroPaddedWidth: Float = ZeroWidth * 2f // 00:xx

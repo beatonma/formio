@@ -5,7 +5,6 @@ import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.options.GlyphOptions
-import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 
 enum class GlyphState {
@@ -20,11 +19,6 @@ enum class GlyphState {
     Disappeared,
     ;
 
-    val isLockable: Boolean
-        get() = when (this) {
-            Active, Inactive, Disappeared -> true
-            else -> false
-        }
     val affectsVisibility: Boolean
         get() = when (this) {
             Appearing, Disappeared, Disappearing, DisappearingFromActive, DisappearingFromInactive -> true
@@ -50,7 +44,9 @@ interface GlyphCompanion {
     val maxSize: NativeSize
 }
 
-interface Glyph {
+typealias RenderGlyph<P> = (Canvas, Glyph<P>) -> Unit
+
+interface Glyph<P : Paints> {
     val companion: GlyphCompanion
     val maxSize: NativeSize get() = companion.maxSize
     val role: GlyphRole
@@ -58,22 +54,23 @@ interface Glyph {
     val lock: GlyphState?
     val scale: Float
     var key: String
+    var stateChangedAt: Long
     var onStateChange: OnStateChange?
 
     val canonicalStartGlyph: Char
     val canonicalEndGlyph: Char
 
-    fun draw(canvas: Canvas, glyphProgress: Float, paints: Paints)
+    fun draw(canvas: Canvas, glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>? = null)
     fun getWidthAtProgress(glyphProgress: Float): Float
     fun setState(newState: GlyphState, force: Boolean = false)
 }
 
 
-abstract class BaseGlyph(
+abstract class BaseGlyph<P : Paints>(
     override val role: GlyphRole,
     override val scale: Float = 1f,
     override val lock: GlyphState? = null,
-) : Glyph {
+) : Glyph<P> {
     final override var state: GlyphState = GlyphState.Appearing
         private set(value) {
             stateChangedAt = getCurrentTimeMillis()
@@ -84,7 +81,7 @@ abstract class BaseGlyph(
 
     override var onStateChange: OnStateChange? = null
 
-    var stateChangedAt: Long = getCurrentTimeMillis()
+    override var stateChangedAt: Long = getCurrentTimeMillis()
 
     override var key: String = " "
         set(value) {
@@ -223,79 +220,78 @@ abstract class BaseGlyph(
     }
 }
 
-
-abstract class BaseClockGlyph(
+abstract class BaseClockGlyph<P : Paints>(
     role: GlyphRole,
     scale: Float = 1f,
     lock: GlyphState? = null,
-) : BaseGlyph(role, scale, lock) {
-    override fun draw(canvas: Canvas, glyphProgress: Float, paints: Paints) {
+) : BaseGlyph<P>(role, scale, lock) {
+    override fun draw(
+        canvas: Canvas,
+        glyphProgress: Float,
+        paints: P,
+        renderGlyph: RenderGlyph<P>?,
+    ) {
         with(canvas) {
             when (key) {
-                "0", "0_1" -> drawZeroOne(glyphProgress, paints)
-                "1", "1_2" -> drawOneTwo(glyphProgress, paints)
-                "2", "2_3" -> drawTwoThree(glyphProgress, paints)
-                "3", "3_4" -> drawThreeFour(glyphProgress, paints)
-                "4", "4_5" -> drawFourFive(glyphProgress, paints)
-                "5", "5_6" -> drawFiveSix(glyphProgress, paints)
-                "6", "6_7" -> drawSixSeven(glyphProgress, paints)
-                "7", "7_8" -> drawSevenEight(glyphProgress, paints)
-                "8", "8_9" -> drawEightNine(glyphProgress, paints)
-                "9", "9_0" -> drawNineZero(glyphProgress, paints)
-                "1_0" -> drawOneZero(glyphProgress, paints)
-                "2_0" -> drawTwoZero(glyphProgress, paints)
-                "3_0" -> drawThreeZero(glyphProgress, paints)
-                "5_0" -> drawFiveZero(glyphProgress, paints)
-                "1_ " -> drawOneEmpty(glyphProgress, paints)
-                "2_ " -> drawTwoEmpty(glyphProgress, paints)
-                " _1" -> drawEmptyOne(glyphProgress, paints)
-                ":" -> drawSeparator(glyphProgress, paints)
-                " ", "_" -> drawSpace(glyphProgress, paints)
-                "#" -> drawHash(glyphProgress, paints)
+                "0", "0_1" -> drawZeroOne(glyphProgress, paints, renderGlyph)
+                "1", "1_2" -> drawOneTwo(glyphProgress, paints, renderGlyph)
+                "2", "2_3" -> drawTwoThree(glyphProgress, paints, renderGlyph)
+                "3", "3_4" -> drawThreeFour(glyphProgress, paints, renderGlyph)
+                "4", "4_5" -> drawFourFive(glyphProgress, paints, renderGlyph)
+                "5", "5_6" -> drawFiveSix(glyphProgress, paints, renderGlyph)
+                "6", "6_7" -> drawSixSeven(glyphProgress, paints, renderGlyph)
+                "7", "7_8" -> drawSevenEight(glyphProgress, paints, renderGlyph)
+                "8", "8_9" -> drawEightNine(glyphProgress, paints, renderGlyph)
+                "9", "9_0" -> drawNineZero(glyphProgress, paints, renderGlyph)
+                "1_0" -> drawOneZero(glyphProgress, paints, renderGlyph)
+                "2_0" -> drawTwoZero(glyphProgress, paints, renderGlyph)
+                "3_0" -> drawThreeZero(glyphProgress, paints, renderGlyph)
+                "5_0" -> drawFiveZero(glyphProgress, paints, renderGlyph)
+                "1_ " -> drawOneEmpty(glyphProgress, paints, renderGlyph)
+                "2_ " -> drawTwoEmpty(glyphProgress, paints, renderGlyph)
+                " _1" -> drawEmptyOne(glyphProgress, paints, renderGlyph)
+                ":" -> drawSeparator(glyphProgress, paints, renderGlyph)
+                " ", "_" -> drawSpace(glyphProgress, paints, renderGlyph)
+                "#" -> drawHash(glyphProgress, paints, renderGlyph)
                 else -> throw Exception("Unhandled glyph key '${key}'")
             }
         }
     }
 
-    fun Canvas.drawNotImplemented(glyphProgress: Float, paints: Paints) {
+    fun Canvas.drawNotImplemented(glyphProgress: Float, paints: P) {
         val (width, height) = companion.maxSize
         drawLine(Color.Red, 0f, 0f, width, height)
         drawLine(Color.Red, width, 0f, 0f, height)
     }
 
-    abstract fun Canvas.drawZeroOne(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawOneTwo(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawTwoThree(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawThreeFour(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawFourFive(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawFiveSix(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawSixSeven(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawSevenEight(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawEightNine(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawNineZero(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawOneZero(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawTwoZero(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawThreeZero(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawFiveZero(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawOneEmpty(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawTwoEmpty(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawEmptyOne(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawSeparator(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawSpace(glyphProgress: Float, paints: Paints)
-    abstract fun Canvas.drawHash(glyphProgress: Float, paints: Paints)
+    abstract fun Canvas.drawZeroOne(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawOneTwo(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawTwoThree(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawThreeFour(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawFourFive(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawFiveSix(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawSixSeven(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawSevenEight(
+        glyphProgress: Float,
+        paints: P,
+        renderGlyph: RenderGlyph<P>?,
+    )
+
+    abstract fun Canvas.drawEightNine(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawNineZero(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawOneZero(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawTwoZero(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawThreeZero(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawFiveZero(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawOneEmpty(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawTwoEmpty(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawEmptyOne(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawSeparator(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawSpace(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
+    abstract fun Canvas.drawHash(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>?)
 }
 
 
-interface GlyphRenderer<G : Glyph, P : Paints> {
-    fun draw(glyph: G, canvas: Canvas, glyphProgress: Float, paints: P) {
-        glyph.draw(canvas, glyphProgress, paints)
-
-        debug(false) {
-            canvas.drawText(glyph.state.name)
-        }
-    }
-
-    companion object {
-        fun <G : Glyph, P : Paints> Default() = object : GlyphRenderer<G, P> {}
-    }
+fun interface GlyphRenderer<P : Paints> {
+    fun draw(glyph: Glyph<P>, canvas: Canvas, paints: P)
 }

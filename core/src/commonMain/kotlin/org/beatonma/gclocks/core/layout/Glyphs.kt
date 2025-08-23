@@ -4,15 +4,16 @@ import org.beatonma.gclocks.core.BaseClockGlyph
 import org.beatonma.gclocks.core.ClockFont
 import org.beatonma.gclocks.core.Glyph
 import org.beatonma.gclocks.core.GlyphState
+import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.TimeOfDay
 import org.beatonma.gclocks.core.util.nextSecond
 import org.beatonma.gclocks.core.util.progress
 
 
-internal class Glyphs<G : BaseClockGlyph>(
-    font: ClockFont<G>,
-    options: Options<*>,
+internal class Glyphs<P : Paints, G : BaseClockGlyph<P>>(
+    font: ClockFont<P, G>,
+    options: Options<P>,
 ) {
     private val stringLength = options.layout.format.stringLength
     private var mutableGlyphs: List<MutableGlyphStatus<G>> = List(stringLength) { index ->
@@ -102,7 +103,7 @@ internal class Glyphs<G : BaseClockGlyph>(
 }
 
 
-interface GlyphStatus<G : Glyph> {
+interface GlyphStatus<G : Glyph<*>> {
     val glyph: G
     val key: String
     val isVisible: Boolean
@@ -113,7 +114,7 @@ interface GlyphStatus<G : Glyph> {
     val scaledHeight: Float
 }
 
-private class MutableGlyphStatus<G : Glyph>(
+private class MutableGlyphStatus<G : Glyph<*>>(
     override val glyph: G,
     val index: Int,
 ) : GlyphStatus<G> {

@@ -6,22 +6,23 @@ import org.beatonma.gclocks.core.geometry.ConstrainedLayout
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.geometry.ScaledSize
+import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.TimeOfDay
 
 
-class ClockLayout<G : BaseClockGlyph>(
-    private val font: ClockFont<G>,
-    options: Options<*>,
+class ClockLayout<P : Paints, G : BaseClockGlyph<P>>(
+    private val font: ClockFont<P, G>,
+    options: Options<P>,
 ) : ConstrainedLayout {
-    var options: Options<*> = options
+    var options: Options<P> = options
         set(value) {
             field = value
             onOptionsChange(value)
         }
 
-    private lateinit var layout: Layout<G> // Initialized in onOptionsChange
-    private lateinit var glyphs: Glyphs<G> // Initialized in onOptionsChange
+    private lateinit var layout: Layout<P, G> // Initialized in onOptionsChange
+    private lateinit var glyphs: Glyphs<P, G> // Initialized in onOptionsChange
 
     /**
      * The maximum size the clock can be with 1x scaling.
@@ -40,7 +41,7 @@ class ClockLayout<G : BaseClockGlyph>(
     var isDrawable: Boolean = false
         private set
 
-    private fun onOptionsChange(value: Options<*>) {
+    private fun onOptionsChange(value: Options<P>) {
         layout = getLayout(
             value.layout,
             value.paints,

@@ -13,7 +13,7 @@ class TestFont(
     override val maxHours12Width: Float = TestGlyph.maxSize.width * 2f,
     override val maxMinutesWidth: Float = TestGlyph.maxSize.width * 2f,
     override val maxSecondsWidth: Float = TestGlyph.maxSize.width * 2f,
-) : ClockFont<TestGlyph> {
+) : ClockFont<TestPaints, TestGlyph> {
     override fun getGlyphAt(
         index: Int,
         format: TimeFormat,

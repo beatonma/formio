@@ -9,6 +9,8 @@ import org.beatonma.gclocks.core.util.interpolate
 import kotlin.math.cos
 import kotlin.math.sin
 
+typealias RenderCallback = (Canvas) -> Unit
+
 sealed interface PathCommand {
     fun plot(canvas: Canvas)
     fun plotInterpolated(canvas: Canvas, other: PathCommand, progress: Float)
@@ -300,8 +302,11 @@ class PathDefinition(
     val height: Float,
     val commands: List<PathCommand>,
 ) {
-    fun plot(canvas: Canvas) {
-        commands.fastForEach { it.plot(canvas) }
+    fun plot(canvas: Canvas, render: RenderCallback? = null) {
+        commands.fastForEach { command ->
+            command.plot(canvas)
+            maybeRender(command, canvas, render)
+        }
     }
 
     /**
@@ -312,9 +317,22 @@ class PathDefinition(
      * - Each position of the command lists must share the same type of command
      *   (i.e. must interpolate from [LineTo] to [LineTo], etc.; not [LineTo] to [CubicTo], etc.)
      */
-    fun plotInterpolated(canvas: Canvas, other: PathDefinition, progress: Float) {
+    fun plotInterpolated(
+        canvas: Canvas,
+        other: PathDefinition,
+        progress: Float,
+        render: RenderCallback? = null,
+    ) {
         commands.zip(other.commands).fastForEach { (a, b) ->
             a.plotInterpolated(canvas, b, progress)
+            maybeRender(a, canvas, render)
+        }
+    }
+
+    private fun maybeRender(command: PathCommand, canvas: Canvas, render: RenderCallback?) {
+        when (command) {
+            is ClosePath, is Circle -> render?.invoke(canvas)
+            else -> {}
         }
     }
 
@@ -422,14 +440,3 @@ class PathDefinition(
 
 inline fun PathDefinition(width: Float, height: Float, init: PathDefinition.Builder.() -> Unit) =
     PathDefinition.Builder(width, height).apply(init).build()
-
-///** Create a cubic curve with zero size - used as filler to help with interpolation between
-// * [PathDefinition] instances that do not naturally share the same sequence of commands. */
-//fun PathDefinition.Builder.zeroCubic(x: Float, y: Float) {
-//    cubicTo(x, y, x, y, x, y)
-//}
-//
-///** Create a line with zero size */
-//fun PathDefinition.Builder.zeroLine(x: Float, y: Float) {
-//    lineTo(x, y)
-//}

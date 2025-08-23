@@ -34,9 +34,11 @@ private const val AnimationDurationSeconds = 2f
 @Composable
 fun <G : Glyph, P : Paints> GlyphPreview(
     glyph: G,
+fun <P : Paints> GlyphPreview(
+    glyph: Glyph<P>,
     paints: P,
     modifier: Modifier = Modifier,
-    renderer: GlyphRenderer<G, P> = GlyphRenderer.Default(),
+    renderer: GlyphRenderer<P>? = null,
     animPosition: Float? = null,
 ) {
     val preview = remember { GlyphPreview(glyph, renderer, paints) }
@@ -74,9 +76,9 @@ fun <G : Glyph, P : Paints> GlyphPreview(
 }
 
 
-private class GlyphPreview<G : Glyph, P : Paints>(
-    val glyph: G,
-    val renderer: GlyphRenderer<G, P>,
+private class GlyphPreview<P : Paints>(
+    val glyph: Glyph<P>,
+    val renderer: GlyphRenderer<P>?,
     private val paints: P,
 ) : ConstrainedLayout {
     private var measuredSize: ScaledSize = ScaledSize.Init

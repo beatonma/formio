@@ -221,7 +221,7 @@ private fun LazyGridScope.Io16Preview(
                 Io16GlyphRenderer(
                     ComposePath(),
                     Io16Options(),
-                    updateOnDraw = true,
+                    debugUpdateOnDraw = true,
                 )
             },
             animPosition = animationPosition,

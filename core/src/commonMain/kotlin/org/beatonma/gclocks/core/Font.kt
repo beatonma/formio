@@ -1,13 +1,14 @@
 package org.beatonma.gclocks.core
 
 import org.beatonma.gclocks.core.geometry.NativeSize
+import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.core.options.TimeResolution
 
 
-interface ClockFont<G : Glyph> {
+interface ClockFont<P : Paints, G : Glyph<P>> {
     /**
      * Create a new glyph instance for the given position.
      */
