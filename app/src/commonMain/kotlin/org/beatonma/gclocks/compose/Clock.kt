@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.layout.ClockLayout
 import org.beatonma.gclocks.core.ClockRenderer
-import org.beatonma.gclocks.core.graphics.Paints
+import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.TimeOfDay
 import org.beatonma.gclocks.core.util.getTime
@@ -29,8 +29,9 @@ fun <Opts : Options<*>> Clock(
     options: Opts,
     modifier: Modifier = Modifier,
     getTickTime: () -> TimeOfDay = ::getTime,
+    forcedState: GlyphState? = null,
 ) {
-    val animator = rememberClockAnimator(options)
+    val animator = rememberClockAnimator(options, forcedState)
     val frameDeltaMillis = currentFrameDelta()
     val canvas = rememberCanvas()
 
@@ -49,12 +50,19 @@ expect fun currentFrameDelta(): Duration
 
 
 @Composable
-private fun <Opts : Options<*>> rememberClockAnimator(options: Opts): ClockAnimator<*, *> {
-    return remember {
+private fun <Opts : Options<*>> rememberClockAnimator(
+    options: Opts,
+    forcedState: GlyphState?,
+): ClockAnimator<*, *> {
+    return remember(forcedState) {
         when (options) {
             is Io16Options -> object : ClockAnimator<Io16Glyph, Io16Paints> {
                 override val layout = ClockLayout(
-                    font = Io16Font(),
+                    font = Io16Font(
+                        debugGetGlyphAt = if (forcedState == null) null else ({ glyph ->
+                            glyph.apply { setState(forcedState, force = true) }
+                        })
+                    ),
                     options = options,
                 )
                 override val renderers: List<ClockRenderer<Io16Glyph, Io16Paints>> = listOf(

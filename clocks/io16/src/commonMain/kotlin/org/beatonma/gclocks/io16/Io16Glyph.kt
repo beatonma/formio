@@ -3,7 +3,7 @@ package org.beatonma.gclocks.io16
 import org.beatonma.gclocks.core.BaseClockGlyph
 import org.beatonma.gclocks.core.GlyphCompanion
 import org.beatonma.gclocks.core.GlyphRole
-import org.beatonma.gclocks.core.GlyphStateLock
+import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Paints
@@ -28,14 +28,13 @@ private fun ease(t: Float) = accelerateDecelerate(overshoot(anticipate(t)))
 class Io16Glyph(
     role: GlyphRole,
     scale: Float = 1f,
-    lock: GlyphStateLock = GlyphStateLock.NotLocked,
+    lock: GlyphState? = null,
 ) : BaseClockGlyph(role, scale, lock) {
     companion object : GlyphCompanion {
         override val maxSize = NativeSize(
             x = Io16GlyphPath.Zero.canonical.width,
             y = Io16GlyphPath.Zero.canonical.height,
         )
-        override val aspectRatio: Float = maxSize.aspectRatio()
     }
 
     override val companion: GlyphCompanion = Io16Glyph

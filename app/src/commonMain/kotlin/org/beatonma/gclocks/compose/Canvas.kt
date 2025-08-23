@@ -218,13 +218,14 @@ class ComposeCanvas(
     override fun drawPoint(
         x: Float,
         y: Float,
+        radius: Float,
         color: Color,
         style: DrawStyle,
         alpha: Float,
     ) {
         drawScope.drawCircle(
             color.toCompose(),
-            radius = 8f,
+            radius = radius,
             center = Offset(x, y),
             style = style.toCompose(),
             alpha = alpha,

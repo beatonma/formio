@@ -5,5 +5,5 @@ import org.beatonma.gclocks.core.GlyphRenderer
 
 class FormClockRenderer(
     override var paints: FormPaints,
-    override val renderer: GlyphRenderer<FormGlyph> = GlyphRenderer.Default(),
+    override val renderer: GlyphRenderer<FormGlyph, FormPaints> = GlyphRenderer.Default(),
 ) : ClockRenderer<FormGlyph, FormPaints>

@@ -2,14 +2,17 @@ package org.beatonma.gclocks.io16
 
 import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.ClockFont
-import org.beatonma.gclocks.core.GlyphStateLock
+import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.options.TimeFormat
+import org.beatonma.gclocks.core.util.debug
 
 
 private val ZeroWidth = Io16GlyphPath.Zero.canonical.width
 
 
-class Io16Font : ClockFont<Io16Glyph> {
+class Io16Font(
+    private val debugGetGlyphAt: ((defaultGlyph: Io16Glyph) -> Io16Glyph)? = null,
+) : ClockFont<Io16Glyph> {
     override val lineHeight: Float = Io16Glyph.maxSize.y
     override val separatorWidth: Float = Io16GlyphPath.Separator.canonical.width
     override val maxHours24ZeroPaddedWidth: Float = ZeroWidth * 2f // 00:xx
@@ -23,13 +26,19 @@ class Io16Font : ClockFont<Io16Glyph> {
     override fun getGlyphAt(index: Int, format: TimeFormat, secondsGlyphScale: Float): Io16Glyph {
         val role = format.roles.getOrNull(index) ?: GlyphRole.Default
         val lock = when (role.isSeparator) {
-            true -> GlyphStateLock.AlwaysInactive
-            false -> GlyphStateLock.NotLocked
+            true -> GlyphState.Inactive
+            false -> null
         }
         val scale = when (role) {
             GlyphRole.Second -> secondsGlyphScale
             else -> 1f
         }
+
+        debug {
+            val glyph = Io16Glyph(role, scale, lock)
+            return debugGetGlyphAt?.invoke(glyph) ?: glyph
+        }
+
         return Io16Glyph(role, scale, lock)
     }
 }

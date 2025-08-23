@@ -18,11 +18,14 @@ import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,10 +44,11 @@ import org.beatonma.gclocks.compose.Io16Config
 import org.beatonma.gclocks.compose.Platform
 import org.beatonma.gclocks.compose.platform
 import org.beatonma.gclocks.core.GlyphRole
+import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.util.TimeOfDay
 import org.beatonma.gclocks.core.util.getTime
 import org.beatonma.gclocks.core.util.interpolate
-import org.beatonma.gclocks.core.util.timeOfDay
+import org.beatonma.gclocks.core.util.nextSecond
 import org.beatonma.gclocks.form.FormGlyph
 import org.beatonma.gclocks.form.FormOptions
 import org.beatonma.gclocks.form.FormPaints
@@ -56,7 +60,9 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.math.roundToInt
 
 
-private val ItemModifier = Modifier.border(1.dp, Color.Black.copy(alpha = 0.33f))
+private val ItemModifier =
+    Modifier
+        .border(1.dp, Color.Black.copy(alpha = 0.33f))
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,6 +104,7 @@ fun App() {
             )
         })
     }
+    var state: GlyphState? by remember { mutableStateOf(null) }
 
     MaterialTheme {
         Box(Modifier.background(Color.LightGray)) {
@@ -110,28 +117,23 @@ fun App() {
                         bottom = 256.dp
                     )
 
-                    else -> PaddingValues()
+                    else -> PaddingValues(bottom = 256.dp)
                 }
             ) {
-                item {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     Clock(
-                        FormConfig(
-                            FormOptions(),
-                            FormPaints()
-                        ),
+                        FormOptions(),
                         ItemModifier.fillMaxSize(),
                         getTickTime = timeFunc
                     )
                 }
 
-                item {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     Clock(
-                        Io16Config(
-                            Io16Options(),
-                            Io16Paints()
-                        ),
+                        Io16Options(),
                         ItemModifier.fillMaxSize(),
-                        getTickTime = timeFunc
+                        getTickTime = timeFunc,
+                        forcedState = state,
                     )
                 }
 
@@ -145,7 +147,13 @@ fun App() {
                     .padding(8.dp)
                     .systemBarsPadding()
             ) {
-                TextField(customTimeStr, { customTimeStr = it })
+                // Dev tools
+                StateDropdown(state, { state = it })
+
+                TextField(
+                    customTimeStr,
+                    { customTimeStr = it },
+                    placeholder = { Text("Custom Time") })
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -202,17 +210,20 @@ private fun LazyGridScope.Io16Preview(
         key = { index, key -> "io16_$key" },
     ) { index, key ->
         GlyphPreview(
-            Io16Glyph(GlyphRole.Hour).apply {
-                this.key = key
+            remember {
+                Io16Glyph(GlyphRole.Hour).apply {
+                    this.key = key
+                }
             },
-            Io16Paints(),
-            Modifier.fillMaxSize()
-                .border(1.dp, Color.Black.copy(alpha = 0.33f)),
-            renderer = Io16GlyphRenderer(
-                ComposePath(),
-                Io16Options(),
-                updateOnDraw = true
-            ),
+            remember { Io16Paints() },
+            ItemModifier.fillMaxSize(),
+            renderer = remember {
+                Io16GlyphRenderer(
+                    ComposePath(),
+                    Io16Options(),
+                    updateOnDraw = true,
+                )
+            },
             animPosition = animationPosition,
         )
     }
@@ -224,12 +235,36 @@ private fun parseTime(str: String, millis: Int): TimeOfDay {
         val m = it.groups[2]?.value?.toInt() ?: 0
         val s = it.groups[3]?.value?.toInt() ?: 0
 
-        return timeOfDay(
-            hour = h,
-            minute = m,
-            second = s,
-            millisecond = millis,
-        )
+        if (millis < 1000) {
+            return TimeOfDay(
+                hour = h,
+                minute = m,
+                second = s,
+                millisecond = millis,
+            )
+        }
+        return TimeOfDay(h, m, s).nextSecond()
     }
     return getTime()
+}
+
+
+@Composable
+private fun StateDropdown(
+    selected: GlyphState?,
+    onSelect: (GlyphState?) -> Unit,
+) {
+    var isDropdownExtended by remember { mutableStateOf(false) }
+
+    Box {
+        TextButton(onClick = { isDropdownExtended = !isDropdownExtended }) {
+            Text(selected?.name ?: "State override")
+        }
+        DropdownMenu(isDropdownExtended, { isDropdownExtended = false }) {
+            DropdownMenuItem({ Text("Reset") }, onClick = { onSelect(null) })
+            GlyphState.entries.forEach {
+                DropdownMenuItem({ Text(it.name) }, onClick = { onSelect(it) })
+            }
+        }
+    }
 }

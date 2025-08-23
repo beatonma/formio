@@ -184,6 +184,7 @@ interface Canvas : Path {
     fun drawPoint(
         x: Float,
         y: Float,
+        radius: Float = 2f,
         color: Color = Color.Red,
         style: DrawStyle = Fill,
         alpha: Float = 1f,

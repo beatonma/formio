@@ -27,7 +27,6 @@ class FormGlyph(
             x = 192f,
             y = 144f,
         )
-        override val aspectRatio: Float = maxSize.aspectRatio()
     }
 
     override val companion: GlyphCompanion = FormGlyph

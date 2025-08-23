@@ -14,7 +14,6 @@ class TestGlyph(role: GlyphRole, scale: Float = 1f, val separatorWidth: Float) :
 
     companion object : GlyphCompanion {
         override val maxSize: NativeSize = NativeSize(100f, 100f)
-        override val aspectRatio: Float = maxSize.aspectRatio()
     }
 
     override fun getWidthAtProgress(glyphProgress: Float): Float {

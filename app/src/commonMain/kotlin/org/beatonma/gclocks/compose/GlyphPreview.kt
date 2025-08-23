@@ -32,14 +32,14 @@ import org.beatonma.gclocks.core.util.progress
 private const val AnimationDurationSeconds = 2f
 
 @Composable
-fun <G : Glyph> GlyphPreview(
+fun <G : Glyph, P : Paints> GlyphPreview(
     glyph: G,
-    paints: Paints,
+    paints: P,
     modifier: Modifier = Modifier,
-    renderer: GlyphRenderer<G> = GlyphRenderer.Default(),
+    renderer: GlyphRenderer<G, P> = GlyphRenderer.Default(),
     animPosition: Float? = null,
 ) {
-    val preview = remember { GlyphPreview(glyph, renderer) }
+    val preview = remember { GlyphPreview(glyph, renderer, paints) }
     var animProgress: Float by remember(animPosition) {
         mutableFloatStateOf(
             when {
@@ -52,7 +52,7 @@ fun <G : Glyph> GlyphPreview(
     var flag by remember { mutableStateOf(false) }
 
     Box(modifier) {
-        ConstrainedCanvas(preview) {
+        ConstrainedCanvas(preview, Modifier.fillMaxSize()) {
             canvas.withScope(this) {
                 preview.draw(this, animProgress, paints)
             }
@@ -74,9 +74,10 @@ fun <G : Glyph> GlyphPreview(
 }
 
 
-private class GlyphPreview<G : Glyph>(
+private class GlyphPreview<G : Glyph, P : Paints>(
     val glyph: G,
-    val renderer: GlyphRenderer<G>,
+    val renderer: GlyphRenderer<G, P>,
+    private val paints: P,
 ) : ConstrainedLayout {
     private var measuredSize: ScaledSize = ScaledSize.Init
 

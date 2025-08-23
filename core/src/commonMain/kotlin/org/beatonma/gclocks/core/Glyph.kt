@@ -25,18 +25,10 @@ enum class GlyphState {
             Active, Inactive, Disappeared -> true
             else -> false
         }
-}
-
-enum class GlyphStateLock {
-    NotLocked,
-    AlwaysActive,
-    AlwaysInactive,
-    ;
-
-    val isLocked: Boolean
+    val affectsVisibility: Boolean
         get() = when (this) {
-            NotLocked -> false
-            else -> true
+            Appearing, Disappeared, Disappearing, DisappearingFromActive, DisappearingFromInactive -> true
+            else -> false
         }
 }
 
@@ -56,7 +48,6 @@ private typealias OnStateChange = (newState: GlyphState) -> Unit
 
 interface GlyphCompanion {
     val maxSize: NativeSize
-    val aspectRatio: Float
 }
 
 interface Glyph {
@@ -64,7 +55,7 @@ interface Glyph {
     val maxSize: NativeSize get() = companion.maxSize
     val role: GlyphRole
     val state: GlyphState
-    val lock: GlyphStateLock
+    val lock: GlyphState?
     val scale: Float
     var key: String
     var onStateChange: OnStateChange?
@@ -81,7 +72,7 @@ interface Glyph {
 abstract class BaseGlyph(
     override val role: GlyphRole,
     override val scale: Float = 1f,
-    override val lock: GlyphStateLock = GlyphStateLock.NotLocked,
+    override val lock: GlyphState? = null,
 ) : Glyph {
     final override var state: GlyphState = GlyphState.Appearing
         private set(value) {
@@ -116,9 +107,12 @@ abstract class BaseGlyph(
             state = newState
             return
         }
-        if (lock.isLocked && state.isLockable) {
-            // Transitional states should tick-over into their end states even
-            // if the glyph is locked.
+        if (state == lock && !newState.affectsVisibility) {
+            /*
+            * Lock is overruled when:
+            * - Current state is transitional, so we can tick over to a steady state
+            * - New state affects visibility (appearing/disappearing)
+            */
             return
         }
 
@@ -233,7 +227,7 @@ abstract class BaseGlyph(
 abstract class BaseClockGlyph(
     role: GlyphRole,
     scale: Float = 1f,
-    lock: GlyphStateLock = GlyphStateLock.NotLocked,
+    lock: GlyphState? = null,
 ) : BaseGlyph(role, scale, lock) {
     override fun draw(canvas: Canvas, glyphProgress: Float, paints: Paints) {
         with(canvas) {
@@ -292,8 +286,8 @@ abstract class BaseClockGlyph(
 }
 
 
-interface GlyphRenderer<G : Glyph> {
-    fun draw(glyph: G, canvas: Canvas, glyphProgress: Float, paints: Paints) {
+interface GlyphRenderer<G : Glyph, P : Paints> {
+    fun draw(glyph: G, canvas: Canvas, glyphProgress: Float, paints: P) {
         glyph.draw(canvas, glyphProgress, paints)
 
         debug(false) {
@@ -302,6 +296,6 @@ interface GlyphRenderer<G : Glyph> {
     }
 
     companion object {
-        fun <G : Glyph> Default() = object : GlyphRenderer<G> {}
+        fun <G : Glyph, P : Paints> Default() = object : GlyphRenderer<G, P> {}
     }
 }
