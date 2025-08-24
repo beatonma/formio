@@ -44,7 +44,7 @@ interface GlyphCompanion {
     val maxSize: NativeSize
 }
 
-typealias RenderGlyph<P> = (Canvas, Glyph<P>) -> Unit
+typealias RenderGlyph = () -> Unit
 
 interface Glyph<P : Paints> {
     val companion: GlyphCompanion
@@ -60,7 +60,7 @@ interface Glyph<P : Paints> {
     val canonicalStartGlyph: Char
     val canonicalEndGlyph: Char
 
-    fun draw(canvas: Canvas, glyphProgress: Float, paints: P, renderGlyph: RenderGlyph<P>? = null)
+    fun draw(canvas: Canvas, glyphProgress: Float, paints: P, renderGlyph: RenderGlyph? = null)
     fun getWidthAtProgress(glyphProgress: Float): Float
     fun setState(newState: GlyphState, force: Boolean = false)
 }
@@ -292,6 +292,6 @@ abstract class BaseClockGlyph<P : Paints>(
 }
 
 
-fun interface GlyphRenderer<P : Paints> {
-    fun draw(glyph: Glyph<P>, canvas: Canvas, paints: P)
+fun interface GlyphRenderer<P : Paints, G : Glyph<P>> {
+    fun draw(glyph: G, canvas: Canvas, paints: P)
 }

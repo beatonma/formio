@@ -9,7 +9,7 @@ import org.beatonma.gclocks.core.util.interpolate
 import kotlin.math.cos
 import kotlin.math.sin
 
-typealias RenderCallback = (Canvas) -> Unit
+typealias RenderCallback = () -> Unit
 
 sealed interface PathCommand {
     fun plot(canvas: Canvas)
@@ -305,7 +305,7 @@ class PathDefinition(
     fun plot(canvas: Canvas, render: RenderCallback? = null) {
         commands.fastForEach { command ->
             command.plot(canvas)
-            maybeRender(command, canvas, render)
+            maybeRender(command, render)
         }
     }
 
@@ -325,13 +325,13 @@ class PathDefinition(
     ) {
         commands.zip(other.commands).fastForEach { (a, b) ->
             a.plotInterpolated(canvas, b, progress)
-            maybeRender(a, canvas, render)
+            maybeRender(a, render)
         }
     }
 
-    private fun maybeRender(command: PathCommand, canvas: Canvas, render: RenderCallback?) {
+    private fun maybeRender(command: PathCommand, render: RenderCallback?) {
         when (command) {
-            is ClosePath, is Circle -> render?.invoke(canvas)
+            is ClosePath, is Circle -> render?.invoke()
             else -> {}
         }
     }

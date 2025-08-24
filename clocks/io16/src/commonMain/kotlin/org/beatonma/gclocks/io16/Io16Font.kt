@@ -4,7 +4,10 @@ import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.ClockFont
 import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.options.TimeFormat
+import org.beatonma.gclocks.core.types.NormalFloat
+import org.beatonma.gclocks.core.types.nf
 import org.beatonma.gclocks.core.util.debug
+import kotlin.random.Random
 
 
 private val ZeroWidth = Io16GlyphPath.Zero.canonical.width
@@ -12,6 +15,12 @@ private val ZeroWidth = Io16GlyphPath.Zero.canonical.width
 
 class Io16Font(
     private val debugGetGlyphAt: ((defaultGlyph: Io16Glyph) -> Io16Glyph)? = null,
+
+    /**
+     * If true, segment animation will have a random offset for each glyph.
+     * If false, segment animation will be synchronised across all glyphs.
+     */
+    private val randomiseSegmentOffset: Boolean = true,
 ) : ClockFont<Io16Paints, Io16Glyph> {
     override val lineHeight: Float = Io16Glyph.maxSize.y
     override val separatorWidth: Float = Io16GlyphPath.Separator.canonical.width
@@ -33,12 +42,21 @@ class Io16Font(
             GlyphRole.Second -> secondsGlyphScale
             else -> 1f
         }
+        val animationOffset: () -> NormalFloat = when (randomiseSegmentOffset) {
+            true -> {
+                { Random.nextFloat().nf }
+            }
+
+            false -> {
+                { NormalFloat.Zero }
+            }
+        }
 
         debug {
-            val glyph = Io16Glyph(role, scale, lock)
+            val glyph = Io16Glyph(role, scale, lock, animationOffset())
             return debugGetGlyphAt?.invoke(glyph) ?: glyph
         }
 
-        return Io16Glyph(role, scale, lock)
+        return Io16Glyph(role, scale, lock, animationOffset())
     }
 }

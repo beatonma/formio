@@ -34,7 +34,7 @@ class FormGlyph(
     override fun Canvas.drawZeroOne(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (_, color2, color3) = paints.colors
         val d1 = decelerate5(progress(glyphProgress, 0f, 0.5f))
@@ -91,7 +91,7 @@ class FormGlyph(
     override fun Canvas.drawOneTwo(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (color1, color2, color3) = paints.colors
         val d = 1f - decelerate5(progress(glyphProgress, 0f, 0.5f))
@@ -138,7 +138,7 @@ class FormGlyph(
     override fun Canvas.drawTwoThree(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (color1, color2, color3) = paints.colors
         val d1 = decelerate5(progress(glyphProgress, 0f, 0.5f))
@@ -230,7 +230,7 @@ class FormGlyph(
     override fun Canvas.drawThreeFour(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (color1, color2, color3) = paints.colors
         val d1 = 1f - decelerate5(progress(glyphProgress, 0f, 0.5f))
@@ -328,7 +328,7 @@ class FormGlyph(
     override fun Canvas.drawFourFive(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (color1, color2, color3) = paints.colors
         val d = decelerate5(progress(glyphProgress, 0f, 0.5f))
@@ -407,7 +407,7 @@ class FormGlyph(
     override fun Canvas.drawFiveSix(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (color1, color2, color3) = paints.colors
         val d = decelerate5(progress(glyphProgress, 0f, 0.7f))
@@ -467,7 +467,7 @@ class FormGlyph(
     override fun Canvas.drawSixSeven(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (_, color2, color3) = paints.colors
         val d = decelerate5(glyphProgress)
@@ -498,7 +498,7 @@ class FormGlyph(
     override fun Canvas.drawSevenEight(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (color1, color2, color3) = paints.colors
         val d1 = decelerate5(progress(glyphProgress, 0f, 0.5f))
@@ -603,7 +603,7 @@ class FormGlyph(
     override fun Canvas.drawEightNine(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (color1, color2, color3) = paints.colors
         val d1 = decelerate5(progress(glyphProgress, 0f, 0.5f))
@@ -683,7 +683,7 @@ class FormGlyph(
     override fun Canvas.drawNineZero(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (_, color2, color3) = paints.colors;
         val d = decelerate5(glyphProgress);
@@ -715,7 +715,7 @@ class FormGlyph(
     override fun Canvas.drawOneZero(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         drawZeroOne(1f - glyphProgress, paints, renderGlyph)
     }
@@ -723,7 +723,7 @@ class FormGlyph(
     override fun Canvas.drawTwoZero(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (color1, color2, color3) = paints.colors
         val d1 = decelerate5(progress(glyphProgress, 0f, 0.5f))
@@ -807,7 +807,7 @@ class FormGlyph(
     override fun Canvas.drawThreeZero(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (color1, color2, color3) = paints.colors;
         val d1 = 1f - decelerate5(progress(glyphProgress, 0f, 0.5f));
@@ -867,7 +867,7 @@ class FormGlyph(
     override fun Canvas.drawFiveZero(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (color1, color2, color3) = paints.colors;
         val d = decelerate5(progress(glyphProgress, 0f, 0.5f))
@@ -917,7 +917,7 @@ class FormGlyph(
     override fun Canvas.drawOneEmpty(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (_, color2, color3) = paints.colors;
         val d1 = decelerate5(progress(glyphProgress, 0f, 0.5f));
@@ -941,7 +941,7 @@ class FormGlyph(
     override fun Canvas.drawTwoEmpty(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (color1, color2, color3) = paints.colors;
         val d = decelerate5(progress(glyphProgress, 0f, 0.5f));
@@ -982,7 +982,7 @@ class FormGlyph(
     override fun Canvas.drawEmptyOne(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (_, color2, color3) = paints.colors;
         val d1 = decelerate5(progress(glyphProgress, 0f, 0.5f))
@@ -1007,7 +1007,7 @@ class FormGlyph(
     override fun Canvas.drawSeparator(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         val (_, color2, color3) = paints.colors
         drawCircle(color2, 24f, 24f, 24f);
@@ -1017,7 +1017,7 @@ class FormGlyph(
     override fun Canvas.drawSpace(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         // Page intentionally blank
     }
@@ -1025,7 +1025,7 @@ class FormGlyph(
     override fun Canvas.drawHash(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph<FormPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         // Page intentionally blank
     }

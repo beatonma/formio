@@ -13,7 +13,7 @@ import org.beatonma.gclocks.core.util.debug
  * Draws a [ClockLayout] to a [org.beatonma.gclocks.core.graphics.Canvas].
  */
 interface ClockRenderer<P : Paints, G : BaseClockGlyph<P>> {
-    val renderer: GlyphRenderer<P>?
+    val renderer: GlyphRenderer<P, G>?
     val paints: P
 
     fun draw(canvas: Canvas, layout: ClockLayout<P, G>) {
@@ -76,7 +76,7 @@ interface ClockRenderer<P : Paints, G : BaseClockGlyph<P>> {
         paints: P,
     ) {
         glyph.draw(canvas, glyphAnimationProgress, paints, renderer?.let { renderer ->
-            { canvas, glyph -> renderer.draw(glyph, canvas, paints) }
+            { renderer.draw(glyph, canvas, paints) }
         })
 
         debug(false) {

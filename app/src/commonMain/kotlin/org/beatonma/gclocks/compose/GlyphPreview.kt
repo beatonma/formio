@@ -2,6 +2,7 @@ package org.beatonma.gclocks.compose
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
@@ -13,15 +14,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.beatonma.gclocks.core.Glyph
 import org.beatonma.gclocks.core.GlyphRenderer
 import org.beatonma.gclocks.core.geometry.ConstrainedLayout
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
+import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.geometry.ScaledSize
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Paints
@@ -32,13 +31,11 @@ import org.beatonma.gclocks.core.util.progress
 private const val AnimationDurationSeconds = 2f
 
 @Composable
-fun <G : Glyph, P : Paints> GlyphPreview(
+fun <P : Paints, G : Glyph<P>> GlyphPreview(
     glyph: G,
-fun <P : Paints> GlyphPreview(
-    glyph: Glyph<P>,
     paints: P,
     modifier: Modifier = Modifier,
-    renderer: GlyphRenderer<P>? = null,
+    renderer: GlyphRenderer<P, G>? = null,
     animPosition: Float? = null,
 ) {
     val preview = remember { GlyphPreview(glyph, renderer, paints) }
@@ -76,40 +73,42 @@ fun <P : Paints> GlyphPreview(
 }
 
 
-private class GlyphPreview<P : Paints>(
-    val glyph: Glyph<P>,
-    val renderer: GlyphRenderer<P>?,
+private class GlyphPreview<P : Paints, G : Glyph<P>>(
+    val glyph: G,
+    val renderer: GlyphRenderer<P, G>?,
     private val paints: P,
 ) : ConstrainedLayout {
-    private var measuredSize: ScaledSize = ScaledSize.Init
+    private var measureScale: Float = 100f
+    private var drawScale: Float = 100f
 
     override fun setConstraints(constraints: MeasureConstraints): ScaledSize {
-        val scale = constraints.measureScale(glyph.maxSize)
-        glyph.scale = scale
-        measuredSize = glyph.maxSize * scale
-        return measuredSize
+        measureScale = constraints.measureScale(
+            glyph.maxSize.toRect()
+                .add(0f, 0f, paints.strokeWidth, paints.strokeWidth)
+                .run {
+                    NativeSize(width, height)
+                })
+
+        drawScale = constraints.measureScale(
+            glyph.maxSize.toRect()
+                .add(0f, 0f, paints.strokeWidth * 2, paints.strokeWidth * 2)
+                .run {
+                    NativeSize(width, height)
+                })
+
+
+        return glyph.maxSize * measureScale
     }
 
-    fun draw(canvas: Canvas, glyphProgress: Float, paints: Paints) {
-        canvas.withScale(glyph.scale) {
-            renderer.draw(glyph, canvas, glyphProgress, paints)
-        }
-    }
-}
-
-private fun Modifier.gridlines(): Modifier = composed {
-    val color = Color.Black.copy(alpha = 0.4f)
-    this.drawWithContent {
-        drawContent()
-
-        val (w, h) = size
-        for (i in 0 until 10) {
-            val x = i * w / 10f
-            drawLine(color, Offset(x, 0f), Offset(x, h))
-        }
-        for (i in 0 until 10) {
-            val y = i * h / 10f
-            drawLine(color, Offset(0f, y), Offset(w, y))
+    fun draw(canvas: Canvas, glyphProgress: Float, paints: P) {
+        canvas.withTranslationAndScale(
+            paints.strokeWidth * drawScale / 2f,
+            paints.strokeWidth * drawScale / 2f,
+            this.measureScale
+        ) {
+            glyph.draw(canvas, glyphProgress, paints, renderer?.let { renderer ->
+                { renderer.draw(glyph, canvas, paints) }
+            })
         }
     }
 }

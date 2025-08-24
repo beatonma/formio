@@ -7,6 +7,7 @@ import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.RenderGlyph
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.graphics.Canvas
+import org.beatonma.gclocks.core.types.NormalFloat
 import org.beatonma.gclocks.core.util.interpolate
 
 private val Width0 = Io16GlyphPath.Zero.canonical.width
@@ -29,6 +30,7 @@ class Io16Glyph(
     role: GlyphRole,
     scale: Float = 1f,
     lock: GlyphState? = null,
+    val animationOffset: NormalFloat,
 ) : BaseClockGlyph<Io16Paints>(role, scale, lock) {
     companion object : GlyphCompanion {
         override val maxSize = NativeSize(
@@ -43,17 +45,17 @@ class Io16Glyph(
         canvas: Canvas,
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         canvas.beginPath()
         super.draw(canvas, ease(glyphProgress), paints, renderGlyph)
-        renderGlyph?.invoke(canvas, this)
+        renderGlyph?.invoke()
     }
 
     override fun Canvas.drawZeroOne(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.ZeroOne.plot(this, glyphProgress)
     }
@@ -61,7 +63,7 @@ class Io16Glyph(
     override fun Canvas.drawOneTwo(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.OneTwo.plot(this, glyphProgress)
     }
@@ -69,7 +71,7 @@ class Io16Glyph(
     override fun Canvas.drawTwoThree(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.TwoThree.plot(this, glyphProgress)
     }
@@ -77,7 +79,7 @@ class Io16Glyph(
     override fun Canvas.drawThreeFour(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.ThreeFour.plot(this, glyphProgress)
     }
@@ -85,7 +87,7 @@ class Io16Glyph(
     override fun Canvas.drawFourFive(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.FourFive.plot(this, glyphProgress)
     }
@@ -93,7 +95,7 @@ class Io16Glyph(
     override fun Canvas.drawFiveSix(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.FiveSix.plot(this, glyphProgress)
     }
@@ -101,7 +103,7 @@ class Io16Glyph(
     override fun Canvas.drawSixSeven(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.SixSeven.plot(this, glyphProgress)
     }
@@ -109,7 +111,7 @@ class Io16Glyph(
     override fun Canvas.drawSevenEight(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.SevenEight.plot(this, glyphProgress)
     }
@@ -117,7 +119,7 @@ class Io16Glyph(
     override fun Canvas.drawEightNine(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.EightNine.plot(this, glyphProgress)
     }
@@ -125,7 +127,7 @@ class Io16Glyph(
     override fun Canvas.drawNineZero(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.NineZero.plot(this, glyphProgress)
     }
@@ -133,7 +135,7 @@ class Io16Glyph(
     override fun Canvas.drawOneZero(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.OneZero.plot(this, glyphProgress)
     }
@@ -141,7 +143,7 @@ class Io16Glyph(
     override fun Canvas.drawTwoZero(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.TwoZero.plot(this, glyphProgress)
     }
@@ -149,7 +151,7 @@ class Io16Glyph(
     override fun Canvas.drawThreeZero(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.ThreeZero.plot(this, glyphProgress)
     }
@@ -157,7 +159,7 @@ class Io16Glyph(
     override fun Canvas.drawFiveZero(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.FiveZero.plot(this, glyphProgress)
     }
@@ -165,7 +167,7 @@ class Io16Glyph(
     override fun Canvas.drawOneEmpty(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         // TODO state = Disappearing
         Io16GlyphPath.One.plot(this, glyphProgress)
@@ -174,7 +176,7 @@ class Io16Glyph(
     override fun Canvas.drawTwoEmpty(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         // TODO state = Disappearing
         drawNotImplemented(glyphProgress, paints)
@@ -184,7 +186,7 @@ class Io16Glyph(
     override fun Canvas.drawEmptyOne(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         // TODO state = Appearing
         drawNotImplemented(glyphProgress, paints)
@@ -194,17 +196,15 @@ class Io16Glyph(
     override fun Canvas.drawSeparator(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
-        Io16GlyphPath.Separator.plot(this, glyphProgress, render = renderGlyph?.let { render ->
-            { canvas -> render(canvas, this@Io16Glyph) }
-        })
+        Io16GlyphPath.Separator.plot(this, glyphProgress, render = renderGlyph)
     }
 
     override fun Canvas.drawSpace(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         // Page intentionally blank
     }
@@ -212,7 +212,7 @@ class Io16Glyph(
     override fun Canvas.drawHash(
         glyphProgress: Float,
         paints: Io16Paints,
-        renderGlyph: RenderGlyph<Io16Paints>?,
+        renderGlyph: RenderGlyph?,
     ) {
         // TODO
         drawNotImplemented(glyphProgress, paints)

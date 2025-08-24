@@ -33,7 +33,8 @@ class Io16GlyphRenderer<P : Path>(
     private val segmentPath: P,
     options: Io16Options,
     private val debugUpdateOnDraw: Boolean = false,
-) : GlyphRenderer<Io16Paints> {
+) : GlyphRenderer<Io16Paints, Io16Glyph> {
+    private val options: Io16GlyphOptions = options.glyph
     private var previousNow: Long = getCurrentTimeMillis()
     internal var now: Long = getCurrentTimeMillis()
         set(value) {
@@ -51,7 +52,6 @@ class Io16GlyphRenderer<P : Path>(
         }
 
     private var segmentAnimationMillis: Int = 0
-
     private var segmentOffsetProgress: NormalFloat = NormalFloat.Zero
 
     private val style: Stroke = Stroke(
@@ -59,13 +59,8 @@ class Io16GlyphRenderer<P : Path>(
         cap = options.paints.strokeCap,
         join = options.paints.strokeJoin,
     )
-    private val options: Io16GlyphOptions = options.glyph
 
-    override fun draw(
-        glyph: Glyph<Io16Paints>,
-        canvas: Canvas,
-        paints: Io16Paints,
-    ) {
+    override fun draw(glyph: Io16Glyph, canvas: Canvas, paints: Io16Paints) {
         debug {
             if (debugUpdateOnDraw) {
                 now = getCurrentTimeMillis()
@@ -95,6 +90,7 @@ class Io16GlyphRenderer<P : Path>(
             return
         }
 
+        val segmentOffsetProgress: Float = segmentOffsetProgress + glyph.animationOffset
         // Otherwise, split the path and render each segment individually
         canvas.measurePath { pm ->
             debug(false) {
@@ -111,7 +107,7 @@ class Io16GlyphRenderer<P : Path>(
                 drawSegment(
                     pm,
                     canvas,
-                    segmentOffsetProgress.value,
+                    segmentOffsetProgress,
                     inactiveSegmentSize * remainingFraction,
                     paints.inactive,
                     style

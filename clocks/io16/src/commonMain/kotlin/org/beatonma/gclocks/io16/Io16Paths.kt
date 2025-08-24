@@ -125,6 +125,7 @@ internal enum class Io16GlyphPath {
             circle(8f, 48f, 8f, Path.Direction.AntiClockwise)
             beginPath()
             circle(8f, 96f, 8f, Path.Direction.AntiClockwise)
+            beginPath()
         }
     }
     ;
@@ -133,7 +134,7 @@ internal enum class Io16GlyphPath {
     open val start: PathDefinition? = null
     open val end: PathDefinition? = null
 
-    fun plot(canvas: Canvas, glyphProgress: Float, render: ((Canvas) -> Unit)? = null) {
+    fun plot(canvas: Canvas, glyphProgress: Float, render: (() -> Unit)? = null) {
         if (start == null || end == null || glyphProgress == 0f) {
             canonical.plot(canvas, render)
         } else {
