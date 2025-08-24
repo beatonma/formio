@@ -11,7 +11,7 @@ import org.beatonma.gclocks.core.util.fastForEach
 import org.beatonma.gclocks.core.util.getTime
 import kotlin.math.max
 
-interface ClockAnimator<P : Paints, G : BaseClockGlyph<P>> : ConstrainedLayout {
+interface ClockAnimator<P : Paints, G : ClockGlyph<P>> : ConstrainedLayout {
     val layout: ClockLayout<P, G>
     val renderers: List<ClockRenderer<P, G>>
 

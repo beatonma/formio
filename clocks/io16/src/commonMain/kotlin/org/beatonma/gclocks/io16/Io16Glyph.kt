@@ -1,6 +1,7 @@
 package org.beatonma.gclocks.io16
 
 import org.beatonma.gclocks.core.BaseClockGlyph
+import org.beatonma.gclocks.core.ClockGlyph
 import org.beatonma.gclocks.core.GlyphCompanion
 import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.GlyphState
@@ -220,33 +221,31 @@ class Io16Glyph(
 
     override fun getWidthAtProgress(glyphProgress: Float): Float {
         val p = ease(glyphProgress)
-        return when (key) {
-            "0", "0_1" -> interpolate(p, Width0, Width1)
-            "1", "1_2" -> interpolate(p, Width1, Width2)
-            "2", "2_3" -> interpolate(p, Width2, Width3)
-            "3", "3_4" -> interpolate(p, Width3, Width4)
-            "4", "4_5" -> interpolate(p, Width4, Width5)
-            "5", "5_6" -> interpolate(p, Width5, Width6)
-            "6", "6_7" -> interpolate(p, Width6, Width7)
-            "7", "7_8" -> interpolate(p, Width7, Width8)
-            "8", "8_9" -> interpolate(p, Width8, Width9)
-            "9", "9_0" -> interpolate(p, Width9, Width0)
-            " _1" -> interpolate(p, 0f, Width1)
-            "1_ " -> interpolate(p, Width1, 0f)
-            "2_ " -> interpolate(p, Width2, 0f)
-            "2_1" -> interpolate(p, Width2, Width1)
-            "2_0" -> interpolate(p, Width2, Width0)
-            "3_0" -> interpolate(p, Width3, Width0)
-            "5_0" -> interpolate(p, Width5, Width0)
-            ":" -> when (role) {
+
+        return when (clockKey) {
+            ClockGlyph.Key.Zero, ClockGlyph.Key.ZeroOne -> interpolate(p, Width0, Width1)
+            ClockGlyph.Key.One, ClockGlyph.Key.OneTwo -> interpolate(p, Width1, Width2)
+            ClockGlyph.Key.Two, ClockGlyph.Key.TwoThree -> interpolate(p, Width2, Width3)
+            ClockGlyph.Key.Three, ClockGlyph.Key.ThreeFour -> interpolate(p, Width3, Width4)
+            ClockGlyph.Key.Four, ClockGlyph.Key.FourFive -> interpolate(p, Width4, Width5)
+            ClockGlyph.Key.Five, ClockGlyph.Key.FiveSix -> interpolate(p, Width5, Width6)
+            ClockGlyph.Key.Six, ClockGlyph.Key.SixSeven -> interpolate(p, Width6, Width7)
+            ClockGlyph.Key.Seven, ClockGlyph.Key.SevenEight -> interpolate(p, Width7, Width8)
+            ClockGlyph.Key.Eight, ClockGlyph.Key.EightNine -> interpolate(p, Width8, Width9)
+            ClockGlyph.Key.Nine, ClockGlyph.Key.NineZero -> interpolate(p, Width9, Width0)
+            ClockGlyph.Key.EmptyOne -> interpolate(p, 0f, Width1)
+            ClockGlyph.Key.OneEmpty -> interpolate(p, Width1, 0f)
+            ClockGlyph.Key.TwoEmpty -> interpolate(p, Width2, 0f)
+            ClockGlyph.Key.OneZero -> interpolate(p, Width1, Width0)
+            ClockGlyph.Key.TwoZero -> interpolate(p, Width2, Width0)
+            ClockGlyph.Key.ThreeZero -> interpolate(p, Width3, Width0)
+            ClockGlyph.Key.FiveZero -> interpolate(p, Width5, Width0)
+            ClockGlyph.Key.Separator -> when (role) {
                 GlyphRole.SeparatorMinutesSeconds -> 0f
                 else -> WidthSeparator
             }
 
-            "#" -> 49f
-            " ", "_" -> 0f
-
-            else -> throw IllegalArgumentException("getWidthAtProgress unhandled key $key")
+            ClockGlyph.Key.HashTag, ClockGlyph.Key.Empty -> 0f
         }
     }
 }

@@ -12,7 +12,7 @@ import org.beatonma.gclocks.core.util.debug
 /**
  * Draws a [ClockLayout] to a [org.beatonma.gclocks.core.graphics.Canvas].
  */
-interface ClockRenderer<P : Paints, G : BaseClockGlyph<P>> {
+interface ClockRenderer<P : Paints, G : ClockGlyph<P>> {
     val renderer: GlyphRenderer<P, G>?
     val paints: P
 

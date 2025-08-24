@@ -1,6 +1,7 @@
 package org.beatonma.gclocks.core.fixtures
 
 import org.beatonma.gclocks.core.BaseClockGlyph
+import org.beatonma.gclocks.core.ClockGlyph
 import org.beatonma.gclocks.core.GlyphCompanion
 import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.RenderGlyph
@@ -17,8 +18,8 @@ class TestGlyph(role: GlyphRole, scale: Float = 1f, val separatorWidth: Float) :
     }
 
     override fun getWidthAtProgress(glyphProgress: Float): Float {
-        return when (key) {
-            ":" -> separatorWidth
+        return when (clockKey) {
+            ClockGlyph.Key.Separator -> separatorWidth
             else -> Companion.maxSize.width
         }
     }
@@ -26,140 +27,140 @@ class TestGlyph(role: GlyphRole, scale: Float = 1f, val separatorWidth: Float) :
     override fun Canvas.drawZeroOne(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawOneTwo(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawTwoThree(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawThreeFour(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawFourFive(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawFiveSix(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawSixSeven(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawSevenEight(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawEightNine(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawNineZero(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawOneZero(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawTwoZero(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawThreeZero(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawFiveZero(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawOneEmpty(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawTwoEmpty(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawEmptyOne(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawSeparator(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawSpace(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 
     override fun Canvas.drawHash(
         glyphProgress: Float,
         paints: TestPaints,
-        renderGlyph: RenderGlyph<TestPaints>?,
+        renderGlyph: RenderGlyph?,
     ) {
     }
 }

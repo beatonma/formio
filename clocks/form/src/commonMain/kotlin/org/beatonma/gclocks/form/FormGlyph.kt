@@ -1,6 +1,7 @@
 package org.beatonma.gclocks.form
 
 import org.beatonma.gclocks.core.BaseClockGlyph
+import org.beatonma.gclocks.core.ClockGlyph
 import org.beatonma.gclocks.core.GlyphCompanion
 import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.RenderGlyph
@@ -1031,8 +1032,8 @@ class FormGlyph(
     }
 
     override fun getWidthAtProgress(glyphProgress: Float): Float {
-        return when (key) {
-            "0", "0_1" -> interpolate(
+        return when (clockKey) {
+            ClockGlyph.Key.Zero, ClockGlyph.Key.ZeroOne -> interpolate(
                 decelerate5(progress(glyphProgress, 0.5f, 1f)),
                 interpolate(
                     decelerate5(progress(glyphProgress, 0f, 0.4f)), 144f, 192f
@@ -1040,13 +1041,57 @@ class FormGlyph(
                 100f,
             )
 
-            "1", "1_2" -> interpolate(decelerate5(progress(glyphProgress, 0f, 0.5f)), 100f, 144f)
-            "2", "2_3" -> interpolate(decelerate5(progress(glyphProgress, 0f, 0.5f)), 144f, 128f)
-            "3", "3_4" -> interpolate(decelerate5(progress(glyphProgress, 0f, 0.5f)), 128f, 144f)
-            "4", "4_5" -> interpolate(decelerate5(progress(glyphProgress, 0f, 0.5f)), 144f, 128f)
-            "5", "5_6" -> interpolate(decelerate5(progress(glyphProgress, 0.1f, 1f)), 128f, 144f)
+            ClockGlyph.Key.One, ClockGlyph.Key.OneTwo -> interpolate(
+                decelerate5(
+                    progress(
+                        glyphProgress,
+                        0f,
+                        0.5f
+                    )
+                ), 100f, 144f
+            )
 
-            "6", "6_7" -> {
+            ClockGlyph.Key.Two, ClockGlyph.Key.TwoThree -> interpolate(
+                decelerate5(
+                    progress(
+                        glyphProgress,
+                        0f,
+                        0.5f
+                    )
+                ), 144f, 128f
+            )
+
+            ClockGlyph.Key.Three, ClockGlyph.Key.ThreeFour -> interpolate(
+                decelerate5(
+                    progress(
+                        glyphProgress,
+                        0f,
+                        0.5f
+                    )
+                ), 128f, 144f
+            )
+
+            ClockGlyph.Key.Four, ClockGlyph.Key.FourFive -> interpolate(
+                decelerate5(
+                    progress(
+                        glyphProgress,
+                        0f,
+                        0.5f
+                    )
+                ), 144f, 128f
+            )
+
+            ClockGlyph.Key.Five, ClockGlyph.Key.FiveSix -> interpolate(
+                decelerate5(
+                    progress(
+                        glyphProgress,
+                        0.1f,
+                        1f
+                    )
+                ), 128f, 144f
+            )
+
+            ClockGlyph.Key.Six, ClockGlyph.Key.SixSeven -> {
                 val turningPoint = 0.8f
                 val maxChange = 31f
                 val d = decelerate5(glyphProgress)
@@ -1057,40 +1102,57 @@ class FormGlyph(
                 }
             }
 
-            "7", "7_8" -> 144f
-            "8", "8_9" -> 144f
-            "9", "9_0" -> 144f
+            ClockGlyph.Key.Seven, ClockGlyph.Key.SevenEight -> 144f
+            ClockGlyph.Key.Eight, ClockGlyph.Key.EightNine -> 144f
+            ClockGlyph.Key.Nine, ClockGlyph.Key.NineZero -> 144f
 
-            " _1" -> interpolate(
+            ClockGlyph.Key.EmptyOne -> interpolate(
                 decelerate5(progress(glyphProgress, 0f, 0.5f)),
                 0f,
                 100f,
             )
 
-            "1_ " -> interpolate(
+            ClockGlyph.Key.OneEmpty -> interpolate(
                 decelerate5(progress(glyphProgress, 0.5f, 1f)),
                 100f,
                 0f,
             )
 
-            "2_ " -> interpolate(
+            ClockGlyph.Key.TwoEmpty -> interpolate(
                 decelerate5(progress(glyphProgress, 0f, 0.5f)),
                 144f,
                 interpolate(decelerate5(progress(glyphProgress, 0.5f, 1f)), 72f, 0f),
             )
 
-            "2_1" -> interpolate(decelerate5(progress(glyphProgress, 0f, 0.5f)), 144f, 100f)
-            "3_0" -> interpolate(decelerate5(progress(glyphProgress, 0f, 0.5f)), 128f, 144f)
-            "5_0" -> interpolate(decelerate5(progress(glyphProgress, 0f, 0.5f)), 128f, 144f)
-            "2_0" -> 144f
-            ":" -> when (role) {
+//            ClockGlyph.Key.TwoOne "2_1" -> interpolate(decelerate5(progress(glyphProgress, 0f, 0.5f)), 144f, 100f)
+            ClockGlyph.Key.OneZero -> 1f - interpolate(
+                decelerate5(progress(glyphProgress, 0.5f, 1f)),
+                interpolate(
+                    decelerate5(progress(glyphProgress, 0f, 0.4f)), 144f, 192f
+                ),
+                100f,
+            )
+
+            ClockGlyph.Key.TwoZero -> 144f
+            ClockGlyph.Key.ThreeZero -> interpolate(
+                decelerate5(progress(glyphProgress, 0f, 0.5f)),
+                128f,
+                144f
+            )
+
+            ClockGlyph.Key.FiveZero -> interpolate(
+                decelerate5(progress(glyphProgress, 0f, 0.5f)),
+                128f,
+                144f
+            )
+
+            ClockGlyph.Key.Separator -> when (role) {
                 GlyphRole.SeparatorHoursMinutes -> 48f
                 else -> 0f
             }
 
-            "#", " ", "_" -> 0f
 
-            else -> throw IllegalArgumentException("getWidthAtProgress unhandled key $key")
+            ClockGlyph.Key.HashTag, ClockGlyph.Key.Empty -> 0f
         }
     }
 }

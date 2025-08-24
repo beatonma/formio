@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -38,11 +39,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.beatonma.gclocks.compose.Clock
 import org.beatonma.gclocks.compose.ComposePath
-import org.beatonma.gclocks.compose.FormConfig
 import org.beatonma.gclocks.compose.GlyphPreview
-import org.beatonma.gclocks.compose.Io16Config
 import org.beatonma.gclocks.compose.Platform
 import org.beatonma.gclocks.compose.platform
+import org.beatonma.gclocks.core.ClockGlyph
 import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.types.NormalFloat
@@ -70,31 +70,7 @@ private val ItemModifier =
 @Composable
 @Preview
 fun App() {
-    val keys = remember {
-        listOf(
-            "0_1",
-            "1_2",
-            "2_3",
-            "3_4",
-            "4_5",
-            "5_6",
-            "6_7",
-            "7_8",
-            "8_9",
-            "9_0",
-            "1_0",
-            "2_0",
-            "3_0",
-            "5_0",
-            "1_ ",
-            "2_ ",
-            " _1",
-            ":",
-            " ",
-            "_",
-            "#",
-        )
-    }
+    val keys = remember { ClockGlyph.Key.entries.map { it.key } }
     var animationPosition by remember { mutableStateOf<Float?>(null) }
     var customTimeStr by remember { mutableStateOf("") }
     val timeFunc: () -> TimeOfDay by remember {

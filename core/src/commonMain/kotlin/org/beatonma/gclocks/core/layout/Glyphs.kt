@@ -1,6 +1,5 @@
 package org.beatonma.gclocks.core.layout
 
-import org.beatonma.gclocks.core.BaseClockGlyph
 import org.beatonma.gclocks.core.ClockFont
 import org.beatonma.gclocks.core.Glyph
 import org.beatonma.gclocks.core.GlyphState
@@ -11,7 +10,7 @@ import org.beatonma.gclocks.core.util.nextSecond
 import org.beatonma.gclocks.core.util.progress
 
 
-internal class Glyphs<P : Paints, G : BaseClockGlyph<P>>(
+internal class Glyphs<P : Paints, G : Glyph<P>>(
     font: ClockFont<P, G>,
     options: Options<P>,
 ) {
