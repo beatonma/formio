@@ -11,8 +11,8 @@ import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.graphics.PathMeasureScope
 import org.beatonma.gclocks.core.graphics.Stroke
-import org.beatonma.gclocks.core.types.NormalFloat
-import org.beatonma.gclocks.core.types.nf
+import org.beatonma.gclocks.core.types.ProgressFloat
+import org.beatonma.gclocks.core.types.pf
 import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 import org.beatonma.gclocks.core.util.progress
@@ -47,12 +47,12 @@ class Io16GlyphRenderer<P : Path>(
                 segmentAnimationMillis.toFloat(),
                 0f,
                 options.colorCycleDurationMillis.toFloat()
-            ).nf
+            ).pf
             field = value
         }
 
     private var segmentAnimationMillis: Int = 0
-    private var segmentOffsetProgress: NormalFloat = NormalFloat.Zero
+    private var segmentOffsetProgress: ProgressFloat = ProgressFloat.Zero
 
     private val style: Stroke = Stroke(
         options.paints.strokeWidth,
@@ -75,7 +75,7 @@ class Io16GlyphRenderer<P : Path>(
             (now - glyph.stateChangedAt).toFloat(),
             0f,
             options.stateChangeDurationMillis.toFloat()
-        ).nf
+        ).pf
         val disappearedSegmentSize = getDisappearedSegmentLength(glyph, transitionProgress)
         if (disappearedSegmentSize.isOne) {
             // Nothing to render
@@ -100,7 +100,7 @@ class Io16GlyphRenderer<P : Path>(
                 }
             }
 
-            var remainingFraction: NormalFloat = disappearedSegmentSize.reversed
+            var remainingFraction: ProgressFloat = disappearedSegmentSize.reversed
 
             if (inactiveSegmentSize.isNotZero) {
                 // Draw 'inactive' section first, taking as much of the length as needed.
@@ -113,10 +113,10 @@ class Io16GlyphRenderer<P : Path>(
                     style
                 )
                 remainingFraction =
-                    (remainingFraction - (remainingFraction * inactiveSegmentSize)).nf
+                    (remainingFraction - (remainingFraction * inactiveSegmentSize)).pf
             }
 
-            val segmentSize: NormalFloat = remainingFraction / paints.active.size
+            val segmentSize: ProgressFloat = remainingFraction / paints.active.size
 
             // Split the remaining length between the 'active' colors.
             paints.active.forEachIndexed { index, color ->
@@ -135,21 +135,21 @@ class Io16GlyphRenderer<P : Path>(
     /** Portion of the total path length consumed by 'inactive' color. */
     private fun getInactiveSegmentLength(
         glyph: Glyph<*>,
-        transitionProgress: NormalFloat,
-    ): NormalFloat {
-        if (glyph.lock == GlyphState.Inactive) return NormalFloat.One
+        transitionProgress: ProgressFloat,
+    ): ProgressFloat {
+        if (glyph.lock == GlyphState.Inactive) return ProgressFloat.One
 
         return when (glyph.state) {
             GlyphState.Inactive,
             GlyphState.DisappearingFromInactive,
-                -> NormalFloat.One
+                -> ProgressFloat.One
 
             GlyphState.Active,
             GlyphState.Appearing,
             GlyphState.DisappearingFromActive,
             GlyphState.Disappearing,
             GlyphState.Disappeared,
-                -> NormalFloat.Zero
+                -> ProgressFloat.Zero
 
             GlyphState.Activating -> transitionProgress.reversed
             GlyphState.Deactivating -> transitionProgress
@@ -159,15 +159,15 @@ class Io16GlyphRenderer<P : Path>(
     /** Portion of the total path length that is not visible. */
     private fun getDisappearedSegmentLength(
         glyph: Glyph<*>,
-        transitionProgress: NormalFloat,
-    ): NormalFloat = when (glyph.state) {
-        GlyphState.Disappeared -> NormalFloat.One
+        transitionProgress: ProgressFloat,
+    ): ProgressFloat = when (glyph.state) {
+        GlyphState.Disappeared -> ProgressFloat.One
 
         GlyphState.Inactive,
         GlyphState.Active,
         GlyphState.Activating,
         GlyphState.Deactivating,
-            -> NormalFloat.Zero
+            -> ProgressFloat.Zero
 
         GlyphState.Appearing -> transitionProgress.reversed
 
@@ -181,7 +181,7 @@ class Io16GlyphRenderer<P : Path>(
         pathMeasure: PathMeasureScope,
         canvas: Canvas,
         start: Float,
-        segmentLength: NormalFloat,
+        segmentLength: ProgressFloat,
         color: Color,
         style: DrawStyle,
     ) {

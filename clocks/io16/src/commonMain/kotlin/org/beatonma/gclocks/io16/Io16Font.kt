@@ -4,8 +4,8 @@ import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.ClockFont
 import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.options.TimeFormat
-import org.beatonma.gclocks.core.types.NormalFloat
-import org.beatonma.gclocks.core.types.nf
+import org.beatonma.gclocks.core.types.ProgressFloat
+import org.beatonma.gclocks.core.types.pf
 import org.beatonma.gclocks.core.util.debug
 import kotlin.random.Random
 
@@ -42,13 +42,13 @@ class Io16Font(
             GlyphRole.Second -> secondsGlyphScale
             else -> 1f
         }
-        val animationOffset: () -> NormalFloat = when (randomiseSegmentOffset) {
+        val animationOffset: () -> ProgressFloat = when (randomiseSegmentOffset) {
             true -> {
-                { Random.nextFloat().nf }
+                { Random.nextFloat().pf }
             }
 
             false -> {
-                { NormalFloat.Zero }
+                { ProgressFloat.Zero }
             }
         }
 

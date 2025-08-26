@@ -8,7 +8,8 @@ import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.RenderGlyph
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.graphics.Canvas
-import org.beatonma.gclocks.core.types.NormalFloat
+import org.beatonma.gclocks.core.types.ProgressFloat
+import org.beatonma.gclocks.core.util.decelerate2
 import org.beatonma.gclocks.core.util.interpolate
 
 private val Width0 = Io16GlyphPath.Zero.canonical.width
@@ -24,14 +25,14 @@ private val Width9 = Io16GlyphPath.Nine.canonical.width
 private val WidthSeparator = Io16GlyphPath.Separator.canonical.width
 
 
-private fun ease(t: Float) = accelerateDecelerate(overshoot(anticipate(t)))
+private fun ease(t: Float) = decelerate2(overshoot(anticipate(t)))
 
 
 class Io16Glyph(
     role: GlyphRole,
     scale: Float = 1f,
     lock: GlyphState? = null,
-    val animationOffset: NormalFloat,
+    val animationOffset: ProgressFloat,
 ) : BaseClockGlyph<Io16Paints>(role, scale, lock) {
     companion object : GlyphCompanion {
         override val maxSize = NativeSize(

@@ -45,7 +45,7 @@ import org.beatonma.gclocks.compose.platform
 import org.beatonma.gclocks.core.ClockGlyph
 import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.GlyphState
-import org.beatonma.gclocks.core.types.NormalFloat
+import org.beatonma.gclocks.core.types.ProgressFloat
 import org.beatonma.gclocks.core.util.TimeOfDay
 import org.beatonma.gclocks.core.util.getTime
 import org.beatonma.gclocks.core.util.interpolate
@@ -188,7 +188,7 @@ private fun LazyGridScope.Io16Preview(
     ) { index, key ->
         GlyphPreview(
             remember {
-                Io16Glyph(GlyphRole.Hour, animationOffset = NormalFloat.Zero).apply {
+                Io16Glyph(GlyphRole.Hour, animationOffset = ProgressFloat.Zero).apply {
                     this.key = key
                 }
             },
