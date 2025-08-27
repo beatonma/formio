@@ -620,10 +620,10 @@ class FormGlyph(
                 // left + middle bottom
                 drawPath(color1) {
                     moveTo(48f, 48f)
-                    lineTo(96f, 48f);
-                    lineTo(96f, 144f);
-                    lineTo(48f, 144f);
-                    boundedArc(0f, 48f, 96f, 144f, Angle.Ninety);
+                    lineTo(96f, 48f)
+                    lineTo(96f, 144f)
+                    lineTo(48f, 144f)
+                    boundedArc(0f, 48f, 96f, 144f, Angle.Ninety)
                 }
 
                 // right bottom
@@ -652,17 +652,17 @@ class FormGlyph(
             // 9
             withRotation(interpolate(d2, -90f, -180f).degrees, 72f, 72f) {
                 drawPath(color3) {
-                    moveTo(0f, 72f);
+                    moveTo(0f, 72f)
                     lineTo(
                         interpolate(d2, 0f, 36f),
                         interpolate(d2, 72f, 0f),
-                    );
+                    )
                     lineTo(
                         interpolate(d2, 72f, 108f),
                         interpolate(d2, 72f, 0f),
-                    );
-                    lineTo(72f, 72f);
-                    lineTo(0f, 72f);
+                    )
+                    lineTo(72f, 72f)
+                    lineTo(0f, 72f)
                 }
 
                 // vanishing arc
@@ -673,10 +673,10 @@ class FormGlyph(
                     144f,
                     144f,
                     interpolate(d2, 180f, 0f).degrees,
-                );
+                )
 
                 // primary arc
-                drawBoundedArc(color2, 0f, 0f, 144f, 144f, Angle.Zero);
+                drawBoundedArc(color2, 0f, 0f, 144f, 144f, Angle.Zero)
             }
         }
     }
@@ -686,18 +686,18 @@ class FormGlyph(
         paints: FormPaints,
         renderGlyph: RenderGlyph?,
     ) {
-        val (_, color2, color3) = paints.colors;
-        val d = decelerate5(glyphProgress);
+        val (_, color2, color3) = paints.colors
+        val d = decelerate5(glyphProgress)
 
         // 9
         withRotation(interpolate(d, -180f, -225f).degrees, 72f, 72f) {
             // parallelogram
             drawPath(color3) {
-                moveTo(0f, 72f);
-                lineTo(interpolate(d, 36f, 0f), interpolate(d, 0f, 72f));
-                lineTo(interpolate(d, 108f, 72f), interpolate(d, 0f, 72f));
-                lineTo(72f, 72f);
-                lineTo(0f, 72f);
+                moveTo(0f, 72f)
+                lineTo(interpolate(d, 36f, 0f), interpolate(d, 0f, 72f))
+                lineTo(interpolate(d, 108f, 72f), interpolate(d, 0f, 72f))
+                lineTo(72f, 72f)
+                lineTo(0f, 72f)
             }
 
             drawBoundedArc(
@@ -708,8 +708,8 @@ class FormGlyph(
                 144f,
                 interpolate(d, 180f, 0f).degrees,
                 (-180f).degrees
-            );
-            drawBoundedArc(color2, 0f, 0f, 144f, 144f, Angle.Zero);
+            )
+            drawBoundedArc(color2, 0f, 0f, 144f, 144f, Angle.Zero)
         }
     }
 
@@ -810,9 +810,9 @@ class FormGlyph(
         paints: FormPaints,
         renderGlyph: RenderGlyph?,
     ) {
-        val (color1, color2, color3) = paints.colors;
-        val d1 = 1f - decelerate5(progress(glyphProgress, 0f, 0.5f));
-        val d2 = decelerate5(progress(glyphProgress, 0.5f, 1f));
+        val (color1, color2, color3) = paints.colors
+        val d1 = 1f - decelerate5(progress(glyphProgress, 0f, 0.5f))
+        val d2 = decelerate5(progress(glyphProgress, 0.5f, 1f))
 
         withRotation(interpolate(d2, 0f, 45f).degrees, 72f, 72f) {
             withTranslation(interpolate(d1, interpolate(d2, 16f, -8f), 0f), 0f) {
@@ -820,12 +820,12 @@ class FormGlyph(
                     // top part of 3 with triangle
                     withTranslation(0f, interpolate(d1, 48f, 0f)) {
                         drawPath(color3) {
-                            val x = interpolate(d1, 48f, 0f);
-                            moveTo(128f - x, 0f);
-                            lineTo(80f - x, 48f);
-                            lineTo(80f - x, 0f);
+                            val x = interpolate(d1, 48f, 0f)
+                            moveTo(128f - x, 0f)
+                            lineTo(80f - x, 48f)
+                            lineTo(80f - x, 0f)
                         }
-                        drawRect(color3, interpolate(d1, 32f, 0f), 0f, 80f, 48f);
+                        drawRect(color3, interpolate(d1, 32f, 0f), 0f, 80f, 48f)
                     }
                 }
 
@@ -836,10 +836,10 @@ class FormGlyph(
                     96f,
                     80f,
                     144f,
-                );
+                )
 
                 // middle rectangle
-                drawRect(color2, interpolate(d2, 32f, 80f), 48f, 80f, 96f);
+                drawRect(color2, interpolate(d2, 32f, 80f), 48f, 80f, 96f)
 
                 // 0
                 // half-circles
@@ -854,11 +854,11 @@ class FormGlyph(
                                     144f,
                                     144f,
                                     Angle.Ninety,
-                                );
+                                )
                             }
                         }
 
-                        drawBoundedArc(color3, 0f, 0f, 144f, 144f);
+                        drawBoundedArc(color3, 0f, 0f, 144f, 144f)
                     }
                 }
             }
@@ -870,7 +870,7 @@ class FormGlyph(
         paints: FormPaints,
         renderGlyph: RenderGlyph?,
     ) {
-        val (color1, color2, color3) = paints.colors;
+        val (color1, color2, color3) = paints.colors
         val d = decelerate5(progress(glyphProgress, 0f, 0.5f))
         val d1 = decelerate5(progress(glyphProgress, 0.5f, 1f))
 
@@ -920,9 +920,9 @@ class FormGlyph(
         paints: FormPaints,
         renderGlyph: RenderGlyph?,
     ) {
-        val (_, color2, color3) = paints.colors;
-        val d1 = decelerate5(progress(glyphProgress, 0f, 0.5f));
-        val d2 = decelerate5(progress(glyphProgress, 0.5f, 1f));
+        val (_, color2, color3) = paints.colors
+        val d1 = decelerate5(progress(glyphProgress, 0f, 0.5f))
+        val d2 = decelerate5(progress(glyphProgress, 0.5f, 1f))
 
         withScale(interpolate(d2, 1f, 0f), 0f, 144f) {
             drawRect(
@@ -931,10 +931,10 @@ class FormGlyph(
                 interpolate(d1, 0f, 72f),
                 100f,
                 interpolate(d1, 48f, 144f),
-            );
+            )
 
             if (d1 < 1f) {
-                drawRect(color3, 28f, interpolate(d1, 48f, 144f), 100f, 144f);
+                drawRect(color3, 28f, interpolate(d1, 48f, 144f), 100f, 144f)
             }
         }
     }
@@ -944,25 +944,25 @@ class FormGlyph(
         paints: FormPaints,
         renderGlyph: RenderGlyph?,
     ) {
-        val (color1, color2, color3) = paints.colors;
-        val d = decelerate5(progress(glyphProgress, 0f, 0.5f));
-        val d1 = decelerate5(progress(glyphProgress, 0.5f, 1.0f));
+        val (color1, color2, color3) = paints.colors
+        val d = decelerate5(progress(glyphProgress, 0f, 0.5f))
+        val d1 = decelerate5(progress(glyphProgress, 0.5f, 1.0f))
 
         // 2f
         withTranslation(interpolate(d, 0f, -72f), 0f) {
             if (d < 1f) {
                 withTranslation(interpolate(d, 0f, 72f), 0f) {
                     drawPath(color3) {
-                        beginPath();
-                        moveTo(0f, 144f);
-                        lineTo(72f, 72f);
-                        lineTo(72f, 144f);
-                        lineTo(0f, 144f);
+                        beginPath()
+                        moveTo(0f, 144f)
+                        lineTo(72f, 72f)
+                        lineTo(72f, 144f)
+                        lineTo(0f, 144f)
                     }
                 }
 
                 withTranslation(108f, interpolate(d, 0f, 72f)) {
-                    drawBoundedArc(color1, -36f, 0f, 36f, 72f);
+                    drawBoundedArc(color1, -36f, 0f, 36f, 72f)
                 }
 
                 drawRect(
@@ -971,11 +971,11 @@ class FormGlyph(
                     interpolate(d, 0f, 72f),
                     interpolate(d, 108f, 144f),
                     interpolate(d, 72f, 144f),
-                );
+                )
             }
 
             withScale(interpolate(d1, 1f, 0f), 72f, 144f) {
-                drawRect(color2, 72f, 72f, 144f, 144f);
+                drawRect(color2, 72f, 72f, 144f, 144f)
             }
         }
     }
@@ -985,7 +985,7 @@ class FormGlyph(
         paints: FormPaints,
         renderGlyph: RenderGlyph?,
     ) {
-        val (_, color2, color3) = paints.colors;
+        val (_, color2, color3) = paints.colors
         val d1 = decelerate5(progress(glyphProgress, 0f, 0.5f))
         val d2 = decelerate5(progress(glyphProgress, 0.5f, 1f))
 
@@ -1011,8 +1011,8 @@ class FormGlyph(
         renderGlyph: RenderGlyph?,
     ) {
         val (_, color2, color3) = paints.colors
-        drawCircle(color2, 24f, 24f, 24f);
-        drawCircle(color3, 24f, 120f, 24f);
+        drawCircle(color2, 24f, 24f, 24f)
+        drawCircle(color3, 24f, 120f, 24f)
     }
 
     override fun Canvas.drawSpace(

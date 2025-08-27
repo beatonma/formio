@@ -54,6 +54,8 @@ interface Path {
         direction: Direction,
     )
 
+    fun rect(left: Float, top: Float, right: Float, bottom: Float, direction: Direction)
+
     fun beginPath()
     fun closePath()
 
@@ -78,5 +80,5 @@ interface PathMeasureScope {
 }
 
 interface PathMeasure : PathMeasureScope {
-    fun setPath(path: Path, forceClosed: Boolean = true)
+    fun setPath(path: Path, forceClosed: Boolean = false)
 }

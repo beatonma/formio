@@ -2,6 +2,7 @@ package org.beatonma.gclocks.core.graphics
 
 import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.geometry.FloatPoint
+import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.geometry.Position
 import org.beatonma.gclocks.core.geometry.degrees
 import org.beatonma.gclocks.core.util.fastForEach
@@ -25,9 +26,7 @@ object BeginPath : PathCommand {
         canvas.beginPath()
     }
 
-    override fun toString(): String {
-        return "BeginPath"
-    }
+    override fun toString(): String = "BeginPath"
 }
 
 object ClosePath : PathCommand {
@@ -39,12 +38,10 @@ object ClosePath : PathCommand {
         canvas.closePath()
     }
 
-    override fun toString(): String {
-        return "Z"
-    }
+    override fun toString(): String = "Z"
 }
 
-class MoveTo(private val x: Float, private val y: Float) : PathCommand {
+data class MoveTo(private val x: Float, private val y: Float) : PathCommand {
     override fun plot(canvas: Canvas) {
         canvas.moveTo(x, y)
     }
@@ -60,27 +57,9 @@ class MoveTo(private val x: Float, private val y: Float) : PathCommand {
     override fun toString(): String {
         return "M $x,$y"
     }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as MoveTo
-
-        if (x != other.x) return false
-        if (y != other.y) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = x.hashCode()
-        result = 31 * result + y.hashCode()
-        return result
-    }
 }
 
-class LineTo(private val x: Float, private val y: Float) : PathCommand {
+data class LineTo(private val x: Float, private val y: Float) : PathCommand {
     override fun plot(canvas: Canvas) {
         canvas.lineTo(x, y)
     }
@@ -96,27 +75,9 @@ class LineTo(private val x: Float, private val y: Float) : PathCommand {
     override fun toString(): String {
         return "L $x,$y"
     }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as LineTo
-
-        if (x != other.x) return false
-        if (y != other.y) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = x.hashCode()
-        result = 31 * result + y.hashCode()
-        return result
-    }
 }
 
-class CubicTo(
+data class CubicTo(
     private val x1: Float,
     private val y1: Float,
     private val x2: Float,
@@ -143,35 +104,9 @@ class CubicTo(
     override fun toString(): String {
         return "C $x1,$y1 $x2,$y2 $x3,$y3"
     }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as CubicTo
-
-        if (x1 != other.x1) return false
-        if (y1 != other.y1) return false
-        if (x2 != other.x2) return false
-        if (y2 != other.y2) return false
-        if (x3 != other.x3) return false
-        if (y3 != other.y3) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = x1.hashCode()
-        result = 31 * result + y1.hashCode()
-        result = 31 * result + x2.hashCode()
-        result = 31 * result + y2.hashCode()
-        result = 31 * result + x3.hashCode()
-        result = 31 * result + y3.hashCode()
-        return result
-    }
 }
 
-class Circle(
+data class Circle(
     private val centerX: Float,
     private val centerY: Float,
     private val radius: Float,
@@ -190,35 +125,36 @@ class Circle(
             direction,
         )
     }
+}
 
-    override fun toString(): String {
-        return "Circle($centerX, $centerY, $radius, $direction)"
+data class Rect(
+    private val left: Float,
+    private val top: Float,
+    private val right: Float,
+    private val bottom: Float,
+    private val direction: Path.Direction,
+) : PathCommand {
+    override fun plot(canvas: Canvas) {
+        canvas.rect(left, top, right, bottom, direction)
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Circle
-
-        if (centerX != other.centerX) return false
-        if (centerY != other.centerY) return false
-        if (radius != other.radius) return false
-        if (direction != other.direction) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = centerX.hashCode()
-        result = 31 * result + centerY.hashCode()
-        result = 31 * result + radius.hashCode()
-        result = 31 * result + direction.hashCode()
-        return result
+    override fun plotInterpolated(
+        canvas: Canvas,
+        other: PathCommand,
+        progress: Float,
+    ) {
+        other as Rect
+        canvas.rect(
+            interpolate(progress, left, other.left),
+            interpolate(progress, top, other.top),
+            interpolate(progress, right, other.right),
+            interpolate(progress, bottom, other.bottom),
+            direction
+        )
     }
 }
 
-class BoundedArc(
+data class BoundedArc(
     private val left: Float,
     private val top: Float,
     private val right: Float,
@@ -258,37 +194,6 @@ class BoundedArc(
         val y = centerY + radiusY * sin(angle.asRadians)
 
         return FloatPoint(x, y)
-    }
-
-
-    override fun toString(): String {
-        return "BoundedArc($left, $top, $right, $bottom, $startAngle, $sweepAngle)"
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as BoundedArc
-
-        if (left != other.left) return false
-        if (top != other.top) return false
-        if (right != other.right) return false
-        if (bottom != other.bottom) return false
-        if (startAngle != other.startAngle) return false
-        if (sweepAngle != other.sweepAngle) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = left.hashCode()
-        result = 31 * result + top.hashCode()
-        result = 31 * result + right.hashCode()
-        result = 31 * result + bottom.hashCode()
-        result = 31 * result + startAngle.hashCode()
-        result = 31 * result + sweepAngle.hashCode()
-        return result
     }
 }
 
@@ -336,11 +241,29 @@ class PathDefinition(
         }
     }
 
+    override fun toString(): String {
+        return "PathDefinition(${commands.joinToString("\n")})"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as PathDefinition
+
+        return commands == other.commands
+    }
+
+    override fun hashCode(): Int {
+        return commands.hashCode()
+    }
+
     class Builder(
-        private val width: Float,
-        private val height: Float,
+        private val width: Float?,
+        private val height: Float?,
     ) : Path {
         private val _commands: MutableList<PathCommand> = mutableListOf()
+        private val bounds = MutableRectF(0f, 0f, 0f, 0f)
 
         // Track current endpoint of the path so we can easily add 'filler' via [zeroCubic] and [zeroLine].
         private var x: Float? = null
@@ -350,12 +273,14 @@ class PathDefinition(
             _commands.add(MoveTo(x, y))
             this.x = x
             this.y = y
+            bounds.include(x, y)
         }
 
         override fun lineTo(x: Float, y: Float) {
             _commands.add(LineTo(x, y))
             this.x = x
             this.y = y
+            bounds.include(x, y)
         }
 
         override fun cubicTo(
@@ -369,6 +294,7 @@ class PathDefinition(
             _commands.add(CubicTo(x1, y1, x2, y2, x3, y3))
             this.x = x3
             this.y = y3
+            bounds.include(x3, y3)
         }
 
         override fun boundedArc(
@@ -384,6 +310,7 @@ class PathDefinition(
                     val (x, y) = it.endPosition()
                     this.x = x
                     this.y = y
+                    bounds.include(x, y)
                 }
             )
         }
@@ -395,6 +322,20 @@ class PathDefinition(
             direction: Path.Direction,
         ) {
             _commands.add(Circle(centerX, centerY, radius, direction))
+            bounds.include(centerX - radius, centerY - radius)
+            bounds.include(centerX + radius, centerY + radius)
+        }
+
+        override fun rect(
+            left: Float,
+            top: Float,
+            right: Float,
+            bottom: Float,
+            direction: Path.Direction,
+        ) {
+            _commands.add(Rect(left, top, right, bottom, direction))
+            bounds.include(left, top)
+            bounds.include(right, bottom)
         }
 
         override fun beginPath() {
@@ -417,26 +358,21 @@ class PathDefinition(
             lineTo(x ?: return, y ?: return)
         }
 
-        fun build(): PathDefinition = PathDefinition(width, height, _commands)
-    }
-
-    override fun toString(): String {
-        return "PathDefinition(${commands.joinToString("\n")})"
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as PathDefinition
-
-        return commands == other.commands
-    }
-
-    override fun hashCode(): Int {
-        return commands.hashCode()
+        fun build(): PathDefinition {
+            if (_commands.first() !is BeginPath) {
+                _commands.add(0, BeginPath)
+            }
+            return PathDefinition(
+                width ?: bounds.width,
+                height ?: bounds.height,
+                _commands
+            )
+        }
     }
 }
 
 inline fun PathDefinition(width: Float, height: Float, init: PathDefinition.Builder.() -> Unit) =
     PathDefinition.Builder(width, height).apply(init).build()
+
+inline fun PathDefinition(init: PathDefinition.Builder.() -> Unit) =
+    PathDefinition.Builder(null, null).apply(init).build()

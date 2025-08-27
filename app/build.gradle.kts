@@ -72,7 +72,7 @@ kotlin {
             implementation(project(":core"))
             implementation(project(":clocks:form"))
             implementation(project(":clocks:io16"))
-//            implementation(project(":clocks:io18"))
+            implementation(project(":clocks:io18"))
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

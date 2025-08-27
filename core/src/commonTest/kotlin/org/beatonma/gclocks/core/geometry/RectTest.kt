@@ -133,4 +133,24 @@ class MutableRectTest {
             isEmpty shouldbe true
         }
     }
+
+    @Test
+    fun `height and width are correct`() {
+        with(MutableRectF(-11f, -31f, 9f, 13f)) {
+            width shouldbe 20f
+            height shouldbe 44f
+        }
+    }
+
+    @Test
+    fun `center is correct`() {
+        with(MutableRectF(0f, 0f, 9f, 10f)) {
+            center.x shouldbe 4.5f
+            center.y shouldbe 5f
+
+            translate(-5f, 4f)
+            center.x shouldbe -0.5f
+            center.y shouldbe 9f
+        }
+    }
 }

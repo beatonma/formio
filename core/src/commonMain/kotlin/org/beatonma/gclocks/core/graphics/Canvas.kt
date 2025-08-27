@@ -6,14 +6,10 @@ import org.beatonma.gclocks.core.geometry.Rect
 private const val DefaultAlpha = 1f
 
 enum class StrokeCap {
+    Square,
     Round,
     Butt,
-    Square,
     ;
-
-    companion object {
-        val Default = Square
-    }
 }
 
 enum class StrokeJoin {
@@ -21,10 +17,6 @@ enum class StrokeJoin {
     Round,
     Bevel,
     ;
-
-    companion object {
-        val Default = Miter
-    }
 }
 
 sealed class DrawStyle
@@ -33,8 +25,8 @@ object Fill : DrawStyle()
 data class Stroke(
     val width: Float = 0f,
     val miter: Float = 0f,
-    val cap: StrokeCap = StrokeCap.Default,
-    val join: StrokeJoin = StrokeJoin.Default,
+    val cap: StrokeCap = StrokeCap.Butt,
+    val join: StrokeJoin = StrokeJoin.Miter,
 ) : DrawStyle() {
     companion object {
         val Default = Stroke()
@@ -178,7 +170,7 @@ interface Canvas : Path {
         beginPath()
         block()
         drawPath(color, style, alpha)
-        closePath()
+//        closePath()
     }
 
     fun drawPoint(

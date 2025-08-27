@@ -67,7 +67,7 @@ interface ClockRenderer<P : Paints, G : ClockGlyph<P>> {
             boundary.left,
             boundary.bottom
         )
-    };
+    }
 
     fun drawGlyph(
         glyph: G,

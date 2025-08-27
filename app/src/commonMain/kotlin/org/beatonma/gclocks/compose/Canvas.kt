@@ -38,6 +38,7 @@ import org.beatonma.gclocks.core.graphics.PathMeasure
 import org.beatonma.gclocks.core.graphics.PathMeasureScope
 import org.beatonma.gclocks.core.graphics.Stroke
 import org.beatonma.gclocks.core.graphics.StrokeJoin
+import org.beatonma.gclocks.core.util.debug
 import androidx.compose.ui.graphics.Color as PlatformColor
 
 private val DefaultPivot = Offset.Zero
@@ -96,6 +97,16 @@ class ComposePath : Path {
         )
     }
 
+    override fun rect(
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        direction: Path.Direction,
+    ) {
+        composePath.addRect(PlatformRect(left, top, right, bottom), direction.toCompose())
+    }
+
     override fun closePath() {
         composePath.close()
     }
@@ -120,6 +131,11 @@ class ComposePathMeasure(
         outPath: Path,
         startsWithMoveTo: Boolean,
     ): Path {
+        debug(false) {
+            if (!(outPath as ComposePath).composePath.isEmpty) {
+                debug("getSegment outPath is not empty!")
+            }
+        }
         pathMeasure.getSegment(
             startDistance,
             endDistance,
@@ -155,7 +171,7 @@ class ComposeCanvas(
 
     override fun measurePath(block: PathMeasureScope.() -> Unit) {
         pathMeasure.setPath(path)
-        pathMeasure.apply { block() }
+        pathMeasure.apply(block)
     }
 
     fun withScope(scope: DrawScope, block: ComposeCanvas.() -> Unit) {
@@ -258,10 +274,11 @@ class ComposeCanvas(
             text,
             Offset.Zero,
             style = TextStyle(
-                fontSize = 12.sp,
-                color = PlatformColor.Green
+                fontSize = 16.sp,
+                color = PlatformColor.White,
+                background = PlatformColor.DarkGray,
             ),
-            overflow = TextOverflow.Visible
+            overflow = TextOverflow.Visible,
         )
     }
 

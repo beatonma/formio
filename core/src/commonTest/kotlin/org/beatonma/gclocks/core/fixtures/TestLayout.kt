@@ -17,8 +17,8 @@ data class TestPaints(
     override val colors: Array<Color> = emptyArray(),
     override val strokeWidth: Float = 0f,
 ) : Paints {
-    override val strokeCap: StrokeCap = StrokeCap.Default
-    override val strokeJoin: StrokeJoin = StrokeJoin.Default
+    override val strokeCap: StrokeCap = StrokeCap.Square
+    override val strokeJoin: StrokeJoin = StrokeJoin.Miter
 }
 
 data class TestOptions(

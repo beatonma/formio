@@ -5,4 +5,6 @@ interface Paints {
     val strokeWidth: Float
     val strokeCap: StrokeCap
     val strokeJoin: StrokeJoin
+
+    operator fun get(index: Int) = colors[index]
 }

@@ -16,6 +16,7 @@ interface Rect<T : Number> {
     val height: T
     val area: T
     val isEmpty: Boolean
+    val center: Position
 
     /** Return false if any of the boundaries are unset/NaN */
     val isValid: Boolean
@@ -40,6 +41,9 @@ interface FloatRect : Rect<Float> {
     override val isValid: Boolean
         get() = !(left.isNaN() || top.isNaN() || right.isNaN() || bottom.isNaN())
 
+    override val center: Position
+        get() = FloatPoint(left + (right - left) / 2f, top + (bottom - top) / 2f)
+
     override fun toSize(): Size<Float> = FloatSize(width, height)
 }
 
@@ -53,6 +57,8 @@ interface MutableRect<T : Number> : Rect<T> {
      * Returns true if this results in our boundaries changing.
      * Returns false if the other Rect was already within our boundaries.*/
     fun include(other: Rect<T>): Boolean
+    fun include(other: Point<T>): Boolean
+    fun include(x: T, y: T): Boolean
     fun set(left: T, top: T, right: T, bottom: T): MutableRect<T>
     fun set(other: Rect<T>) = set(other.left, other.top, other.right, other.bottom)
 
@@ -76,6 +82,13 @@ interface MutableRect<T : Number> : Rect<T> {
     /** Equivalent to set(Nan, NaN, NaN, NaN) */
     fun clear(): MutableRect<T>
 }
+
+data class RectF(
+    override val left: Float,
+    override val top: Float,
+    override val right: Float,
+    override val bottom: Float,
+) : FloatRect
 
 
 class MutableRectF(
@@ -161,6 +174,23 @@ class MutableRectF(
         )
         return area != original
     }
+
+    override fun include(x: Float, y: Float): Boolean {
+        if (!isValid) {
+            set(x, y, x, y)
+        }
+
+        val original = area
+        set(
+            min(left, x),
+            min(top, y),
+            max(right, x),
+            max(bottom, y)
+        )
+        return area != original
+    }
+
+    override fun include(other: Point<Float>): Boolean = include(other.x, other.y)
 
     override fun clear(): MutableRect<Float> = set(Float.NaN, Float.NaN, Float.NaN, Float.NaN)
 

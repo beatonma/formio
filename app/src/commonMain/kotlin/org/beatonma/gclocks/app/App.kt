@@ -45,6 +45,7 @@ import org.beatonma.gclocks.compose.platform
 import org.beatonma.gclocks.core.ClockGlyph
 import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.GlyphState
+import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.types.ProgressFloat
 import org.beatonma.gclocks.core.util.TimeOfDay
 import org.beatonma.gclocks.core.util.getTime
@@ -57,13 +58,15 @@ import org.beatonma.gclocks.io16.Io16Glyph
 import org.beatonma.gclocks.io16.Io16GlyphRenderer
 import org.beatonma.gclocks.io16.Io16Options
 import org.beatonma.gclocks.io16.Io16Paints
+import org.beatonma.gclocks.io18.GlyphAnimations
+import org.beatonma.gclocks.io18.Io18Glyph
+import org.beatonma.gclocks.io18.Io18Options
+import org.beatonma.gclocks.io18.Io18Paints
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.math.roundToInt
 
 
-private val ItemModifier =
-    Modifier
-        .border(1.dp, Color.Black.copy(alpha = 0.33f))
+private val ItemModifier = Modifier.border(1.dp, Color.Black.copy(alpha = 0.33f))
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -97,25 +100,13 @@ fun App() {
                     else -> PaddingValues(bottom = 256.dp)
                 }
             ) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Clock(
-                        FormOptions(),
-                        ItemModifier.fillMaxSize(),
-                        getTickTime = timeFunc
-                    )
-                }
+                clockPreview(FormOptions(), timeFunc, state)
+                clockPreview(Io16Options(), timeFunc, state)
+                clockPreview(Io18Options(), timeFunc, state)
 
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Clock(
-                        Io16Options(),
-                        ItemModifier.fillMaxSize(),
-                        getTickTime = timeFunc,
-                        forcedState = state,
-                    )
-                }
-
-                FormPreview(keys, animationPosition)
-                Io16Preview(keys, animationPosition)
+//                FormGlyphs(keys, animationPosition)
+//                Io16Glyphs(keys, animationPosition)
+//                Io18Glyphs(keys, animationPosition)
             }
 
             Column(
@@ -159,7 +150,23 @@ fun App() {
 }
 
 
-private fun LazyGridScope.FormPreview(
+private fun <O : Options<*>> LazyGridScope.clockPreview(
+    options: O,
+    timeFunc: () -> TimeOfDay,
+    forcedState: GlyphState? = null,
+) {
+    item(span = { GridItemSpan(maxLineSpan) }) {
+        Clock(
+            options,
+            ItemModifier.fillMaxSize(),
+            getTickTime = timeFunc,
+            forcedState = forcedState,
+        )
+    }
+}
+
+
+private fun LazyGridScope.FormGlyphs(
     keys: List<String>,
     animationPosition: Float?,
 ) {
@@ -178,7 +185,7 @@ private fun LazyGridScope.FormPreview(
     }
 }
 
-private fun LazyGridScope.Io16Preview(
+private fun LazyGridScope.Io16Glyphs(
     keys: List<String>,
     animationPosition: Float?,
 ) {
@@ -201,6 +208,31 @@ private fun LazyGridScope.Io16Preview(
                     debugUpdateOnDraw = true,
                 )
             },
+            animPosition = animationPosition,
+        )
+    }
+}
+
+
+@Composable
+private fun rememberIo18Animations() = remember { GlyphAnimations(ComposePath()) }
+private fun LazyGridScope.Io18Glyphs(
+    keys: List<String>,
+    animationPosition: Float?,
+) {
+    itemsIndexed(
+        keys,
+        key = { index, key -> "io18_$key" },
+    ) { index, key ->
+        val io18Animations = rememberIo18Animations()
+        GlyphPreview(
+            remember {
+                Io18Glyph(io18Animations, GlyphRole.Default).apply {
+                    this.key = key
+                }
+            },
+            remember { Io18Paints() },
+            ItemModifier.fillMaxSize(),
             animPosition = animationPosition,
         )
     }
