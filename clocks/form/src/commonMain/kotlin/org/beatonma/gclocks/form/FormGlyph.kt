@@ -805,6 +805,14 @@ class FormGlyph(
         }
     }
 
+    override fun Canvas.drawTwoOne(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?,
+    ) {
+        drawOneTwo(1f - glyphProgress, paints, renderGlyph)
+    }
+
     override fun Canvas.drawThreeZero(
         glyphProgress: Float,
         paints: FormPaints,
@@ -1133,6 +1141,16 @@ class FormGlyph(
             )
 
             ClockGlyph.Key.TwoZero -> 144f
+            ClockGlyph.Key.TwoOne -> interpolate(
+                decelerate5(
+                    progress(
+                        1f - glyphProgress,
+                        0f,
+                        0.5f
+                    )
+                ), 100f, 144f
+            )
+
             ClockGlyph.Key.ThreeZero -> interpolate(
                 decelerate5(progress(glyphProgress, 0f, 0.5f)),
                 128f,

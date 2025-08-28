@@ -79,6 +79,7 @@ interface ClockGlyph<P : Paints> : Glyph<P> {
     fun Canvas.drawNineZero(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
     fun Canvas.drawOneZero(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
     fun Canvas.drawTwoZero(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
+    fun Canvas.drawTwoOne(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
     fun Canvas.drawThreeZero(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
     fun Canvas.drawFiveZero(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
     fun Canvas.drawOneEmpty(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
@@ -110,6 +111,7 @@ interface ClockGlyph<P : Paints> : Glyph<P> {
         EightNine("8_9"),
         OneZero("1_0"),
         TwoZero("2_0"),
+        TwoOne("2_1"),
         ThreeZero("3_0"),
         FiveZero("5_0"),
         NineZero("9_0"),
@@ -135,7 +137,10 @@ abstract class BaseGlyph<P : Paints> internal constructor(
 ) : Glyph<P> {
     final override var state: GlyphState = GlyphState.Appearing
         private set(value) {
-            stateChangedAt = getCurrentTimeMillis()
+            if (value != field || value == GlyphState.Active) {
+                // Setting as active resets the timeout, even if already active
+                stateChangedAt = getCurrentTimeMillis()
+            }
 
             field = value
             onStateChange?.invoke(value)
@@ -309,7 +314,7 @@ abstract class BaseClockGlyph<P : Paints>(
     }
 
     /**
-     * Mapping of [ClockGlyphKey] to abstract draw methods.
+     * Mapping of [ClockGlyph.Key] to abstract draw methods.
      */
     private fun Canvas.delegateDrawMethod(
         glyphProgress: Float,
@@ -359,6 +364,7 @@ abstract class BaseClockGlyph<P : Paints>(
 
             ClockGlyph.Key.OneZero -> drawOneZero(glyphProgress, paints, renderGlyph)
             ClockGlyph.Key.TwoZero -> drawTwoZero(glyphProgress, paints, renderGlyph)
+            ClockGlyph.Key.TwoOne -> drawTwoOne(glyphProgress, paints, renderGlyph)
             ClockGlyph.Key.ThreeZero -> drawThreeZero(glyphProgress, paints, renderGlyph)
             ClockGlyph.Key.FiveZero -> drawFiveZero(glyphProgress, paints, renderGlyph)
             ClockGlyph.Key.OneEmpty -> drawOneEmpty(glyphProgress, paints, renderGlyph)

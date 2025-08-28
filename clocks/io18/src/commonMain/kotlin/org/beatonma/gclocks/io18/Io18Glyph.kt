@@ -77,6 +77,8 @@ class Io18Glyph(
             ClockGlyph.Key.OneTwo,
                 -> interpolate(p, One.size.width, Two.size.width)
 
+            ClockGlyph.Key.TwoOne -> interpolate(p, Two.size.width, One.size.width)
+
             ClockGlyph.Key.OneEmpty -> interpolate(p, One.size.width, 0f)
             ClockGlyph.Key.EmptyOne -> interpolate(p, 0f, One.size.width)
 
@@ -188,6 +190,14 @@ class Io18Glyph(
         renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, two, zero)
+    }
+
+    override fun Canvas.drawTwoOne(
+        glyphProgress: Float,
+        paints: Io18Paints,
+        renderGlyph: RenderGlyph?,
+    ) {
+        transition(glyphProgress, two, one)
     }
 
     override fun Canvas.drawThreeZero(

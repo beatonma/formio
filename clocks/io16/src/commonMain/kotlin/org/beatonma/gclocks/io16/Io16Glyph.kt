@@ -185,6 +185,14 @@ class Io16Glyph(
         Io16GlyphPath.Two.plot(this, glyphProgress)
     }
 
+    override fun Canvas.drawTwoOne(
+        glyphProgress: Float,
+        paints: Io16Paints,
+        renderGlyph: RenderGlyph?,
+    ) {
+        Io16GlyphPath.OneTwo.plot(this, 1f - glyphProgress)
+    }
+
     override fun Canvas.drawEmptyOne(
         glyphProgress: Float,
         paints: Io16Paints,
@@ -237,6 +245,7 @@ class Io16Glyph(
             ClockGlyph.Key.EmptyOne -> interpolate(p, 0f, Width1)
             ClockGlyph.Key.OneEmpty -> interpolate(p, Width1, 0f)
             ClockGlyph.Key.TwoEmpty -> interpolate(p, Width2, 0f)
+            ClockGlyph.Key.TwoOne -> interpolate(p, Width2, Width1)
             ClockGlyph.Key.OneZero -> interpolate(p, Width1, Width0)
             ClockGlyph.Key.TwoZero -> interpolate(p, Width2, Width0)
             ClockGlyph.Key.ThreeZero -> interpolate(p, Width3, Width0)

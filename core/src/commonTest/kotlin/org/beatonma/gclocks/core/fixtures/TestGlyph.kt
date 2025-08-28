@@ -108,6 +108,13 @@ class TestGlyph(role: GlyphRole, scale: Float = 1f, val separatorWidth: Float) :
     ) {
     }
 
+    override fun Canvas.drawTwoOne(
+        glyphProgress: Float,
+        paints: TestPaints,
+        renderGlyph: RenderGlyph?,
+    ) {
+    }
+
     override fun Canvas.drawThreeZero(
         glyphProgress: Float,
         paints: TestPaints,

@@ -68,8 +68,8 @@ data class Io18Paints(
 
 data class Io18Options(
     override val paints: Io18Paints = Io18Paints(),
-    override val layout: LayoutOptions = Io18LayoutOptions(),
-    override val glyph: GlyphOptions = Io18GlyphOptions(),
+    override val layout: Io18LayoutOptions = Io18LayoutOptions(),
+    override val glyph: Io18GlyphOptions = Io18GlyphOptions(),
 ) : Options<Io18Paints>
 
 data class Io18LayoutOptions(
