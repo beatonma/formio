@@ -1,5 +1,7 @@
 package org.beatonma.gclocks.core.util
 
+import org.beatonma.gclocks.core.options.TimeFormat
+
 expect fun getCurrentTimeMillis(): Long
 
 data class TimeOfDay(
@@ -15,6 +17,10 @@ data class TimeOfDay(
             require(second in 0..59) { "Invalid time: $this" }
             require(millisecond in 0..999) { "Invalid time: $this" }
         }
+    }
+
+    override fun toString(): String {
+        return TimeFormat.HH_MM_SS_24.apply(this)
     }
 }
 

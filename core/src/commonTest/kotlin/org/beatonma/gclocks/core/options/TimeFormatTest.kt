@@ -14,7 +14,7 @@ class TimeFormatTest {
         assertTrue(TimeFormat.HH_MM_SS_24.is24Hour)
         assertTrue(TimeFormat.HH_MM_24.is24Hour)
         assertFalse(TimeFormat.HH_MM_SS_12.is24Hour)
-        assertFalse(TimeFormat.H_MM_12.is24Hour)
+        assertFalse(TimeFormat.hh_MM_12.is24Hour)
     }
 
     @Test
@@ -24,18 +24,18 @@ class TimeFormatTest {
         assertTrue(TimeFormat.HH_MM_SS_12.isZeroPadded)
         assertTrue(TimeFormat.HH_MM_12.isZeroPadded)
 
-        assertFalse(TimeFormat.H_MM_SS_24.isZeroPadded)
-        assertFalse(TimeFormat.H_MM_24.isZeroPadded)
-        assertFalse(TimeFormat.H_MM_SS_12.isZeroPadded)
-        assertFalse(TimeFormat.H_MM_12.isZeroPadded)
+        assertFalse(TimeFormat.hh_MM_SS_24.isZeroPadded)
+        assertFalse(TimeFormat.hh_MM_24.isZeroPadded)
+        assertFalse(TimeFormat.hh_MM_SS_12.isZeroPadded)
+        assertFalse(TimeFormat.hh_MM_12.isZeroPadded)
     }
 
     @Test
     fun getResolution() {
         assertEquals(TimeResolution.Seconds, TimeFormat.HH_MM_SS_24.resolution)
         assertEquals(TimeResolution.Minutes, TimeFormat.HH_MM_24.resolution)
-        assertEquals(TimeResolution.Seconds, TimeFormat.H_MM_SS_12.resolution)
-        assertEquals(TimeResolution.Minutes, TimeFormat.H_MM_12.resolution)
+        assertEquals(TimeResolution.Seconds, TimeFormat.hh_MM_SS_12.resolution)
+        assertEquals(TimeResolution.Minutes, TimeFormat.hh_MM_12.resolution)
     }
 
     @Test
@@ -53,11 +53,12 @@ class TimeFormatTest {
         assertEquals(
             listOf(
                 GlyphRole.Hour,
+                GlyphRole.Hour,
                 GlyphRole.SeparatorHoursMinutes,
                 GlyphRole.Minute,
                 GlyphRole.Minute,
             ),
-            TimeFormat.H_MM_12.roles,
+            TimeFormat.hh_MM_12.roles,
         )
         assertEquals(
             listOf(
@@ -71,6 +72,19 @@ class TimeFormatTest {
                 GlyphRole.Second,
             ),
             TimeFormat.HH_MM_SS_24.roles,
+        )
+        assertEquals(
+            listOf(
+                GlyphRole.Hour,
+                GlyphRole.Hour,
+                GlyphRole.SeparatorHoursMinutes,
+                GlyphRole.Minute,
+                GlyphRole.Minute,
+                GlyphRole.SeparatorMinutesSeconds,
+                GlyphRole.Second,
+                GlyphRole.Second,
+            ),
+            TimeFormat.hh_MM_SS_24.roles,
         )
     }
 
@@ -117,20 +131,20 @@ class TimeFormatTest {
     @Test
     fun `apply is correct with 24 hours and no padding`() {
         assertEquals(
-            "0:00:00",
-            TimeFormat.H_MM_SS_24.apply(TimeOfDay(0, 0, 0)),
+            " 0:00:00",
+            TimeFormat.hh_MM_SS_24.apply(TimeOfDay(0, 0, 0)),
         )
         assertEquals(
-            "1:02:03",
-            TimeFormat.H_MM_SS_24.apply(TimeOfDay(1, 2, 3)),
+            " 1:02:03",
+            TimeFormat.hh_MM_SS_24.apply(TimeOfDay(1, 2, 3)),
         )
         assertEquals(
-            "9:02",
-            TimeFormat.H_MM_24.apply(TimeOfDay(9, 2, 3)),
+            " 9:02",
+            TimeFormat.hh_MM_24.apply(TimeOfDay(9, 2, 3)),
         )
         assertEquals(
             "23:02",
-            TimeFormat.H_MM_24.apply(TimeOfDay(23, 2, 57)),
+            TimeFormat.hh_MM_24.apply(TimeOfDay(23, 2, 57)),
         )
     }
 
@@ -138,23 +152,23 @@ class TimeFormatTest {
     fun `apply is correct with 12 hours and no padding`() {
         assertEquals(
             "12:00:00",
-            TimeFormat.H_MM_SS_12.apply(TimeOfDay(0, 0, 0)),
+            TimeFormat.hh_MM_SS_12.apply(TimeOfDay(0, 0, 0)),
         )
         assertEquals(
-            "1:02:03",
-            TimeFormat.H_MM_SS_12.apply(TimeOfDay(1, 2, 3)),
+            " 1:02:03",
+            TimeFormat.hh_MM_SS_12.apply(TimeOfDay(1, 2, 3)),
         )
         assertEquals(
             "12:00:00",
-            TimeFormat.H_MM_SS_12.apply(TimeOfDay(12, 0, 0)),
+            TimeFormat.hh_MM_SS_12.apply(TimeOfDay(12, 0, 0)),
         )
         assertEquals(
-            "9:02",
-            TimeFormat.H_MM_12.apply(TimeOfDay(9, 2, 3)),
+            " 9:02",
+            TimeFormat.hh_MM_12.apply(TimeOfDay(9, 2, 3)),
         )
         assertEquals(
             "11:02",
-            TimeFormat.H_MM_12.apply(TimeOfDay(23, 2, 57)),
+            TimeFormat.hh_MM_12.apply(TimeOfDay(23, 2, 57)),
         )
     }
 }

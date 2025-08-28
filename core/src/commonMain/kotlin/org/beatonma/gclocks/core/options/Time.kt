@@ -8,15 +8,28 @@ enum class TimeResolution {
     Seconds,
 }
 
+/** Naming is important!
+ *
+ * Hours:
+ * - `HH` (uppercase): zero-padding
+ * - `hh` (lowercase): no zero-padding
+ *
+ * Seconds will be shown only if `SS` is present.
+ *
+ * Suffix:
+ * - `_12`: 12-hour clock
+ * - `_24`: 24-hour clock
+ */
+@Suppress("EnumEntryName")
 enum class TimeFormat {
     HH_MM_SS_24,
-    H_MM_SS_24,
+    hh_MM_SS_24,
     HH_MM_24,
-    H_MM_24,
+    hh_MM_24,
     HH_MM_SS_12,
-    H_MM_SS_12,
+    hh_MM_SS_12,
     HH_MM_12,
-    H_MM_12,
+    hh_MM_12,
     ;
 
     val is24Hour: Boolean get() = this.name.endsWith("24")
@@ -28,7 +41,7 @@ enum class TimeFormat {
 
             return this.name.removeSuffix("_24").removeSuffix("_12").map { char ->
                 when (char) {
-                    'H' -> GlyphRole.Hour
+                    'h', 'H' -> GlyphRole.Hour
                     'M' -> GlyphRole.Minute
                     'S' -> GlyphRole.Second
                     '_' -> {
@@ -54,7 +67,7 @@ enum class TimeFormat {
                 if (is24Hour) it else (hour % 12).let { if (it == 0) 12 else it }
             }.toString().let {
                 if (isZeroPadded) it.padStart(2, '0')
-                else it
+                else it.padStart(2, ' ')
             },
             minute.toString().padStart(2, '0'),
             if (resolution == TimeResolution.Seconds) second.toString().padStart(2, '0') else null
