@@ -171,7 +171,6 @@ class Io16Glyph(
         paints: Io16Paints,
         renderGlyph: RenderGlyph?,
     ) {
-        // TODO state = Disappearing
         Io16GlyphPath.One.plot(this, glyphProgress)
     }
 
@@ -180,8 +179,6 @@ class Io16Glyph(
         paints: Io16Paints,
         renderGlyph: RenderGlyph?,
     ) {
-        // TODO state = Disappearing
-        drawNotImplemented(glyphProgress, paints)
         Io16GlyphPath.Two.plot(this, glyphProgress)
     }
 
@@ -198,8 +195,6 @@ class Io16Glyph(
         paints: Io16Paints,
         renderGlyph: RenderGlyph?,
     ) {
-        // TODO state = Appearing
-        drawNotImplemented(glyphProgress, paints)
         Io16GlyphPath.One.plot(this, glyphProgress)
     }
 
@@ -224,7 +219,6 @@ class Io16Glyph(
         paints: Io16Paints,
         renderGlyph: RenderGlyph?,
     ) {
-        // TODO
         drawNotImplemented(glyphProgress, paints)
     }
 

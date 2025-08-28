@@ -71,6 +71,13 @@ class Io16GlyphRenderer<P : Path>(
             glyph.setState(GlyphState.Inactive)
         }
 
+        if (glyph.canonicalStartGlyph == ' ' && glyph.canonicalEndGlyph != ' ') {
+            glyph.setState(GlyphState.Appearing, force = true)
+        }
+        if (glyph.canonicalEndGlyph == ' ' && glyph.canonicalStartGlyph != ' ') {
+            glyph.setState(GlyphState.Disappearing, force = true)
+        }
+
         val transitionProgress = progress(
             (now - glyph.stateChangedAt).toFloat(),
             0f,
