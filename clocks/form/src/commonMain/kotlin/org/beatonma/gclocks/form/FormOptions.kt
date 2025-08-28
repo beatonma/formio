@@ -48,9 +48,9 @@ data class FormPaints(
     companion object {
         val DefaultColors: Array<Color>
             get() = arrayOf(
-                Color(0xffFF6D00),
-                Color(0xffFFC400),
-                Color(0xffFFFFFF),
+                Color(0xffFF6D00), // Orange
+                Color(0xffFFC400), // Yellow
+                Color(0xffFFFFFF), // White
             )
     }
 

@@ -1124,7 +1124,6 @@ class FormGlyph(
                 interpolate(decelerate5(progress(glyphProgress, 0.5f, 1f)), 72f, 0f),
             )
 
-//            ClockGlyph.Key.TwoOne "2_1" -> interpolate(decelerate5(progress(glyphProgress, 0f, 0.5f)), 144f, 100f)
             ClockGlyph.Key.OneZero -> 1f - interpolate(
                 decelerate5(progress(glyphProgress, 0.5f, 1f)),
                 interpolate(

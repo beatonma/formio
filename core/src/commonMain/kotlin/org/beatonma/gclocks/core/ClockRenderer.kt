@@ -31,8 +31,15 @@ interface ClockRenderer<P : Paints, G : ClockGlyph<P>> {
                         drawGlyphBoundary(canvas, paints, rect)
                     }
 
-                    canvas.withTranslationAndScale(rect.left, rect.top, glyph.scale) {
+                    withTranslationAndScale(rect.left, rect.top, glyph.scale) {
                         drawGlyph(glyph, canvas, glyphAnimationProgress, paints)
+                    }
+
+                    debug(false) {
+                        // Show measured native width of each glyph at this moment
+                        withTranslation(rect.left, rect.top) {
+                            drawText("Width: ${rect.width}")
+                        }
                     }
                 }
 
@@ -80,6 +87,7 @@ interface ClockRenderer<P : Paints, G : ClockGlyph<P>> {
         })
 
         debug(false) {
+            // Render a skeleton view of any active paths
             canvas.drawPath(Color.Black, Stroke.Default)
         }
     }
