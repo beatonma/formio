@@ -108,7 +108,7 @@ sealed class Layout<P : Paints, G : Glyph<P>>(
         glyphs: List<GlyphStatus<G>>,
         onMeasure: OnMeasure,
     ) {
-        layoutPass(glyphs) { glyph, glyphAnimationProgress, rect ->
+        layoutPass(glyphs) { _, _, rect ->
             if (rect.top != _currentRowSize.top) {
                 // Start a new row
                 storeCurrentRowSize()
@@ -170,66 +170,13 @@ sealed class Layout<P : Paints, G : Glyph<P>>(
             }
         }
     }
-
-    /**
-     * During [LayoutPass.Rendering], returns the aligned 'zero-point' of the given line.
-     */
-    protected fun getAlignedXForRow(alignment: HorizontalAlignment, lineIndex: Int): Float =
-        when (stage) {
-            LayoutPass.Rendering -> alignment.apply(
-                rowSizes[lineIndex].width,
-                nativeSize.width
-            )
-
-            /*
-             * Alignment not possible (or necessary) yet - we need to know
-             * the current measured width before alignment can be applied.
-             */
-            LayoutPass.Measurement -> 0f
-        }
 }
 
 private class HorizontalLayout<P : Paints, G : Glyph<P>>(
-    options: LayoutOptions,
-    paints: P,
+    options: LayoutOptions, paints: P,
     nativeSize: NativeSize,
-) : Layout<P, G>(options, paints, nativeSize) {
-    override fun layoutPass(
-        glyphs: List<GlyphStatus<G>>,
-        callback: GlyphCallback<G>,
-    ) {
-        val spacingPx = options.spacingPx
-        val alignment = options.innerVerticalAlignment
-
-        var x = getAlignedXForRow(options.innerHorizontalAlignment, 0)
-
-        glyphs.fastForEach { status ->
-            val glyph = status.glyph
-            val strokeWidth = this.strokeWidth * glyph.scale
-            val halfStrokeWidth = this.halfStrokeWidth * glyph.scale
-            val spacingPx = spacingPx * glyph.scale
-
-            val left = x
-            val top = alignment.apply(status.scaledHeight, nativeSize.height)
-            val right = left + status.scaledWidth
-            val bottom = top + status.scaledHeight
-
-            callback(
-                status.glyph,
-                status.progress,
-                tempRect.set(left, top, right, bottom)
-                    .applyStrokeOffset(strokeWidth, halfStrokeWidth)
-            )
-
-            val width = right - left
-            if (width > 0f) {
-                x = when (stage) {
-                    LayoutPass.Measurement -> tempRect.right + spacingPx
-                    LayoutPass.Rendering -> tempRect.right + halfStrokeWidth + spacingPx
-                }
-            }
-        }
-    }
+) : MultilineLayout<P, G>(options, paints, nativeSize) {
+    override fun isLineBreak(glyph: G): Boolean = false
 }
 
 private class VerticalLayout<P : Paints, G : Glyph<P>>(
@@ -259,14 +206,20 @@ private abstract class MultilineLayout<P : Paints, G : Glyph<P>>(
         callback: GlyphCallback<G>,
     ) {
         val spacingPx = options.spacingPx
-        val alignment = options.innerHorizontalAlignment
+        val horizontalAlignment = options.innerHorizontalAlignment
+        val verticalAlignment = options.innerVerticalAlignment
         var lineIndex = 0
+        var lineHeight = -1f
 
-        var x = getAlignedXForRow(alignment, lineIndex)
+        var x = getAlignedXForRow(horizontalAlignment, lineIndex)
         var y = 0f
 
         glyphs.fastForEach { status ->
             val glyph = status.glyph
+            if (lineHeight < 0f) {
+                lineHeight = status.scaledHeight
+            }
+
             val isNewRow = isLineBreak(glyph)
             val strokeWidth = this.strokeWidth * glyph.scale
             val halfStrokeWidth = this.halfStrokeWidth * glyph.scale
@@ -274,12 +227,16 @@ private abstract class MultilineLayout<P : Paints, G : Glyph<P>>(
 
             if (isNewRow) {
                 // New line
-                x = getAlignedXForRow(alignment, ++lineIndex)
-                y += status.scaledHeight + spacingPx + strokeWidth
+                x = getAlignedXForRow(horizontalAlignment, ++lineIndex)
+                y += lineHeight + spacingPx + strokeWidth
+                lineHeight = -1f
             }
 
             val left = x
-            val top = y
+            val top = y + when (isNewRow) {
+                true -> 0f
+                false -> verticalAlignment.apply(status.scaledHeight, lineHeight)
+            }
             val right = left + when (isNewRow) {
                 true -> 0f
                 false -> status.scaledWidth
@@ -304,4 +261,21 @@ private abstract class MultilineLayout<P : Paints, G : Glyph<P>>(
             }
         }
     }
+
+    /**
+     * During [LayoutPass.Rendering], returns the aligned 'zero-point' of the given line.
+     */
+    private fun getAlignedXForRow(alignment: HorizontalAlignment, lineIndex: Int): Float =
+        when (stage) {
+            LayoutPass.Rendering -> alignment.apply(
+                rowSizes[lineIndex].width,
+                nativeSize.width
+            )
+
+            /*
+             * Alignment not possible (or necessary) yet - we need to know
+             * the current measured width before alignment can be applied.
+             */
+            LayoutPass.Measurement -> 0f
+        }
 }
