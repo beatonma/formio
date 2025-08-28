@@ -1,8 +1,10 @@
-package org.beatonma.gclocks.compose
+package org.beatonma.gclocks.compose.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import org.beatonma.gclocks.compose.ComposePath
+import org.beatonma.gclocks.compose.rememberCanvas
 import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.ClockFont
 import org.beatonma.gclocks.core.ClockGlyph
@@ -14,20 +16,14 @@ import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.TimeOfDay
 import org.beatonma.gclocks.core.util.getTime
 import org.beatonma.gclocks.form.FormFont
-import org.beatonma.gclocks.form.FormGlyph
 import org.beatonma.gclocks.form.FormOptions
 import org.beatonma.gclocks.form.FormClockRenderer
-import org.beatonma.gclocks.form.FormPaints
 import org.beatonma.gclocks.io16.Io16ClockRenderer
 import org.beatonma.gclocks.io16.Io16Font
-import org.beatonma.gclocks.io16.Io16Glyph
 import org.beatonma.gclocks.io16.Io16GlyphRenderer
 import org.beatonma.gclocks.io16.Io16Options
-import org.beatonma.gclocks.io16.Io16Paints
 import org.beatonma.gclocks.io18.Io18Font
-import org.beatonma.gclocks.io18.Io18Glyph
 import org.beatonma.gclocks.io18.Io18Options
-import org.beatonma.gclocks.io18.Io18Paints
 import org.beatonma.gclocks.io18.Io18Renderer
 import kotlin.time.Duration
 
@@ -105,6 +101,7 @@ private fun <P : Paints, O : Options<P>, G : ClockGlyph<P>> createAnimator(
 ) = object : ClockAnimator<P, G> {
     override val layout = ClockLayout(font = font, options = options)
     override val renderers: List<ClockRenderer<P, G>> = listOf(renderer)
+
 
 //    private var meanFrameTime: Duration = Duration.ZERO
 //    override fun render(canvas: Canvas) {

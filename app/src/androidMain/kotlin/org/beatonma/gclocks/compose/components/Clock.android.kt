@@ -1,4 +1,4 @@
-package org.beatonma.gclocks.compose
+package org.beatonma.gclocks.compose.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameMillis
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.Dispatchers
+import org.beatonma.gclocks.compose.lifecycleAwareEffect
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 

@@ -274,9 +274,9 @@ class ComposeCanvas(
             text,
             Offset.Zero,
             style = TextStyle(
-                fontSize = 16.sp,
+                fontSize = 10.sp,
                 color = PlatformColor.White,
-                background = PlatformColor.DarkGray,
+                background = PlatformColor.DarkGray.copy(alpha = 0.2f),
             ),
             overflow = TextOverflow.Visible,
         )

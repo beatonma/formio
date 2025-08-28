@@ -1,4 +1,4 @@
-package org.beatonma.gclocks.compose
+package org.beatonma.gclocks.compose.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable

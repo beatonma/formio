@@ -1,4 +1,4 @@
-package org.beatonma.gclocks.compose
+package org.beatonma.gclocks.compose.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import org.beatonma.gclocks.compose.rememberCanvas
 import org.beatonma.gclocks.core.Glyph
 import org.beatonma.gclocks.core.GlyphRenderer
 import org.beatonma.gclocks.core.geometry.ConstrainedLayout
