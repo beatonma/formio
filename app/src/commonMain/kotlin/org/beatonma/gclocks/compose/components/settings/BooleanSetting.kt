@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import org.beatonma.gclocks.compose.components.settings.components.CheckableSettingLayout
+import org.beatonma.gclocks.compose.components.settings.components.SettingName
 
 @Composable
 fun BooleanSetting(
@@ -30,11 +31,12 @@ fun BooleanSetting(
     modifier: Modifier = Modifier,
 ) {
     CheckableSettingLayout(
-        name,
+//        name,
         helpText = helpText,
         modifier = modifier.fillMaxWidth(),
         onClick = { onValueChange(!value) },
         role = Role.Switch,
+        text = { SettingName(name) },
     ) {
         Switch(checked = value, onCheckedChange = { checked -> onValueChange(checked) })
     }

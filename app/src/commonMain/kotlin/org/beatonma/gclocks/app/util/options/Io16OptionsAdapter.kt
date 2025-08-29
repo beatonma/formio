@@ -1,5 +1,8 @@
 package org.beatonma.gclocks.app.util.options
 
+import gclocks_multiplatform.app.generated.resources.Res
+import gclocks_multiplatform.app.generated.resources.setting_stroke_width
+import org.beatonma.gclocks.app.LocalizedString
 import org.beatonma.gclocks.compose.components.settings.Setting
 import org.beatonma.gclocks.compose.components.settings.SettingsGroup
 import org.beatonma.gclocks.io16.Io16LayoutOptions
@@ -27,12 +30,13 @@ private fun createAdapter(paints: Io16Paints, onUpdate: (Io16Paints) -> Unit): S
                 onUpdate(paints.copy(colors = colors.toTypedArray()))
             },
             Setting.Float(
-                name = "Width",
+                key = "stroke_width",
+                localized = LocalizedString(Res.string.setting_stroke_width),
                 value = paints.strokeWidth,
                 default = 2f,
                 min = 0f,
                 max = 32f,
-                step = 1f,
+                stepSize = 1f,
                 onValueChange = { onUpdate(paints.copy(strokeWidth = it)) }
             )
         )

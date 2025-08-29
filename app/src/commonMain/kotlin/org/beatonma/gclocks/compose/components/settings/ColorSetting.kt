@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredSize
@@ -37,9 +36,10 @@ import org.beatonma.gclocks.compose.animation.EnterScale
 import org.beatonma.gclocks.compose.animation.EnterVertical
 import org.beatonma.gclocks.compose.animation.ExitScale
 import org.beatonma.gclocks.compose.animation.ExitVertical
+import org.beatonma.gclocks.compose.components.settings.components.CollapsibleSettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.LabelledSlider
-import org.beatonma.gclocks.compose.components.settings.components.OutlinedSettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.ScrollingRow
+import org.beatonma.gclocks.compose.components.settings.components.SettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
 import org.beatonma.gclocks.compose.components.settings.components.rememberMaterialColorSwatch
 import org.beatonma.gclocks.compose.toCompose
@@ -53,7 +53,7 @@ fun MultiColorSetting(
     modifier: Modifier = Modifier,
 ) {
     MultiColorSetting(
-        setting.name,
+        setting.key,
         setting.value,
         { index, color ->
             val value = setting.value.toMutableList()
@@ -74,64 +74,61 @@ fun MultiColorSetting(
     val swatch = rememberMaterialColorSwatch()
     var editingIndex: Int? by remember { mutableStateOf(null) }
     val editorOpenPadding by animateDpAsState(if (editingIndex != null) 48.dp else 0.dp)
-
     val patchSize = 64.dp
 
-    Surface(modifier) {
-        Column {
-            SettingName(name)
+    CollapsibleSettingLayout(editingIndex != null, modifier) {
+        SettingName(name, Modifier.padding(bottom = 4.dp))
 
-            ScrollingRow(
-                Modifier
-                    .fillMaxWidth().padding(bottom = 8.dp)
-                    .requiredHeight(patchSize + (editorOpenPadding * 2f)),
-                horizontalArrangement = Arrangement.spacedBy(
-                    16.dp,
-                    Alignment.CenterHorizontally
-                )
-            ) {
-                itemsIndexed(colors) { index, color ->
-                    val isSelected = index == editingIndex
-                    val padding by animateDpAsState(if (isSelected) editorOpenPadding else 0.dp)
-                    val patchScale by animateFloatAsState(if (isSelected) 1.2f else 1f)
+        ScrollingRow(
+            Modifier
+                .fillMaxWidth().padding(bottom = 8.dp)
+                .requiredHeight(patchSize + (editorOpenPadding * 2f)),
+            horizontalArrangement = Arrangement.spacedBy(
+                16.dp,
+                Alignment.CenterHorizontally
+            )
+        ) {
+            itemsIndexed(colors) { index, color ->
+                val isSelected = index == editingIndex
+                val padding by animateDpAsState(if (isSelected) editorOpenPadding else 0.dp)
+                val patchScale by animateFloatAsState(if (isSelected) 1.2f else 1f)
 
-                    Patch(
-                        color.toCompose(),
-                        onClick = {
-                            editingIndex = when (isSelected) {
-                                true -> null
-                                false -> index
-                            }
-                        },
-                        size = patchSize * patchScale,
-                        modifier = Modifier.padding(
-                            top = padding * 1.5f,
-                            start = padding * 0.5f,
-                            end = padding * 0.5f
-                        )
-                    ) {
-                        AnimatedVisibility(
-                            visible = isSelected,
-                            enter = EnterScale,
-                            exit = ExitScale,
-                        ) {
-                            Icon(
-                                AppIcon.ArrowDown,
-                                "This color is being edited",
-                                Modifier.requiredSize(32.dp)
-                            )
+                Patch(
+                    color.toCompose(),
+                    onClick = {
+                        editingIndex = when (isSelected) {
+                            true -> null
+                            false -> index
                         }
+                    },
+                    size = patchSize * patchScale,
+                    modifier = Modifier.padding(
+                        top = padding * 1.5f,
+                        start = padding * 0.5f,
+                        end = padding * 0.5f
+                    )
+                ) {
+                    AnimatedVisibility(
+                        visible = isSelected,
+                        enter = EnterScale,
+                        exit = ExitScale,
+                    ) {
+                        Icon(
+                            AppIcon.ArrowDown,
+                            "This color is being edited",
+                            Modifier.requiredSize(32.dp)
+                        )
                     }
                 }
             }
-
-            ColorEditor(
-                editingIndex != null,
-                swatch,
-                colors[editingIndex ?: 0],
-                { color -> onValueChange(editingIndex ?: 0, color) },
-            )
         }
+
+        ColorEditor(
+            editingIndex != null,
+            swatch,
+            colors[editingIndex ?: 0],
+            { color -> onValueChange(editingIndex ?: 0, color) },
+        )
     }
 }
 
@@ -160,8 +157,8 @@ fun ColorSetting(
 ) {
     var isEditing by remember { mutableStateOf(false) }
 
-    OutlinedSettingLayout(modifier.heightIn(max = 450.dp)) {
-        SettingName(name)
+    SettingLayout(modifier) {
+        SettingName(name, Modifier.padding(bottom = 4.dp))
 
         Patch(value.toCompose(), onClick = { isEditing = true })
         ColorEditor(isEditing, colors, value, onValueChange)
@@ -181,9 +178,7 @@ private fun ColorEditor(
         enter = EnterVertical,
         exit = ExitVertical,
     ) {
-        Surface(Modifier.padding(8.dp)) {
-            ColorEditor(colors, value, onValueChange, modifier)
-        }
+        ColorEditor(colors, value, onValueChange, modifier)
     }
 }
 
@@ -200,7 +195,7 @@ private fun ColorEditor(
         onValueChange(Color.hsla(hsl.hue, hsl.saturation, hsl.lightness))
     }
 
-    Column(modifier) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         FlowRow(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(

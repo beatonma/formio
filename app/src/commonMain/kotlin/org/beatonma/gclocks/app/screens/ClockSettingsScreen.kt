@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -37,12 +35,11 @@ fun <O : Options<*>> ClockSettingsScreen(
     }
 
     LazyVerticalStaggeredGrid(
-//        StaggeredGridCells.Adaptive(300.dp),
         StaggeredGridCells.Fixed(1),
         modifier
     ) {
         optionsAdapter.settings.map { setting ->
-            SettingOrGroup(setting, Modifier.padding(bottom = 4.dp))
+            SettingOrGroup(setting, Modifier.padding(bottom = 8.dp))
         }
     }
 }
@@ -58,12 +55,8 @@ private fun LazyStaggeredGridScope.SettingOrGroup(
 }
 
 private fun LazyStaggeredGridScope.Group(group: SettingsGroup, modifier: Modifier = Modifier) {
-    item {
-        Text(group.name, modifier, style = typography.titleSmall)
-    }
-
     group.settings.forEach {
-        SettingOrGroup(it)
+        SettingOrGroup(it, modifier)
     }
 }
 
@@ -89,10 +82,7 @@ private fun <T> LazyStaggeredGridScope.Setting(setting: Setting<T>, modifier: Mo
         }
 
         is Setting.Bool -> item {
-            BooleanSetting(
-                setting,
-                modifier = modifier
-            )
+            BooleanSetting(setting, modifier = modifier)
         }
 
         is Setting.Int -> item { IntegerSetting(setting, modifier = modifier) }

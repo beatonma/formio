@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,7 +25,9 @@ import org.beatonma.gclocks.compose.AppIcon
 import org.beatonma.gclocks.compose.animation.EnterVertical
 import org.beatonma.gclocks.compose.animation.ExitVertical
 import org.beatonma.gclocks.compose.components.settings.components.CheckableSettingLayout
-import org.beatonma.gclocks.compose.components.settings.components.OutlinedSettingLayout
+import org.beatonma.gclocks.compose.components.settings.components.CollapsibleSettingLayout
+import org.beatonma.gclocks.compose.components.settings.components.SettingName
+import org.beatonma.gclocks.compose.components.settings.components.SettingValue
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.stringResource
 import kotlin.enums.EnumEntries
@@ -67,10 +68,10 @@ fun <E : Enum<E>> SingleSelectSetting(
             val onClick = { onValueChange(v) }
 
             CheckableSettingLayout(
-                resourceMap.getValue(v).resolve(),
                 helpText = helpResourceMap?.getValue(v)?.resolve(),
                 onClick = onClick,
                 role = Role.RadioButton,
+                text = { SettingValue(resourceMap.getValue(v).resolve()) }
             ) {
                 RadioButton(
                     selected = value == v,
@@ -132,10 +133,10 @@ fun <E : Enum<E>> MultiSelectSetting(
             }
 
             CheckableSettingLayout(
-                resourceMap.getValue(v).resolve(),
                 helpText = helpResourceMap?.getValue(v)?.resolve(),
                 onClick = onClick,
                 role = Role.Checkbox,
+                text = { SettingValue(resourceMap.getValue(v).resolve()) }
             ) {
                 Checkbox(
                     checked = v in value,
@@ -154,16 +155,16 @@ private fun CollapsibleGroup(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val iconRotation by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
     val onClick = { expanded = !expanded }
 
-    OutlinedSettingLayout(modifier) {
+    val iconRotation by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
+
+    CollapsibleSettingLayout(expanded, modifier, helpText) {
         CheckableSettingLayout(
-            name,
-            style = typography.headlineSmall,
+            helpText = helpText,
             onClick = onClick,
             role = Role.DropdownList,
-            helpText = helpText,
+            text = { SettingName(name) }
         ) {
             IconButton(onClick = onClick) {
                 Icon(

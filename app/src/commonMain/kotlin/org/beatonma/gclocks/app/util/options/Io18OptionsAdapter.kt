@@ -25,11 +25,6 @@ private fun createAdapter(paints: Io18Paints, onUpdate: (Io18Paints) -> Unit) =
         debug("${paints.colors.toList()} \n-> $newValue")
         onUpdate(paints.copy(colors = newValue.toTypedArray()))
     }
-//    createColorsAdapter(paints) { index, value ->
-//        onUpdate(paints.copy(colors = paints.colors.apply {
-//            this[index] = value
-//        }))
-//    }
 
 
 private fun createAdapter(

@@ -32,7 +32,10 @@ internal fun LabelledSlider(
             value = value,
             onValueChange = onValueChange,
             valueRange = min..max,
-            steps = steps,
+            steps = kotlin.math.max(
+                0,
+                steps - 2 /* Slider doesn't consider the endpoints to be steps */
+            ),
             modifier = Modifier.weight(1f),
         )
 

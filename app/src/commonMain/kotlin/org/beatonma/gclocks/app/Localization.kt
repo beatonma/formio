@@ -1,6 +1,24 @@
 package org.beatonma.gclocks.app
 
 import androidx.compose.runtime.Composable
+import gclocks_multiplatform.app.generated.resources.Res
+import gclocks_multiplatform.app.generated.resources.setting_alignment_horizontal_center
+import gclocks_multiplatform.app.generated.resources.setting_alignment_horizontal_end
+import gclocks_multiplatform.app.generated.resources.setting_alignment_horizontal_start
+import gclocks_multiplatform.app.generated.resources.setting_alignment_vertical_center
+import gclocks_multiplatform.app.generated.resources.setting_alignment_vertical_end
+import gclocks_multiplatform.app.generated.resources.setting_alignment_vertical_start
+import gclocks_multiplatform.app.generated.resources.setting_clock_layout_horizontal
+import gclocks_multiplatform.app.generated.resources.setting_clock_layout_vertical
+import gclocks_multiplatform.app.generated.resources.setting_clock_layout_wrapped
+import gclocks_multiplatform.app.generated.resources.setting_help_time_format_HH_MM_12
+import gclocks_multiplatform.app.generated.resources.setting_help_time_format_HH_MM_24
+import gclocks_multiplatform.app.generated.resources.setting_help_time_format_HH_MM_SS_12
+import gclocks_multiplatform.app.generated.resources.setting_help_time_format_HH_MM_SS_24
+import gclocks_multiplatform.app.generated.resources.setting_help_time_format_hh_MM_12
+import gclocks_multiplatform.app.generated.resources.setting_help_time_format_hh_MM_24
+import gclocks_multiplatform.app.generated.resources.setting_help_time_format_hh_MM_SS_12
+import gclocks_multiplatform.app.generated.resources.setting_help_time_format_hh_MM_SS_24
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
 import org.beatonma.gclocks.core.options.Layout
@@ -19,8 +37,8 @@ internal fun maybeStringResource(resource: StringResource?): String? =
 private class LocalizationError(message: String? = null) : IllegalArgumentException(message)
 
 data class LocalizedString(
-    private val literal: String? = null,
     private val resource: StringResource? = null,
+    private val literal: String? = null,
 ) {
     init {
         debug {
@@ -46,9 +64,9 @@ internal object Localization {
     val <E : Enum<E>> KClass<out E>.stringResourceMap: Map<E, LocalizedString>
         get() = when (this) {
             TimeFormat::class -> enumLiteral(TimeFormat.entries)
-            Layout::class -> enumLiteral(Layout.entries)
-            HorizontalAlignment::class -> enumLiteral(HorizontalAlignment.entries)
-            VerticalAlignment::class -> enumLiteral(VerticalAlignment.entries)
+            Layout::class -> layoutStrings
+            HorizontalAlignment::class -> horizontalAlignmentStrings
+            VerticalAlignment::class -> verticalAlignmentStrings
 
             else -> throw IllegalArgumentException("Unhandled class $this")
         } as Map<E, LocalizedString>
@@ -56,9 +74,38 @@ internal object Localization {
     @Suppress("UNCHECKED_CAST")
     val <E : Enum<E>> KClass<out E>.helpStringResourceMap: Map<E, LocalizedString>?
         get() = when (this) {
+            TimeFormat::class -> timeFormatHelp
             else -> null
         } as? Map<E, LocalizedString>
 
     private fun <E : Enum<E>> enumLiteral(entries: EnumEntries<E>) =
-        entries.associateWith { LocalizedString(it.name, null) }
+        entries.associateWith { LocalizedString(literal = it.name) }
+
+    private val layoutStrings = mapOf(
+        Layout.Horizontal to LocalizedString(Res.string.setting_clock_layout_horizontal),
+        Layout.Vertical to LocalizedString(Res.string.setting_clock_layout_vertical),
+        Layout.Wrapped to LocalizedString(Res.string.setting_clock_layout_wrapped),
+    )
+
+    private val horizontalAlignmentStrings = mapOf(
+        HorizontalAlignment.Start to LocalizedString(Res.string.setting_alignment_horizontal_start),
+        HorizontalAlignment.Center to LocalizedString(Res.string.setting_alignment_horizontal_center),
+        HorizontalAlignment.End to LocalizedString(Res.string.setting_alignment_horizontal_end),
+    )
+    private val verticalAlignmentStrings = mapOf(
+        VerticalAlignment.Top to LocalizedString(Res.string.setting_alignment_vertical_start),
+        VerticalAlignment.Center to LocalizedString(Res.string.setting_alignment_vertical_center),
+        VerticalAlignment.Bottom to LocalizedString(Res.string.setting_alignment_vertical_end),
+    )
+
+    private val timeFormatHelp = mapOf(
+        TimeFormat.HH_MM_SS_24 to LocalizedString(Res.string.setting_help_time_format_HH_MM_SS_24),
+        TimeFormat.hh_MM_SS_24 to LocalizedString(Res.string.setting_help_time_format_hh_MM_SS_24),
+        TimeFormat.HH_MM_24 to LocalizedString(Res.string.setting_help_time_format_HH_MM_24),
+        TimeFormat.hh_MM_24 to LocalizedString(Res.string.setting_help_time_format_hh_MM_24),
+        TimeFormat.HH_MM_SS_12 to LocalizedString(Res.string.setting_help_time_format_HH_MM_SS_12),
+        TimeFormat.hh_MM_SS_12 to LocalizedString(Res.string.setting_help_time_format_hh_MM_SS_12),
+        TimeFormat.HH_MM_12 to LocalizedString(Res.string.setting_help_time_format_HH_MM_12),
+        TimeFormat.hh_MM_12 to LocalizedString(Res.string.setting_help_time_format_hh_MM_12),
+    )
 }

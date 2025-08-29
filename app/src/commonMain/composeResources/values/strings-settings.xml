@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <!-- Alignment -->
+    <string name="setting_alignment_horizontal">Horizontal alignment</string>
+    <string name="setting_alignment_horizontal_start">Align left</string>
+    <string name="setting_alignment_horizontal_center">Align center</string>
+    <string name="setting_alignment_horizontal_end">Align right</string>
+
+    <string name="setting_alignment_vertical">Vertical alignment</string>
+    <string name="setting_alignment_vertical_start">Align top</string>
+    <string name="setting_alignment_vertical_center">Align center</string>
+    <string name="setting_alignment_vertical_end">Align bottom</string>
+
+    <!-- Clock layout -->
+    <string name="setting_clock_layout">Layout</string>
+    <string name="setting_clock_layout_horizontal">Horizontal</string>
+    <string name="setting_clock_layout_vertical">Vertical</string>
+    <string name="setting_clock_layout_wrapped">Wrapped</string>
+
+    <!-- Time format -->
+    <string name="setting_time_format">Time format</string>
+    <string name="setting_help_time_format_HH_MM_SS_24">24 hour, zero-padding</string>
+    <string name="setting_help_time_format_hh_MM_SS_24">24 hour</string>
+    <string name="setting_help_time_format_HH_MM_24">24 hour, zero-padding, no seconds</string>
+    <string name="setting_help_time_format_hh_MM_24">24 hour, no seconds</string>
+    <string name="setting_help_time_format_HH_MM_SS_12">12 hour, zero-padding</string>
+    <string name="setting_help_time_format_hh_MM_SS_12">12 hour</string>
+    <string name="setting_help_time_format_HH_MM_12">12 hour, zero-padding, no seconds</string>
+    <string name="setting_help_time_format_hh_MM_12">12 hour, no seconds</string>
+
+    <!-- Other -->
+    <string name="setting_colors">Colors</string>
+    <string name="setting_stroke_width">Stroke width</string>
+
+    <string name="setting_clock_spacing">Spacing</string>
+    <string name="setting_help_clock_spacing">Space between clock digits</string>
+    <string name="setting_second_scale">Seconds scale</string>
+    <string name="setting_help_second_scale">Size relative to hours and minutes</string>
+</resources>

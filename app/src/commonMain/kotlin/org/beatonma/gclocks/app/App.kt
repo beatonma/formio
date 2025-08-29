@@ -11,7 +11,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import org.beatonma.gclocks.app.screens.ClockSettingsScreen
 import org.beatonma.gclocks.compose.components.Clock
-import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.io18.Io18Options
 
 @Composable
@@ -23,10 +22,7 @@ fun App() {
             Clock(options, Modifier.fillMaxWidth().aspectRatio(16f / 9f))
             ClockSettingsScreen(
                 options,
-                {
-                    debug("Options updated")
-                    options = it
-                }
+                { options = it }
             )
         }
     }
