@@ -1,6 +1,7 @@
 package org.beatonma.gclocks.app.util.options
 
 import org.beatonma.gclocks.compose.components.settings.SettingsGroup
+import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.io18.Io18LayoutOptions
 import org.beatonma.gclocks.io18.Io18Options
 import org.beatonma.gclocks.io18.Io18Paints
@@ -19,12 +20,16 @@ fun createIo18OptionsAdapter(options: Io18Options, onUpdate: (Io18Options) -> Un
     )
 }
 
-private fun createAdapter(paints: Io18Paints, onUpdate: (Io18Paints) -> Unit): SettingsGroup =
-    createColorsAdapter(paints) { index, value ->
-        onUpdate(paints.copy(colors = paints.colors.apply {
-            this[index] = value
-        }))
+private fun createAdapter(paints: Io18Paints, onUpdate: (Io18Paints) -> Unit) =
+    createColorsAdapter(paints) { newValue ->
+        debug("${paints.colors.toList()} \n-> $newValue")
+        onUpdate(paints.copy(colors = newValue.toTypedArray()))
     }
+//    createColorsAdapter(paints) { index, value ->
+//        onUpdate(paints.copy(colors = paints.colors.apply {
+//            this[index] = value
+//        }))
+//    }
 
 
 private fun createAdapter(

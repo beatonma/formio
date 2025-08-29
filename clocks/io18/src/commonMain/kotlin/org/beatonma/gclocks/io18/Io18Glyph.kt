@@ -11,8 +11,8 @@ import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.util.decelerate2
-import org.beatonma.gclocks.core.util.progress
 import org.beatonma.gclocks.core.util.interpolate
+import org.beatonma.gclocks.core.util.progress
 import org.beatonma.gclocks.io18.animation.AnimatedPath
 import org.beatonma.gclocks.io18.animation.Tube
 import org.beatonma.gclocks.io18.characters.Eight
@@ -37,6 +37,7 @@ class Io18Glyph(
     role: GlyphRole,
     scale: Float = 1f,
     lock: GlyphState? = null,
+    colorsOffset: Int = 0,
     shuffleColors: Boolean = true,
 ) : BaseClockGlyph<Io18Paints>(role, scale, lock) {
     companion object : GlyphCompanion {
@@ -47,8 +48,20 @@ class Io18Glyph(
     override val companion: GlyphCompanion = Companion
     private val paintIndices: IntArray = when (shuffleColors) {
         true -> Io18Paints.getRandomPaintIndices()
-        false -> intArrayOf(0, 1, 2, 3)
+        else -> {
+            val arr = intArrayOf(0, 1, 2, 3)
+            val size = arr.size
+            arr.forEachIndexed { index, value ->
+                arr[index] = (value + colorsOffset) % size
+            }
+            arr
+        }
     }
+
+    //    private val paintIndices: IntArray = when (shuffleColors) {
+//        true -> Io18Paints.getRandomPaintIndices()
+//        false -> intArrayOf(0, 1, 2, 3)
+//    }
     private val colors: Array<Color> = Array(4) { Color.Red }
 
     private val zero = Zero(animations.animatedPath)

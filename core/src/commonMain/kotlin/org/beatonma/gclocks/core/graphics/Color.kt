@@ -1,7 +1,6 @@
 package org.beatonma.gclocks.core.graphics
 
 import org.beatonma.gclocks.core.geometry.positiveDegrees
-import kotlin.jvm.JvmInline
 import kotlin.math.min
 
 @JvmInline
@@ -72,6 +71,9 @@ value class Color(val value: ULong) {
                         (green.toLong() shl 8) or
                         (blue.toLong())).toULong()
             )
+
+        fun argb(alpha: Float, red: Float, green: Float, blue: Float): Color =
+            argb(alpha.toUByte(), red.toUByte(), green.toUByte(), blue.toUByte())
 
         /**
          * Conversion algorithm: https://en.wikipedia.org/wiki/HSL_and_HSV#HSL_to_RGB_alternative

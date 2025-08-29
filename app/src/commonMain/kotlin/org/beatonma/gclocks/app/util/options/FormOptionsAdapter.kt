@@ -19,11 +19,9 @@ fun createFormOptionsAdapter(options: FormOptions, onUpdate: (FormOptions) -> Un
     )
 }
 
-private fun createAdapter(paints: FormPaints, onUpdate: (FormPaints) -> Unit): SettingsGroup =
-    createColorsAdapter(paints) { index, value ->
-        onUpdate(paints.copy(colors = paints.colors.apply {
-            this[index] = value
-        }))
+private fun createAdapter(paints: FormPaints, onUpdate: (FormPaints) -> Unit) =
+    createColorsAdapter(paints) { colors ->
+        onUpdate(paints.copy(colors = colors.toTypedArray()))
     }
 
 private fun createAdapter(

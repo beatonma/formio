@@ -23,10 +23,8 @@ private fun createAdapter(paints: Io16Paints, onUpdate: (Io16Paints) -> Unit): S
     SettingsGroup(
         name = "Paints",
         settings = listOf(
-            createColorsAdapter(paints) { index, value ->
-                onUpdate(paints.copy(colors = paints.colors.apply {
-                    this[index] = value
-                }))
+            createColorsAdapter(paints) { colors ->
+                onUpdate(paints.copy(colors = colors.toTypedArray()))
             },
             Setting.Float(
                 name = "Width",

@@ -4,12 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect as PlatformRect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.PathMeasure as PlatformPathMeasure
-import androidx.compose.ui.graphics.Path as PlatformPath
-import androidx.compose.ui.graphics.StrokeCap as PlatformStrokeCap
-import androidx.compose.ui.graphics.StrokeJoin as PlatformStrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
@@ -25,21 +20,26 @@ import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.geometry.FloatPoint
 import org.beatonma.gclocks.core.geometry.Point
 import org.beatonma.gclocks.core.geometry.Position
-import androidx.compose.ui.graphics.drawscope.Fill as PlatformFill
-import androidx.compose.ui.graphics.drawscope.Stroke as PlatformStroke
-import androidx.compose.ui.graphics.drawscope.DrawStyle as PlatformStyle
 import org.beatonma.gclocks.core.graphics.Canvas
-import org.beatonma.gclocks.core.graphics.Path
-import org.beatonma.gclocks.core.graphics.StrokeCap
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.DrawStyle
 import org.beatonma.gclocks.core.graphics.Fill
+import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.graphics.PathMeasure
 import org.beatonma.gclocks.core.graphics.PathMeasureScope
 import org.beatonma.gclocks.core.graphics.Stroke
+import org.beatonma.gclocks.core.graphics.StrokeCap
 import org.beatonma.gclocks.core.graphics.StrokeJoin
 import org.beatonma.gclocks.core.util.debug
+import androidx.compose.ui.geometry.Rect as PlatformRect
 import androidx.compose.ui.graphics.Color as PlatformColor
+import androidx.compose.ui.graphics.Path as PlatformPath
+import androidx.compose.ui.graphics.PathMeasure as PlatformPathMeasure
+import androidx.compose.ui.graphics.StrokeCap as PlatformStrokeCap
+import androidx.compose.ui.graphics.StrokeJoin as PlatformStrokeJoin
+import androidx.compose.ui.graphics.drawscope.DrawStyle as PlatformStyle
+import androidx.compose.ui.graphics.drawscope.Fill as PlatformFill
+import androidx.compose.ui.graphics.drawscope.Stroke as PlatformStroke
 
 private val DefaultPivot = Offset.Zero
 
@@ -373,6 +373,8 @@ fun Color.toCompose(): PlatformColor = PlatformColor(
     blue = blue,
     alpha = alpha,
 )
+
+fun PlatformColor.toColor(): Color = Color.argb(alpha, red, green, blue)
 
 private fun DrawStyle.toCompose(): PlatformStyle = when (this) {
     Fill -> PlatformFill

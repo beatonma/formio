@@ -1,19 +1,21 @@
 package org.beatonma.gclocks.app.screens
 
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import org.beatonma.gclocks.app.util.options.getOptionsAdapter
-import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.components.settings.BooleanSetting
 import org.beatonma.gclocks.compose.components.settings.ColorSetting
 import org.beatonma.gclocks.compose.components.settings.FloatSetting
 import org.beatonma.gclocks.compose.components.settings.IntegerSetting
+import org.beatonma.gclocks.compose.components.settings.MultiColorSetting
 import org.beatonma.gclocks.compose.components.settings.MultiSelectSetting
 import org.beatonma.gclocks.compose.components.settings.Setting
 import org.beatonma.gclocks.compose.components.settings.SettingsGroup
@@ -26,6 +28,7 @@ import org.beatonma.gclocks.core.options.Options
 fun <O : Options<*>> ClockSettingsScreen(
     options: O,
     onEditOptions: (O) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val optionsAdapter = remember(options) {
         getOptionsAdapter(options) {
@@ -33,22 +36,18 @@ fun <O : Options<*>> ClockSettingsScreen(
         }
     }
 
-    LazyColumn {
-        item {
-            Clock(options, Modifier.fillMaxWidth().aspectRatio(16f / 9f))
-        }
-
-        item {
-            Text(options.toString())
-        }
-
+    LazyVerticalStaggeredGrid(
+//        StaggeredGridCells.Adaptive(300.dp),
+        StaggeredGridCells.Fixed(1),
+        modifier
+    ) {
         optionsAdapter.settings.map { setting ->
-            SettingOrGroup(setting)
+            SettingOrGroup(setting, Modifier.padding(bottom = 4.dp))
         }
     }
 }
 
-private fun LazyListScope.SettingOrGroup(
+private fun LazyStaggeredGridScope.SettingOrGroup(
     item: SettingsWrapper,
     modifier: Modifier = Modifier,
 ) {
@@ -58,9 +57,9 @@ private fun LazyListScope.SettingOrGroup(
     }
 }
 
-private fun LazyListScope.Group(group: SettingsGroup, modifier: Modifier = Modifier) {
+private fun LazyStaggeredGridScope.Group(group: SettingsGroup, modifier: Modifier = Modifier) {
     item {
-        Text(group.name, modifier)
+        Text(group.name, modifier, style = typography.titleSmall)
     }
 
     group.settings.forEach {
@@ -68,13 +67,17 @@ private fun LazyListScope.Group(group: SettingsGroup, modifier: Modifier = Modif
     }
 }
 
-private fun <T> LazyListScope.Setting(setting: Setting<T>, modifier: Modifier = Modifier) {
+private fun <T> LazyStaggeredGridScope.Setting(setting: Setting<T>, modifier: Modifier = Modifier) {
     when (setting) {
         is Setting.Color -> item {
             ColorSetting(
                 setting,
                 modifier = modifier,
             )
+        }
+
+        is Setting.Colors -> item {
+            MultiColorSetting(setting, modifier = modifier)
         }
 
         is Setting.SingleSelect<*> -> item {

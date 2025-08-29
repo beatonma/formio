@@ -1,8 +1,9 @@
 package org.beatonma.gclocks.core
 
+import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.geometry.Rect
-import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Canvas
+import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.graphics.Stroke
 import org.beatonma.gclocks.core.layout.ClockLayout
@@ -27,10 +28,6 @@ interface ClockRenderer<P : Paints, G : ClockGlyph<P>> {
                 layout.layoutPass { glyph, glyphAnimationProgress, rect ->
                     if (rect.isEmpty) return@layoutPass
 
-                    debug(false) {
-                        drawGlyphBoundary(canvas, paints, rect)
-                    }
-
                     withTranslationAndScale(rect.left, rect.top, glyph.scale) {
                         drawGlyph(glyph, canvas, glyphAnimationProgress, paints)
                     }
@@ -40,6 +37,14 @@ interface ClockRenderer<P : Paints, G : ClockGlyph<P>> {
                         withTranslation(rect.left, rect.top) {
                             drawText("Width: ${rect.width}")
                         }
+                    }
+
+                    debug(false) {
+                        drawGlyphBoundary(
+                            canvas,
+                            paints,
+                            MutableRectF(rect).extrude(paints.strokeWidth / 2f)
+                        )
                     }
                 }
 

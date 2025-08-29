@@ -2,16 +2,10 @@ package org.beatonma.gclocks.compose.components.settings
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.material.icons.Icons
-import androidx.compose.material3.Icon
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.RadioButton
@@ -28,6 +22,9 @@ import gclocks_multiplatform.app.generated.resources.ui_show_less
 import gclocks_multiplatform.app.generated.resources.ui_show_more
 import org.beatonma.gclocks.app.Localization.helpStringResourceMap
 import org.beatonma.gclocks.app.Localization.stringResourceMap
+import org.beatonma.gclocks.compose.AppIcon
+import org.beatonma.gclocks.compose.animation.EnterVertical
+import org.beatonma.gclocks.compose.animation.ExitVertical
 import org.beatonma.gclocks.compose.components.settings.components.CheckableSettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.OutlinedSettingLayout
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -170,7 +167,7 @@ private fun CollapsibleGroup(
         ) {
             IconButton(onClick = onClick) {
                 Icon(
-                    Icons.Default.ArrowDropDown,
+                    AppIcon.ArrowDropdown,
                     stringResource(
                         when (expanded) {
                             true -> Res.string.ui_show_less
@@ -184,8 +181,8 @@ private fun CollapsibleGroup(
 
         AnimatedVisibility(
             visible = expanded,
-            enter = fadeIn() + expandVertically(),
-            exit = fadeOut() + shrinkVertically(),
+            enter = EnterVertical,
+            exit = ExitVertical,
         ) {
             Column(content = content)
         }

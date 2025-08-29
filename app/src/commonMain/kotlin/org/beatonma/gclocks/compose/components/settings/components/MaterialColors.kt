@@ -1,4 +1,12 @@
-package org.beatonma.gclocks.compose.components.settings
+package org.beatonma.gclocks.compose.components.settings.components
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import org.beatonma.gclocks.core.graphics.Color
+
+@Composable
+fun rememberMaterialColorSwatch(): List<Color> =
+    remember { MaterialColorSwatch.map(::Color) }
 
 const val MaterialRed50 = 0xffFFEBEE_UL
 const val MaterialRed100 = 0xffFFCDD2_UL
@@ -563,8 +571,6 @@ val MaterialColors
 
 val MaterialColorSwatch
     get() = arrayOf(
-        0xff000000_UL,
-        0xffffffff_UL,
         MaterialRed500,
         MaterialPink500,
         MaterialPurple500,
@@ -582,6 +588,8 @@ val MaterialColorSwatch
         MaterialOrange500,
         MaterialDeepOrange500,
         MaterialBrown500,
-        MaterialGrey500,
-        MaterialBlueGrey500,
+        0xff000000_UL, // Black
+        0xffffffff_UL, // White
+        MaterialGrey400,
+//        MaterialBlueGrey500,
     )

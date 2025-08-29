@@ -1,0 +1,77 @@
+package org.beatonma.gclocks.compose.animation
+
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
+
+private const val Scale = 0.95f
+private const val Duration = 300
+private val EaseInOut = CubicBezierEasing(0.4f, 0f, 0.8f, 1f)
+
+val EnterVertical: EnterTransition =
+    fadeIn(
+        tween(
+            durationMillis = Duration * 1 / 2,
+            delayMillis = Duration * 1 / 2,
+            easing = FastOutSlowInEasing,
+        )
+    ) + scaleIn(
+        tween(
+            durationMillis = Duration * 2 / 3,
+            delayMillis = Duration * 1 / 3,
+            easing = LinearEasing,
+        ),
+        initialScale = Scale,
+    ) + expandVertically(
+        tween(
+            durationMillis = Duration,
+            easing = FastOutSlowInEasing,
+        )
+    )
+
+
+val ExitVertical: ExitTransition =
+    fadeOut(
+        tween(durationMillis = Duration, easing = FastOutLinearInEasing)
+    ) + scaleOut(
+        tween(durationMillis = Duration, easing = LinearEasing),
+        targetScale = Scale,
+    ) + shrinkVertically(
+        tween(
+            durationMillis = Duration * 1 / 2,
+            delayMillis = Duration * 1 / 2,
+            easing = EaseInOut
+        )
+    )
+
+val EnterScale: EnterTransition = fadeIn(
+    tween(
+        durationMillis = Duration * 1 / 2,
+        delayMillis = Duration * 1 / 2,
+        easing = FastOutSlowInEasing,
+    )
+) + scaleIn(
+    tween(
+        durationMillis = Duration * 2 / 3,
+        delayMillis = Duration * 1 / 3,
+        easing = LinearEasing,
+    ),
+    initialScale = Scale,
+)
+
+val ExitScale: ExitTransition = fadeOut(
+    tween(durationMillis = Duration, easing = FastOutLinearInEasing)
+) + scaleOut(
+    tween(durationMillis = Duration, easing = LinearEasing),
+    targetScale = Scale,
+)

@@ -34,6 +34,14 @@ sealed interface Setting<T> : SettingsWrapper {
         override val onValueChange: (GraphicsColor) -> Unit,
     ) : Setting<GraphicsColor>
 
+    data class Colors(
+        override val name: String,
+        override val localized: LocalizedString = LocalizedString(literal = name),
+        override val helpText: LocalizedString? = null,
+        override val value: List<GraphicsColor>,
+        override val onValueChange: (List<GraphicsColor>) -> Unit,
+    ) : Setting<List<GraphicsColor>>
+
     data class SingleSelect<E : Enum<E>>(
         override val name: String,
         override val localized: LocalizedString = LocalizedString(literal = name),

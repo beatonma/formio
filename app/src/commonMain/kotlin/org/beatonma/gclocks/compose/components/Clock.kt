@@ -8,16 +8,16 @@ import org.beatonma.gclocks.compose.rememberCanvas
 import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.ClockFont
 import org.beatonma.gclocks.core.ClockGlyph
-import org.beatonma.gclocks.core.layout.ClockLayout
 import org.beatonma.gclocks.core.ClockRenderer
 import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.graphics.Paints
+import org.beatonma.gclocks.core.layout.ClockLayout
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.TimeOfDay
 import org.beatonma.gclocks.core.util.getTime
+import org.beatonma.gclocks.form.FormClockRenderer
 import org.beatonma.gclocks.form.FormFont
 import org.beatonma.gclocks.form.FormOptions
-import org.beatonma.gclocks.form.FormClockRenderer
 import org.beatonma.gclocks.io16.Io16ClockRenderer
 import org.beatonma.gclocks.io16.Io16Font
 import org.beatonma.gclocks.io16.Io16GlyphRenderer
@@ -59,7 +59,7 @@ private fun <Opts : Options<*>> rememberClockAnimator(
     forcedState: GlyphState?,
 ): ClockAnimator<*, *> {
     val path = remember { ComposePath() }
-    return remember(forcedState) {
+    return remember(options, forcedState) {
         when (options) {
             is FormOptions -> createAnimator(
                 options,
@@ -72,7 +72,8 @@ private fun <Opts : Options<*>> rememberClockAnimator(
                 Io16Font(
                     debugGetGlyphAt = if (forcedState == null) null else ({ glyph ->
                         glyph.apply { setState(forcedState, force = true) }
-                    })
+                    }),
+                    randomiseSegmentOffset = false,
                 ),
                 Io16ClockRenderer(
                     Io16GlyphRenderer(path, options),
@@ -82,7 +83,7 @@ private fun <Opts : Options<*>> rememberClockAnimator(
 
             is Io18Options -> createAnimator(
                 options,
-                Io18Font(path),
+                Io18Font(path, shuffleColors = false, offsetColors = true),
                 Io18Renderer(options.paints)
             )
 

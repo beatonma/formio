@@ -11,6 +11,7 @@ private val BaseWidth = Io18Glyph.maxSize.width
 class Io18Font(
     path: Path,
     private val shuffleColors: Boolean = true,
+    private val offsetColors: Boolean = true,
 ) :
     ClockFont<Io18Paints, Io18Glyph> {
     override val lineHeight: Float = Io18Glyph.maxSize.height
@@ -39,6 +40,13 @@ class Io18Font(
             else -> 1f
         }
 
-        return Io18Glyph(animations, role, scale, lock, shuffleColors = shuffleColors)
+        return Io18Glyph(
+            animations,
+            role,
+            scale,
+            lock,
+            shuffleColors = shuffleColors,
+            colorsOffset = if (offsetColors) index else 0
+        )
     }
 }
