@@ -10,7 +10,7 @@ import org.beatonma.gclocks.compose.components.settings.components.SettingName
 
 @Composable
 fun BooleanSetting(
-    setting: Setting.Bool,
+    setting: RichSetting.Bool,
     modifier: Modifier = Modifier,
 ) {
     BooleanSetting(

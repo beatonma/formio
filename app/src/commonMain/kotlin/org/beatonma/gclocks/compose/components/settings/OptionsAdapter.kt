@@ -1,63 +1,89 @@
 package org.beatonma.gclocks.compose.components.settings
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import org.beatonma.gclocks.app.LocalizedString
+import org.beatonma.gclocks.core.options.Options
 import kotlin.enums.EnumEntries
 import org.beatonma.gclocks.core.graphics.Color as GraphicsColor
 
-interface SettingsWrapper
+interface OptionsAdapter
 
 
-data class SettingsGroup(
-    val name: String,
-    val settings: List<SettingsWrapper>,
-) : SettingsWrapper
+/**
+ * A wrapper for [Options] to allow editing by the user.
+ */
+abstract class ClockSettings<O : Options<*>>(
+    options: O,
+    private val onSave: (O) -> Unit,
+) {
+    private var _options: O by mutableStateOf(options)
+    var options: O
+        get() = _options
+        set(value) {
+            _options = value
+            richSettings = buildOptionsAdapter(value)
+        }
+
+    var richSettings: List<OptionsAdapter> by mutableStateOf(buildOptionsAdapter(options))
+        private set
+
+    fun save() {
+        onSave(options)
+    }
+
+    abstract fun buildOptionsAdapter(options: O): List<OptionsAdapter>
+}
 
 
-sealed interface Setting<T> : SettingsWrapper {
-    val key: String
+data class RichSettingsGroup(
+    val settings: List<OptionsAdapter>,
+) : OptionsAdapter
+
+
+/**
+ * Wrapper for a specific [Options] field, with localized display test and
+ * (optional) help text.
+ */
+sealed interface RichSetting<T : Any, Serialized : Any?> : OptionsAdapter {
     val localized: LocalizedString
     val helpText: LocalizedString?
     val value: T
     val onValueChange: (T) -> Unit
 
-
     data class Color(
-        override val key: String,
         override val localized: LocalizedString,
         override val helpText: LocalizedString? = null,
         override val value: GraphicsColor,
         override val onValueChange: (GraphicsColor) -> Unit,
-    ) : Setting<GraphicsColor>
+    ) : RichSetting<GraphicsColor, String>
 
     data class Colors(
-        override val key: String,
         override val localized: LocalizedString,
         override val helpText: LocalizedString? = null,
         override val value: List<GraphicsColor>,
         override val onValueChange: (List<GraphicsColor>) -> Unit,
-    ) : Setting<List<GraphicsColor>>
+    ) : RichSetting<List<GraphicsColor>, List<String>>
 
     data class SingleSelect<E : Enum<E>>(
-        override val key: String,
         override val localized: LocalizedString,
         override val helpText: LocalizedString? = null,
         override val value: E,
         val values: EnumEntries<E>,
         override val onValueChange: (E) -> Unit,
-    ) : Setting<E>
+    ) : RichSetting<E, String>
 
 
     data class MultiSelect<E : Enum<E>>(
-        override val key: String,
         override val localized: LocalizedString,
         override val helpText: LocalizedString? = null,
         override val value: Set<E>,
         val values: EnumEntries<E>,
         override val onValueChange: (Set<E>) -> Unit,
-    ) : Setting<Set<E>>
+    ) : RichSetting<Set<E>, List<String>>
 
     data class Int(
-        override val key: String,
         override val localized: LocalizedString,
         override val helpText: LocalizedString? = null,
         override val value: kotlin.Int,
@@ -66,10 +92,9 @@ sealed interface Setting<T> : SettingsWrapper {
         val max: kotlin.Int,
         val stepSize: kotlin.Int = 1,
         override val onValueChange: (kotlin.Int) -> Unit,
-    ) : Setting<kotlin.Int>
+    ) : RichSetting<kotlin.Int, kotlin.Int>
 
     data class Float(
-        override val key: String,
         override val localized: LocalizedString,
         override val helpText: LocalizedString? = null,
         override val value: kotlin.Float,
@@ -78,13 +103,12 @@ sealed interface Setting<T> : SettingsWrapper {
         val max: kotlin.Float,
         val stepSize: kotlin.Float,
         override val onValueChange: (kotlin.Float) -> Unit,
-    ) : Setting<kotlin.Float>
+    ) : RichSetting<kotlin.Float, kotlin.Float>
 
     data class Bool(
-        override val key: String,
         override val localized: LocalizedString,
         override val helpText: LocalizedString? = null,
         override val value: Boolean,
         override val onValueChange: (Boolean) -> Unit,
-    ) : Setting<Boolean>
+    ) : RichSetting<Boolean, Boolean>
 }

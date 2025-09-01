@@ -1,4 +1,4 @@
-package org.beatonma.gclocks.app.util.options
+package org.beatonma.gclocks.app.settings.clocks
 
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.setting_alignment_horizontal
@@ -11,7 +11,7 @@ import gclocks_multiplatform.app.generated.resources.setting_help_second_scale
 import gclocks_multiplatform.app.generated.resources.setting_second_scale
 import gclocks_multiplatform.app.generated.resources.setting_time_format
 import org.beatonma.gclocks.app.LocalizedString
-import org.beatonma.gclocks.compose.components.settings.Setting
+import org.beatonma.gclocks.compose.components.settings.RichSetting
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
 import org.beatonma.gclocks.core.graphics.Color
@@ -23,8 +23,7 @@ import org.beatonma.gclocks.core.options.TimeFormat
 internal fun createColorsAdapter(
     paints: Paints,
     onValueChange: (value: List<Color>) -> Unit,
-) = Setting.Colors(
-    key = "colors",
+) = RichSetting.Colors(
     localized = LocalizedString(Res.string.setting_colors),
     helpText = null,
     value = paints.colors.toList(),
@@ -32,8 +31,7 @@ internal fun createColorsAdapter(
 )
 
 internal fun chooseLayout(value: Layout, onUpdate: (Layout) -> Unit) =
-    Setting.SingleSelect(
-        key = "layout",
+    RichSetting.SingleSelect(
         localized = LocalizedString(Res.string.setting_clock_layout),
         helpText = null,
         value = value,
@@ -45,8 +43,7 @@ internal fun chooseHorizontalAlignment(
     value: HorizontalAlignment,
     onUpdate: (HorizontalAlignment) -> Unit,
 ) =
-    Setting.SingleSelect(
-        key = "horizontal_alignment",
+    RichSetting.SingleSelect(
         localized = LocalizedString(Res.string.setting_alignment_horizontal),
         value = value,
         values = HorizontalAlignment.entries,
@@ -57,8 +54,7 @@ internal fun chooseVerticalAlignment(
     value: VerticalAlignment,
     onUpdate: (VerticalAlignment) -> Unit,
 ) =
-    Setting.SingleSelect(
-        key = "vertical_alignment",
+    RichSetting.SingleSelect(
         localized = LocalizedString(Res.string.setting_alignment_vertical),
         value = value,
         values = VerticalAlignment.entries,
@@ -67,8 +63,7 @@ internal fun chooseVerticalAlignment(
 
 
 internal fun chooseTimeFormat(value: TimeFormat, onUpdate: (TimeFormat) -> Unit) =
-    Setting.SingleSelect(
-        key = "time_format",
+    RichSetting.SingleSelect(
         localized = LocalizedString(Res.string.setting_time_format),
         value = value,
         values = TimeFormat.entries,
@@ -77,8 +72,7 @@ internal fun chooseTimeFormat(value: TimeFormat, onUpdate: (TimeFormat) -> Unit)
 
 
 internal fun chooseSpacing(value: Int, onUpdate: (Int) -> Unit, default: Int, max: Int) =
-    Setting.Int(
-        key = "spacing",
+    RichSetting.Int(
         localized = LocalizedString(Res.string.setting_clock_spacing),
         helpText = LocalizedString(Res.string.setting_help_clock_spacing),
         value = value,
@@ -90,8 +84,7 @@ internal fun chooseSpacing(value: Int, onUpdate: (Int) -> Unit, default: Int, ma
 
 
 internal fun chooseSecondScale(value: Float, onUpdate: (Float) -> Unit) =
-    Setting.Float(
-        key = "second_scale",
+    RichSetting.Float(
         localized = LocalizedString(Res.string.setting_second_scale),
         helpText = LocalizedString(Res.string.setting_help_second_scale),
         value = value,

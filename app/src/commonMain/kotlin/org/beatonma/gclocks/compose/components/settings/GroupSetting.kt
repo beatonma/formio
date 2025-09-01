@@ -36,7 +36,7 @@ import kotlin.enums.EnumEntries
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun <E : Enum<E>> SingleSelectSetting(
-    setting: Setting.SingleSelect<E>,
+    setting: RichSetting.SingleSelect<E>,
     modifier: Modifier = Modifier,
 ) {
     SingleSelectSetting(
@@ -85,7 +85,7 @@ fun <E : Enum<E>> SingleSelectSetting(
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun <E : Enum<E>> MultiSelectSetting(
-    setting: Setting.MultiSelect<E>,
+    setting: RichSetting.MultiSelect<E>,
     modifier: Modifier = Modifier,
     defaultValue: E = setting.values.first(),
     allowEmptySet: Boolean = false,

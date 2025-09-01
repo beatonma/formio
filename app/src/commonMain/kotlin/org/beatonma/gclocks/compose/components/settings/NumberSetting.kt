@@ -15,7 +15,7 @@ import kotlin.math.roundToInt
 
 @Composable
 fun IntegerSetting(
-    setting: Setting.Int,
+    setting: RichSetting.Int,
     modifier: Modifier = Modifier,
 ) {
     IntegerSetting(
@@ -60,7 +60,7 @@ fun IntegerSetting(
 
 @Composable
 fun FloatSetting(
-    setting: Setting.Float,
+    setting: RichSetting.Float,
     modifier: Modifier = Modifier,
 ) {
     FloatSetting(

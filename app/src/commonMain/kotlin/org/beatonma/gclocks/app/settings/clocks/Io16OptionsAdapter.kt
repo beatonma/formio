@@ -1,36 +1,42 @@
-package org.beatonma.gclocks.app.util.options
+package org.beatonma.gclocks.app.settings.clocks
 
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.setting_stroke_width
 import org.beatonma.gclocks.app.LocalizedString
-import org.beatonma.gclocks.compose.components.settings.Setting
-import org.beatonma.gclocks.compose.components.settings.SettingsGroup
+import org.beatonma.gclocks.compose.components.settings.ClockSettings
+import org.beatonma.gclocks.compose.components.settings.OptionsAdapter
+import org.beatonma.gclocks.compose.components.settings.RichSetting
+import org.beatonma.gclocks.compose.components.settings.RichSettingsGroup
 import org.beatonma.gclocks.io16.Io16LayoutOptions
 import org.beatonma.gclocks.io16.Io16Options
 import org.beatonma.gclocks.io16.Io16Paints
 
-fun createIo16OptionsAdapter(options: Io16Options, onUpdate: (Io16Options) -> Unit): SettingsGroup =
-    SettingsGroup(
-        name = "io16",
-        settings = listOf(
-            createAdapter(options.paints) { paints ->
-                onUpdate(options.copy(paints = paints))
+
+class Io16OptionsAdapter(
+    options: Io16Options,
+    onSave: (Io16Options) -> Unit,
+) :
+    ClockSettings<Io16Options>(options, onSave) {
+
+    override fun buildOptionsAdapter(options: Io16Options): List<OptionsAdapter> {
+        return listOf(
+            createAdapter(options.paints) {
+                this.options = options.copy(paints = it)
             },
-            createAdapter(options.layout) { layout ->
-                onUpdate(options.copy(layout = layout))
+            createAdapter(options.layout) {
+                this.options = options.copy(layout = it)
             },
         )
-    )
+    }
+}
 
-private fun createAdapter(paints: Io16Paints, onUpdate: (Io16Paints) -> Unit): SettingsGroup =
-    SettingsGroup(
-        name = "Paints",
+private fun createAdapter(paints: Io16Paints, onUpdate: (Io16Paints) -> Unit): OptionsAdapter =
+    RichSettingsGroup(
         settings = listOf(
             createColorsAdapter(paints) { colors ->
                 onUpdate(paints.copy(colors = colors.toTypedArray()))
             },
-            Setting.Float(
-                key = "stroke_width",
+            RichSetting.Float(
                 localized = LocalizedString(Res.string.setting_stroke_width),
                 value = paints.strokeWidth,
                 default = 2f,
@@ -46,9 +52,8 @@ private fun createAdapter(paints: Io16Paints, onUpdate: (Io16Paints) -> Unit): S
 private fun createAdapter(
     layoutOptions: Io16LayoutOptions,
     onUpdate: (Io16LayoutOptions) -> Unit,
-): SettingsGroup =
-    SettingsGroup(
-        name = "Layout",
+): OptionsAdapter =
+    RichSettingsGroup(
         settings = listOf(
             chooseLayout(layoutOptions.layout, { onUpdate(layoutOptions.copy(layout = it)) }),
             chooseHorizontalAlignment(

@@ -1,25 +1,31 @@
-package org.beatonma.gclocks.app.util.options
+package org.beatonma.gclocks.app.settings.clocks
 
-import org.beatonma.gclocks.compose.components.settings.SettingsGroup
+import org.beatonma.gclocks.compose.components.settings.ClockSettings
+import org.beatonma.gclocks.compose.components.settings.OptionsAdapter
+import org.beatonma.gclocks.compose.components.settings.RichSettingsGroup
 import org.beatonma.gclocks.form.FormLayoutOptions
 import org.beatonma.gclocks.form.FormOptions
 import org.beatonma.gclocks.form.FormPaints
 
-fun createFormOptionsAdapter(options: FormOptions, onUpdate: (FormOptions) -> Unit): SettingsGroup {
-    return SettingsGroup(
-        name = "FORM",
-        settings = listOf(
+
+class FormOptionsAdapter(
+    options: FormOptions,
+    onSave: (FormOptions) -> Unit,
+) : ClockSettings<FormOptions>(options, onSave) {
+    override fun buildOptionsAdapter(options: FormOptions): List<OptionsAdapter> {
+        return listOf(
             createAdapter(options.paints) {
-                onUpdate(options.copy(paints = it))
+                this.options = options.copy(paints = it)
             },
             createAdapter(options.layout) {
-                onUpdate(options.copy(layout = it))
+                this.options = options.copy(layout = it)
             },
         )
-    )
+    }
 }
 
-private fun createAdapter(paints: FormPaints, onUpdate: (FormPaints) -> Unit) =
+
+private fun createAdapter(paints: FormPaints, onUpdate: (FormPaints) -> Unit): OptionsAdapter =
     createColorsAdapter(paints) { colors ->
         onUpdate(paints.copy(colors = colors.toTypedArray()))
     }
@@ -27,9 +33,8 @@ private fun createAdapter(paints: FormPaints, onUpdate: (FormPaints) -> Unit) =
 private fun createAdapter(
     layoutOptions: FormLayoutOptions,
     onUpdate: (FormLayoutOptions) -> Unit,
-): SettingsGroup =
-    SettingsGroup(
-        name = "Layout",
+): OptionsAdapter =
+    RichSettingsGroup(
         settings = listOf(
             chooseLayout(layoutOptions.layout, { onUpdate(layoutOptions.copy(layout = it)) }),
             chooseHorizontalAlignment(

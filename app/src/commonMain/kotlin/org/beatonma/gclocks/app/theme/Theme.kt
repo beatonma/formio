@@ -1,4 +1,4 @@
-package  org.beatonma.gclocks.app
+package org.beatonma.gclocks.app.theme
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ColorScheme

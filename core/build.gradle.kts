@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinxSerialization)
 }
 
 
@@ -52,6 +53,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(libs.androidx.annotation)
+                implementation(libs.kotlinx.serialization.json)
             }
             kotlin.srcDir(generatedSrcDir)
         }

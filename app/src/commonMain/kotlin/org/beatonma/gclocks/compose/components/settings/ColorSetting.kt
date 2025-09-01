@@ -49,11 +49,11 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 
 @Composable
 fun MultiColorSetting(
-    setting: Setting.Colors,
+    setting: RichSetting.Colors,
     modifier: Modifier = Modifier,
 ) {
     MultiColorSetting(
-        setting.key,
+        setting.localized.resolve(),
         setting.value,
         { index, color ->
             val value = setting.value.toMutableList()
@@ -135,7 +135,7 @@ fun MultiColorSetting(
 
 @Composable
 fun ColorSetting(
-    setting: Setting.Color,
+    setting: RichSetting.Color,
     modifier: Modifier = Modifier,
 ) {
     ColorSetting(

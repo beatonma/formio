@@ -1,8 +1,16 @@
 package org.beatonma.gclocks.core.graphics
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import org.beatonma.gclocks.core.geometry.positiveDegrees
 import kotlin.math.min
 
+@Serializable(with = ColorAsStringSerializer::class)
 @JvmInline
 value class Color(val value: ULong) {
     val alpha: Int get() = (value shr 24).toInt() and 0xff
@@ -61,7 +69,7 @@ value class Color(val value: ULong) {
     fun toStringArgb(): String = argb().joinToString("") { it.toString(16).padStart(2, '0') }
 
     override fun toString(): String =
-        "Color(argb#${argb().joinToString("") { it.toString(16).padStart(2, '0') }} [$value])"
+        "Color(argb#${argb().joinToString("") { it.toString(16).padStart(2, '0') }})"
 
     companion object {
         fun argb(alpha: UByte, red: UByte, green: UByte, blue: UByte): Color =
@@ -150,36 +158,48 @@ private fun Int.normalised(): Float = this.toFloat() / 255f
  * - A 6-character RGB hex string (with or without '#')
  * - An 8-character ARGB hex string (with or without '#')
  * - ULong.toString()
+ *
+ * @throws NumberFormatException if the string is not a valid representation of a number.
  */
-fun String.toColor(): Color? {
+fun String.toColor(): Color {
     val hex = this.removePrefix("#")
 
-    return try {
-        when (hex.length) {
-            3 -> {
-                val (r, g, b) = hex.map {
-                    "$it$it".toUByte(16)
-                }
-                Color.argb(255u, r, g, b)
+    return when (hex.length) {
+        3 -> {
+            val (r, g, b) = hex.map {
+                "$it$it".toUByte(16)
             }
-
-            6 -> {
-                val (r, g, b) = arrayOf(0, 2, 4).map { index ->
-                    "${hex[index]}${hex[index + 1]}".toUByte(16)
-                }
-                Color.argb(255u, r, g, b)
-            }
-
-            8 -> {
-                val (a, r, g, b) = arrayOf(0, 2, 4, 6).map { index ->
-                    "${hex[index]}${hex[index + 1]}".toUByte(16)
-                }
-                Color.argb(a, r, g, b)
-            }
-
-            else -> this.toULong().toColor()
+            Color.argb(255u, r, g, b)
         }
-    } catch (e: NumberFormatException) {
-        null
+
+        6 -> {
+            val (r, g, b) = arrayOf(0, 2, 4).map { index ->
+                "${hex[index]}${hex[index + 1]}".toUByte(16)
+            }
+            Color.argb(255u, r, g, b)
+        }
+
+        8 -> {
+            val (a, r, g, b) = arrayOf(0, 2, 4, 6).map { index ->
+                "${hex[index]}${hex[index + 1]}".toUByte(16)
+            }
+            Color.argb(a, r, g, b)
+        }
+
+        else -> this.toULong().toColor()
     }
+}
+
+private object ColorAsStringSerializer : KSerializer<Color> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("org.beatonma.gclocks.core.graphics.Color", PrimitiveKind.STRING)
+
+    override fun serialize(
+        encoder: Encoder,
+        value: Color,
+    ) {
+        encoder.encodeString(value.toStringArgb())
+    }
+
+    override fun deserialize(decoder: Decoder): Color = decoder.decodeString().toColor()
 }
