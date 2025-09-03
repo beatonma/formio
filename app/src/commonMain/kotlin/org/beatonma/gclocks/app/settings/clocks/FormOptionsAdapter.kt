@@ -1,6 +1,6 @@
 package org.beatonma.gclocks.app.settings.clocks
 
-import org.beatonma.gclocks.compose.components.settings.ClockSettings
+import org.beatonma.gclocks.app.ClockSettingsViewModel
 import org.beatonma.gclocks.compose.components.settings.OptionsAdapter
 import org.beatonma.gclocks.compose.components.settings.RichSettingsGroup
 import org.beatonma.gclocks.form.FormLayoutOptions
@@ -8,17 +8,17 @@ import org.beatonma.gclocks.form.FormOptions
 import org.beatonma.gclocks.form.FormPaints
 
 
-class FormOptionsAdapter(
+class FormOptionsViewModel(
     options: FormOptions,
-    onSave: (FormOptions) -> Unit,
-) : ClockSettings<FormOptions>(options, onSave) {
+    onChangeOptions: suspend (FormOptions) -> Unit,
+) : ClockSettingsViewModel<FormOptions>(options, onChangeOptions) {
     override fun buildOptionsAdapter(options: FormOptions): List<OptionsAdapter> {
         return listOf(
             createAdapter(options.paints) {
-                this.options = options.copy(paints = it)
+                update(this.options.value.copy(paints = it))
             },
             createAdapter(options.layout) {
-                this.options = options.copy(layout = it)
+                update(this.options.value.copy(layout = it))
             },
         )
     }

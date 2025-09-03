@@ -9,7 +9,7 @@ import java.io.File
 
 fun createDataStore(): DataStore<Preferences> = createDataStore {
     val home = System.getProperty("user.home")
-    val directory = File(home, ".gclocks")
+    val directory = File(home, "org.beatonma.gclocks")
 
     File(directory, DataStoreFileName).path.dump("datastore")
 }

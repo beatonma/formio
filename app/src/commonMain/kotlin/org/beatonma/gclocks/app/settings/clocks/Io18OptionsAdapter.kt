@@ -1,6 +1,6 @@
 package org.beatonma.gclocks.app.settings.clocks
 
-import org.beatonma.gclocks.compose.components.settings.ClockSettings
+import org.beatonma.gclocks.app.ClockSettingsViewModel
 import org.beatonma.gclocks.compose.components.settings.OptionsAdapter
 import org.beatonma.gclocks.compose.components.settings.RichSettingsGroup
 import org.beatonma.gclocks.core.util.debug
@@ -9,19 +9,19 @@ import org.beatonma.gclocks.io18.Io18Options
 import org.beatonma.gclocks.io18.Io18Paints
 
 
-class Io18OptionsAdapter(
+class Io18OptionsViewModel(
     options: Io18Options,
-    onSave: (Io18Options) -> Unit,
+    onChangeOptions: suspend (Io18Options) -> Unit,
 ) :
-    ClockSettings<Io18Options>(options, onSave) {
+    ClockSettingsViewModel<Io18Options>(options, onChangeOptions) {
 
     override fun buildOptionsAdapter(options: Io18Options): List<OptionsAdapter> {
         return listOf(
             createAdapter(options.paints) {
-                this.options = options.copy(paints = it)
+                update(this.options.value.copy(paints = it))
             },
             createAdapter(options.layout) {
-                this.options = options.copy(layout = it)
+                update(this.options.value.copy(layout = it))
             },
         )
     }

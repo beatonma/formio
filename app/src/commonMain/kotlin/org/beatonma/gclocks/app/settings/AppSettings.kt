@@ -1,21 +1,50 @@
 package org.beatonma.gclocks.app.settings
 
-import kotlinx.serialization.KSerializer
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.buildClassSerialDescriptor
-import kotlinx.serialization.descriptors.element
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.encoding.decodeStructure
-import kotlinx.serialization.encoding.encodeStructure
-import kotlinx.serialization.serializer
+import kotlinx.serialization.json.Json
 import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.form.FormOptions
 import org.beatonma.gclocks.io16.Io16Options
 import org.beatonma.gclocks.io18.Io18Options
+import kotlin.enums.enumEntries
 
+
+private val CurrentStatePreference = stringPreferencesKey("state")
+private val SettingsContext.preference get() = stringPreferencesKey("context_$name")
+
+
+fun DataStore<Preferences>.loadAppSettings(): Flow<AppSettings> {
+    return data.mapLatest { preferences ->
+        try {
+            return@mapLatest AppSettings(
+                state = Json.decodeFromString(preferences[CurrentStatePreference]!!),
+                settings = enumEntries<SettingsContext>().associateWith {
+                    Json.decodeFromString(preferences[it.preference]!!)
+                }
+            )
+        } catch (e: Exception) {
+            debug("Failed to load preferences: $e")
+        }
+        return@mapLatest DefaultAppSettings
+    }
+}
+
+suspend fun DataStore<Preferences>.saveAppSettings(appSettings: AppSettings) {
+    edit { prefs ->
+        prefs[CurrentStatePreference] = Json.encodeToString(appSettings.state)
+
+        enumEntries<SettingsContext>().forEach {
+            prefs[it.preference] = Json.encodeToString(appSettings.settings[it])
+        }
+    }
+}
 
 /**
  * Context in which a set of [org.beatonma.gclocks.core.options.Options] is applied.
@@ -28,125 +57,56 @@ data class ContextSettings(
     val form: FormOptions = FormOptions(),
     val io16: Io16Options = Io16Options(),
     val io18: Io18Options = Io18Options(),
+) {
+    fun get(clock: AppSettings.Clock): Options<*> = when (clock) {
+        AppSettings.Clock.Form -> this.form
+        AppSettings.Clock.Io16 -> this.io16
+        AppSettings.Clock.Io18 -> this.io18
+    }
+}
+
+@Serializable
+data class AppState(
+    val context: SettingsContext,
+    val clock: AppSettings.Clock,
 )
 
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-@Serializable(with = AppSettingsSerializer::class)
-expect class AppSettings(
-    defaultContext: SettingsContext,
-    defaultClock: CommonAppSettings.Companion.Clock,
-    settings: Map<SettingsContext, ContextSettings>,
-) : CommonAppSettings
+@Serializable
+data class AppSettings(
+    val state: AppState,
+    val settings: Map<SettingsContext, ContextSettings>,
+) {
+    val options: Options<*> get() = getSettings(state.context).get(state.clock)
 
-expect val DefaultAppSettings: AppSettings
-
-interface CommonAppSettings {
-    var context: SettingsContext
-
-    var clock: Clock
-    var settings: Map<SettingsContext, ContextSettings>
-
-    suspend fun getSettings(context: SettingsContext): ContextSettings =
-        settings[context] ?: ContextSettings()
-
-    suspend fun <O : Options<*>> saveSettings(context: SettingsContext, options: O) {
+    fun copyWithOptions(options: Options<*>): AppSettings {
         val updated = settings.toMutableMap().apply {
-            val ctx = this[context] ?: ContextSettings()
-
-            this[context] = when (options) {
-                is FormOptions -> ctx.copy(form = options)
-                is Io16Options -> ctx.copy(io16 = options)
-                is Io18Options -> ctx.copy(io18 = options)
+            val previous = this[state.context] ?: ContextSettings()
+            this[state.context] = when (options) {
+                is FormOptions -> previous.copy(form = options)
+                is Io16Options -> previous.copy(io16 = options)
+                is Io18Options -> previous.copy(io18 = options)
                 else -> throw IllegalStateException("Unhandled options class ${options::class}")
             }
         }
 
-        this.settings = updated.toMap()
-        save()
+        return copy(settings = updated.toMap())
     }
 
-    suspend fun save()
+    private fun getSettings(context: SettingsContext): ContextSettings =
+        settings[context] ?: ContextSettings()
+
+    enum class Clock {
+        Form,
+        Io16,
+        Io18,
+        ;
+    }
 
     companion object {
-        enum class Clock {
-            Form,
-            Io16,
-            Io18,
-            ;
-        }
+        val DefaultSettings get() = SettingsContext.entries.associateWith { ContextSettings() }
     }
 }
 
 
-object AppSettingsSerializer : KSerializer<AppSettings> {
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor(
-        "org.beatonma.gclocks.app.options.AppSettings"
-    ) {
-        element<SettingsContext>("context")
-        element<CommonAppSettings.Companion.Clock>("clock")
-        element<Map<SettingsContext, ContextSettings>>("settings")
-    }
-
-    override fun serialize(
-        encoder: Encoder,
-        value: AppSettings,
-    ) {
-        encoder.encodeStructure(descriptor) {
-            encodeSerializableElement(descriptor, 0, serializer<SettingsContext>(), value.context)
-            encodeSerializableElement(
-                descriptor,
-                1,
-                serializer<CommonAppSettings.Companion.Clock>(),
-                value.clock
-            )
-            encodeSerializableElement(
-                descriptor,
-                2,
-                MapSerializer(serializer<SettingsContext>(), serializer<ContextSettings>()),
-                value.settings
-            )
-        }
-    }
-
-    override fun deserialize(decoder: Decoder): AppSettings {
-        return decoder.decodeStructure(descriptor) {
-            var context: SettingsContext? = null
-            var clock: CommonAppSettings.Companion.Clock? = null
-            var settings: Map<SettingsContext, ContextSettings>? = null
-
-            while (true) {
-                when (val index = decodeElementIndex(descriptor)) {
-                    0 -> context =
-                        decodeSerializableElement(descriptor, 0, serializer<SettingsContext>())
-
-                    1 -> clock =
-                        decodeSerializableElement(
-                            descriptor,
-                            1,
-                            serializer<CommonAppSettings.Companion.Clock>()
-                        )
-
-                    2 -> settings =
-                        decodeSerializableElement(
-                            descriptor,
-                            1,
-                            MapSerializer(
-                                serializer<SettingsContext>(),
-                                serializer<ContextSettings>()
-                            )
-                        )
-
-                    -1 -> break
-                    else -> error("Unknown index $index")
-                }
-            }
-
-            AppSettings(
-                context ?: error("context was not deserialized"),
-                clock ?: error("clock was not deserialized"),
-                settings ?: error("settings were not deserialized")
-            )
-        }
-    }
-}
+expect val DefaultAppSettings: AppSettings

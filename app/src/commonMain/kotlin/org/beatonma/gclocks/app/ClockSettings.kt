@@ -5,7 +5,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.beatonma.gclocks.compose.components.settings.BooleanSetting
-import org.beatonma.gclocks.compose.components.settings.ClockSettings
 import org.beatonma.gclocks.compose.components.settings.ColorSetting
 import org.beatonma.gclocks.compose.components.settings.FloatSetting
 import org.beatonma.gclocks.compose.components.settings.IntegerSetting
@@ -15,14 +14,14 @@ import org.beatonma.gclocks.compose.components.settings.OptionsAdapter
 import org.beatonma.gclocks.compose.components.settings.RichSetting
 import org.beatonma.gclocks.compose.components.settings.RichSettingsGroup
 import org.beatonma.gclocks.compose.components.settings.SingleSelectSetting
-import org.beatonma.gclocks.core.options.Options
 
 
-fun <O : Options<*>> LazyStaggeredGridScope.ClockSettings(settings: ClockSettings<O>) {
-    settings.richSettings.map { setting ->
+fun LazyStaggeredGridScope.ClockSettingsItems(settings: List<OptionsAdapter>) {
+    settings.map { setting ->
         SettingOrGroup(setting, Modifier.padding(bottom = 8.dp))
     }
 }
+
 
 private fun LazyStaggeredGridScope.SettingOrGroup(
     item: OptionsAdapter,
@@ -30,7 +29,7 @@ private fun LazyStaggeredGridScope.SettingOrGroup(
 ) {
     when (item) {
         is RichSettingsGroup -> Group(item, modifier)
-        is RichSetting<*, *> -> Setting(item, modifier)
+        is RichSetting<*> -> Setting(item, modifier)
     }
 }
 
@@ -41,7 +40,7 @@ private fun LazyStaggeredGridScope.Group(group: RichSettingsGroup, modifier: Mod
 }
 
 private fun <T : Any> LazyStaggeredGridScope.Setting(
-    setting: RichSetting<T, *>,
+    setting: RichSetting<T>,
     modifier: Modifier = Modifier,
 ) {
     when (setting) {

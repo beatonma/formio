@@ -2,8 +2,8 @@ package org.beatonma.gclocks.app.settings.clocks
 
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.setting_stroke_width
+import org.beatonma.gclocks.app.ClockSettingsViewModel
 import org.beatonma.gclocks.app.LocalizedString
-import org.beatonma.gclocks.compose.components.settings.ClockSettings
 import org.beatonma.gclocks.compose.components.settings.OptionsAdapter
 import org.beatonma.gclocks.compose.components.settings.RichSetting
 import org.beatonma.gclocks.compose.components.settings.RichSettingsGroup
@@ -12,19 +12,17 @@ import org.beatonma.gclocks.io16.Io16Options
 import org.beatonma.gclocks.io16.Io16Paints
 
 
-class Io16OptionsAdapter(
+class Io16OptionsViewModel(
     options: Io16Options,
-    onSave: (Io16Options) -> Unit,
-) :
-    ClockSettings<Io16Options>(options, onSave) {
-
+    onChangeOptions: suspend (Io16Options) -> Unit,
+) : ClockSettingsViewModel<Io16Options>(options, onChangeOptions) {
     override fun buildOptionsAdapter(options: Io16Options): List<OptionsAdapter> {
         return listOf(
             createAdapter(options.paints) {
-                this.options = options.copy(paints = it)
+                update(this.options.value.copy(paints = it))
             },
             createAdapter(options.layout) {
-                this.options = options.copy(layout = it)
+                update(this.options.value.copy(layout = it))
             },
         )
     }

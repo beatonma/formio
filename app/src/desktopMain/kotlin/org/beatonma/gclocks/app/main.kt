@@ -1,5 +1,6 @@
 package org.beatonma.gclocks.app
 
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -7,8 +8,8 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import org.beatonma.gclocks.app.settings.dataStore
-import org.beatonma.gclocks.app.settings.loadAppSettings
+import androidx.lifecycle.viewmodel.compose.viewModel
+import org.beatonma.gclocks.app.settings.createDataStore
 
 fun main() = application {
     val windowState = rememberWindowState(
@@ -16,11 +17,19 @@ fun main() = application {
         size = DpSize(400.dp, 800.dp),
     )
 
+    val factory = remember {
+        AppViewModelFactory(
+            repository = DataStoreAppSettingsRepository(createDataStore())
+        )
+    }
+
     Window(
         state = windowState,
         onCloseRequest = ::exitApplication,
         title = "gclocks-multiplatform",
     ) {
-        App(dataStore.loadAppSettings())
+        val viewModel: AppViewModel = viewModel(factory = factory)
+
+        App(viewModel)
     }
 }
