@@ -72,9 +72,9 @@ internal class SquareGrid(
         val maxCells = floor(progress * cellCount)
         var count = 0
 
-        canvas.drawPath(color, style) {
-            for (col in columns) {
-                for (row in rows) {
+        for (col in columns) {
+            for (row in rows) {
+                canvas.drawPath(color, style) {
                     if (++count > maxCells) return@drawPath
                     canvas.rect(
                         col * spaceBetween + left,

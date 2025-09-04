@@ -1,5 +1,6 @@
 package org.beatonma.gclocks.app.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -14,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 enum class Theme {
     Light,
     Dark,
+    System,
     ;
 }
 
@@ -33,11 +35,17 @@ fun AppTheme(
     }
 }
 
-private fun getColorScheme(theme: Theme): ColorScheme {
+@Composable
+fun getColorScheme(theme: Theme): ColorScheme {
     return when (theme) {
         Theme.Light -> lightColorScheme()
         Theme.Dark -> darkColorScheme(
             background = Color(red = 9, green = 7, blue = 13)
+        )
+
+        Theme.System -> getColorScheme(
+            if (isSystemInDarkTheme()) Theme.Dark
+            else Theme.Light
         )
     }
 }

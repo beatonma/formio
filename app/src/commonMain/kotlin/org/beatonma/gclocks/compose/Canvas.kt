@@ -44,9 +44,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke as PlatformStroke
 private val DefaultPivot = Offset.Zero
 
 @Composable
-fun rememberCanvas(): ComposeCanvas {
+fun rememberCanvasHost(): ComposeCanvasHost {
     val textMeasurer = rememberTextMeasurer()
-    val canvas = remember { ComposeCanvas(textMeasurer) }
+    val canvas = remember { ComposeCanvasHost(textMeasurer) }
     return canvas
 }
 
@@ -156,214 +156,212 @@ class ComposePathMeasure(
 
 private typealias CanvasAction = Canvas.() -> Unit
 
-class ComposeCanvas(
+class ComposeCanvasHost(
     private val textMeasurer: TextMeasurer,
     private val path: ComposePath = ComposePath(),
-) : Canvas, Path by path {
-    private var _drawScope: DrawScope? = null
-    private val drawScope: DrawScope get() = _drawScope!!
+) {
+    inline fun withScope(drawScope: DrawScope, block: (Canvas) -> Unit) {
+        block(ComposeCanvas(drawScope))
+    }
 
-    private val pathMeasure: PathMeasure by lazy {
-        ComposePathMeasure().apply {
-            setPath(path)
+    inner class ComposeCanvas(private val drawScope: DrawScope) : Canvas, Path by path {
+
+        private val pathMeasure: PathMeasure by lazy {
+            ComposePathMeasure().apply {
+                setPath(path)
+            }
         }
-    }
 
-    override fun measurePath(block: PathMeasureScope.() -> Unit) {
-        pathMeasure.setPath(path)
-        pathMeasure.apply(block)
-    }
-
-    fun withScope(scope: DrawScope, block: ComposeCanvas.() -> Unit) {
-        _drawScope = scope
-        block()
-        _drawScope = null
-    }
-
-    override fun drawCircle(
-        color: Color,
-        centerX: Float,
-        centerY: Float,
-        radius: Float,
-        style: DrawStyle,
-        alpha: Float,
-    ) {
-        drawScope.drawCircle(
-            color = color.toCompose(),
-            radius = radius,
-            center = Offset(centerX, centerY),
-            style = style.toCompose(),
-        )
-    }
-
-    override fun drawLine(
-        color: Color,
-        x1: Float,
-        y1: Float,
-        x2: Float,
-        y2: Float,
-        style: Stroke,
-        alpha: Float,
-    ) {
-        drawScope.drawLine(
-            color = color.toCompose(),
-            start = Offset(x1, y1),
-            end = Offset(x2, y2),
-            strokeWidth = style.width,
-            cap = style.cap.toCompose(),
-        )
-    }
-
-    override fun drawPath(
-        color: Color,
-        style: DrawStyle,
-        alpha: Float,
-    ) {
-        drawPath(path, color, style, alpha)
-    }
-
-    override fun drawPath(path: Path, color: Color, style: DrawStyle, alpha: Float) {
-        drawScope.drawPath(
-            (path as ComposePath).composePath,
-            color = color.toCompose(),
-            alpha = alpha,
-            style = style.toCompose(),
-        )
-    }
-
-    override fun drawPoint(
-        x: Float,
-        y: Float,
-        radius: Float,
-        color: Color,
-        style: DrawStyle,
-        alpha: Float,
-    ) {
-        drawScope.drawCircle(
-            color.toCompose(),
-            radius = radius,
-            center = Offset(x, y),
-            style = style.toCompose(),
-            alpha = alpha,
-        )
-    }
-
-    override fun drawRoundRect(
-        color: Color,
-        left: Float,
-        top: Float,
-        right: Float,
-        bottom: Float,
-        radius: Float,
-        style: DrawStyle,
-        alpha: Float,
-    ) {
-        drawScope.drawRoundRect(
-            color = color.toCompose(),
-            topLeft = Offset(left, top),
-            size = Size(right - left, bottom - top),
-            cornerRadius = CornerRadius(radius),
-            style = style.toCompose(),
-            alpha = alpha,
-        )
-    }
-
-    override fun drawText(text: String) {
-        drawScope.drawText(
-            textMeasurer,
-            text,
-            Offset.Zero,
-            style = TextStyle(
-                fontSize = 10.sp,
-                color = PlatformColor.White,
-                background = PlatformColor.DarkGray.copy(alpha = 0.2f),
-            ),
-            overflow = TextOverflow.Visible,
-        )
-    }
-
-    override fun withRotation(
-        angle: Angle,
-        pivotX: Float,
-        pivotY: Float,
-        block: CanvasAction,
-    ) {
-        drawScope.rotate(angle.asDegrees, Offset(pivotX, pivotY)) {
-            block()
+        override fun measurePath(block: PathMeasureScope.() -> Unit) {
+            pathMeasure.setPath(path)
+            pathMeasure.apply(block)
         }
-    }
 
-    override fun withScale(
-        scale: Float,
-        block: CanvasAction,
-    ) {
-        drawScope.scale(scale, pivot = DefaultPivot) {
-            block()
+        override fun drawCircle(
+            color: Color,
+            centerX: Float,
+            centerY: Float,
+            radius: Float,
+            style: DrawStyle,
+            alpha: Float,
+        ) {
+            drawScope.drawCircle(
+                color = color.toCompose(),
+                radius = radius,
+                center = Offset(centerX, centerY),
+                style = style.toCompose(),
+            )
         }
-    }
 
-    override fun withScale(scaleX: Float, scaleY: Float, block: Canvas.() -> Unit) {
-        drawScope.scale(scaleX, scaleY, pivot = DefaultPivot) {
-            block()
+        override fun drawLine(
+            color: Color,
+            x1: Float,
+            y1: Float,
+            x2: Float,
+            y2: Float,
+            style: Stroke,
+            alpha: Float,
+        ) {
+            drawScope.drawLine(
+                color = color.toCompose(),
+                start = Offset(x1, y1),
+                end = Offset(x2, y2),
+                strokeWidth = style.width,
+                cap = style.cap.toCompose(),
+            )
         }
-    }
 
-    override fun withScale(
-        scale: Float,
-        pivotX: Float,
-        pivotY: Float,
-        block: CanvasAction,
-    ) {
-        drawScope.scale(scale, pivot = Offset(pivotX, pivotY)) {
-            block()
+        override fun drawPath(
+            color: Color,
+            style: DrawStyle,
+            alpha: Float,
+        ) {
+            drawPath(path, color, style, alpha)
         }
-    }
 
-    override fun withScale(
-        scaleX: Float,
-        scaleY: Float,
-        pivotX: Float,
-        pivotY: Float,
-        block: CanvasAction,
-    ) {
-        drawScope.scale(scaleX, scaleY, pivot = Offset(pivotX, pivotY)) {
-            block()
+        override fun drawPath(path: Path, color: Color, style: DrawStyle, alpha: Float) {
+            drawScope.drawPath(
+                (path as ComposePath).composePath,
+                color = color.toCompose(),
+                alpha = alpha,
+                style = style.toCompose(),
+            )
         }
-    }
 
-    override fun withTranslation(
-        x: Float,
-        y: Float,
-        block: CanvasAction,
-    ) {
-        drawScope.translate(x, y) {
-            block()
+        override fun drawPoint(
+            x: Float,
+            y: Float,
+            radius: Float,
+            color: Color,
+            style: DrawStyle,
+            alpha: Float,
+        ) {
+            drawScope.drawCircle(
+                color.toCompose(),
+                radius = radius,
+                center = Offset(x, y),
+                style = style.toCompose(),
+                alpha = alpha,
+            )
         }
-    }
 
-    override fun withTranslationAndScale(
-        x: Float,
-        y: Float,
-        scale: Float,
-        block: CanvasAction,
-    ) {
-        drawScope.withTransform({
-            translate(x, y)
-            scale(scale, pivot = DefaultPivot)
-        }) {
-            block()
+        override fun drawRoundRect(
+            color: Color,
+            left: Float,
+            top: Float,
+            right: Float,
+            bottom: Float,
+            radius: Float,
+            style: DrawStyle,
+            alpha: Float,
+        ) {
+            drawScope.drawRoundRect(
+                color = color.toCompose(),
+                topLeft = Offset(left, top),
+                size = Size(right - left, bottom - top),
+                cornerRadius = CornerRadius(radius),
+                style = style.toCompose(),
+                alpha = alpha,
+            )
         }
-    }
 
-    override fun save() {
-        drawScope.drawContext.canvas.save()
-    }
+        override fun drawText(text: String) {
+            drawScope.drawText(
+                textMeasurer,
+                text,
+                Offset.Zero,
+                style = TextStyle(
+                    fontSize = 10.sp,
+                    color = PlatformColor.White,
+                    background = PlatformColor.DarkGray.copy(alpha = 0.2f),
+                ),
+                overflow = TextOverflow.Visible,
+            )
+        }
 
-    override fun restore() {
-        drawScope.drawContext.canvas.restore()
-    }
+        override fun withRotation(
+            angle: Angle,
+            pivotX: Float,
+            pivotY: Float,
+            block: CanvasAction,
+        ) {
+            drawScope.rotate(angle.asDegrees, Offset(pivotX, pivotY)) {
+                block()
+            }
+        }
 
-    override fun clear() {}
+        override fun withScale(
+            scale: Float,
+            block: CanvasAction,
+        ) {
+            drawScope.scale(scale, pivot = DefaultPivot) {
+                block()
+            }
+        }
+
+        override fun withScale(scaleX: Float, scaleY: Float, block: Canvas.() -> Unit) {
+            drawScope.scale(scaleX, scaleY, pivot = DefaultPivot) {
+                block()
+            }
+        }
+
+        override fun withScale(
+            scale: Float,
+            pivotX: Float,
+            pivotY: Float,
+            block: CanvasAction,
+        ) {
+            drawScope.scale(scale, pivot = Offset(pivotX, pivotY)) {
+                block()
+            }
+        }
+
+        override fun withScale(
+            scaleX: Float,
+            scaleY: Float,
+            pivotX: Float,
+            pivotY: Float,
+            block: CanvasAction,
+        ) {
+            drawScope.scale(scaleX, scaleY, pivot = Offset(pivotX, pivotY)) {
+                block()
+            }
+        }
+
+        override fun withTranslation(
+            x: Float,
+            y: Float,
+            block: CanvasAction,
+        ) {
+            drawScope.translate(x, y) {
+                block()
+            }
+        }
+
+        override fun withTranslationAndScale(
+            x: Float,
+            y: Float,
+            scale: Float,
+            block: CanvasAction,
+        ) {
+            drawScope.withTransform({
+                translate(x, y)
+                scale(scale, pivot = DefaultPivot)
+            }) {
+                block()
+            }
+        }
+
+        override fun save() {
+            drawScope.drawContext.canvas.save()
+        }
+
+        override fun restore() {
+            drawScope.drawContext.canvas.restore()
+        }
+
+        override fun clear() {}
+    }
 }
 
 

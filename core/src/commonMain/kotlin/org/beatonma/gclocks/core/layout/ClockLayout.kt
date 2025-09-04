@@ -75,4 +75,8 @@ class ClockLayout<P : Paints, G : ClockGlyph<P>>(
     internal fun measureFrame(callback: OnMeasure) {
         layout.measureFrame(glyphs.glyphs, callback)
     }
+
+    override fun toString(): String {
+        return "ClockLayout(Constraints=${layout.constraints}, scale=$scale)"
+    }
 }

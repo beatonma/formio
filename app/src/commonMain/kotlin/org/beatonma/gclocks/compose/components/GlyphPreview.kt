@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import org.beatonma.gclocks.compose.rememberCanvas
+import org.beatonma.gclocks.compose.rememberCanvasHost
 import org.beatonma.gclocks.core.Glyph
 import org.beatonma.gclocks.core.GlyphRenderer
 import org.beatonma.gclocks.core.geometry.ConstrainedLayout
@@ -48,13 +48,13 @@ fun <P : Paints, G : Glyph<P>> GlyphPreview(
             }
         )
     }
-    val canvas = rememberCanvas()
+    val canvasHost = rememberCanvasHost()
     var flag by remember { mutableStateOf(false) }
 
     Box(modifier) {
         ConstrainedCanvas(preview, Modifier.fillMaxSize()) {
-            canvas.withScope(this) {
-                preview.draw(this, animProgress, paints)
+            canvasHost.withScope(this) { canvas ->
+                preview.draw(canvas, animProgress, paints)
             }
             if (animPosition == null) {
                 animProgress = getTime().run {

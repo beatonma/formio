@@ -28,6 +28,7 @@ value class Color(val value: ULong) {
         )
     }
 
+    fun toArgbInt(): Int = (alpha shl 24) or (red shl 16) or (green shl 8) or blue
     fun toRgbInt(): Int = (red shl 16) or (green shl 8) or blue
 
     fun rgb() = arrayOf(red, green, blue)

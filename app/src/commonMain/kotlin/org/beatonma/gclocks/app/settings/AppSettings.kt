@@ -40,10 +40,12 @@ suspend fun DataStore<Preferences>.saveAppSettings(appSettings: AppSettings) {
     edit { prefs ->
         prefs[CurrentStatePreference] = Json.encodeToString(appSettings.state)
 
-        enumEntries<SettingsContext>().forEach {
-            prefs[it.preference] = Json.encodeToString(appSettings.settings[it])
+        enumEntries<SettingsContext>().forEach { context ->
+            prefs[context.preference] =
+                Json.encodeToString(appSettings.settings[context])
         }
     }
+
 }
 
 /**
@@ -54,11 +56,12 @@ expect enum class SettingsContext
 /** Per-context set of options for each clock type. */
 @Serializable
 data class ContextSettings(
+    val clock: AppSettings.Clock = AppSettings.Clock.Default,
     val form: FormOptions = FormOptions(),
     val io16: Io16Options = Io16Options(),
     val io18: Io18Options = Io18Options(),
 ) {
-    fun get(clock: AppSettings.Clock): Options<*> = when (clock) {
+    fun get(clock: AppSettings.Clock = this.clock): Options<*> = when (clock) {
         AppSettings.Clock.Form -> this.form
         AppSettings.Clock.Io16 -> this.io16
         AppSettings.Clock.Io18 -> this.io18
@@ -79,13 +82,17 @@ data class AppSettings(
 ) {
     val options: Options<*> get() = getSettings(state.context).get(state.clock)
 
+    fun getOptions(context: SettingsContext): Options<*> {
+        return getSettings(context).get()
+    }
+
     fun copyWithOptions(options: Options<*>): AppSettings {
         val updated = settings.toMutableMap().apply {
             val previous = this[state.context] ?: ContextSettings()
             this[state.context] = when (options) {
-                is FormOptions -> previous.copy(form = options)
-                is Io16Options -> previous.copy(io16 = options)
-                is Io18Options -> previous.copy(io18 = options)
+                is FormOptions -> previous.copy(clock = Clock.Form, form = options)
+                is Io16Options -> previous.copy(clock = Clock.Io16, io16 = options)
+                is Io18Options -> previous.copy(clock = Clock.Io18, io18 = options)
                 else -> throw IllegalStateException("Unhandled options class ${options::class}")
             }
         }
@@ -101,6 +108,10 @@ data class AppSettings(
         Io16,
         Io18,
         ;
+
+        companion object {
+            val Default get() = Form
+        }
     }
 
     companion object {

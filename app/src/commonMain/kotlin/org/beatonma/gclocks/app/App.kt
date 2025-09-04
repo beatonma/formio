@@ -6,11 +6,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -34,7 +33,11 @@ import org.beatonma.gclocks.app.settings.AppSettings
 import org.beatonma.gclocks.app.theme.AppTheme
 import org.beatonma.gclocks.app.theme.Material3.extendedFloatingActionButton
 import org.beatonma.gclocks.compose.Loading
+import org.beatonma.gclocks.compose.VerticalBottomContentPadding
 import org.beatonma.gclocks.compose.components.Clock
+import org.beatonma.gclocks.compose.horizontal
+import org.beatonma.gclocks.compose.plus
+import org.beatonma.gclocks.compose.vertical
 import org.beatonma.gclocks.core.options.Options
 import kotlin.enums.enumEntries
 
@@ -68,7 +71,8 @@ fun App(
                 onEditOptions = {
                     onEditSettings(appSettings.copyWithOptions(it))
                 },
-                key = "${state.context}_${state.clock}"
+                key = "${state.context}_${state.clock}",
+//                modifier = Modifier.safeDrawingPadding()
             )
 
             Row(
@@ -124,10 +128,11 @@ private fun <O : Options<*>> ClockSettings(
     LazyVerticalStaggeredGrid(
         StaggeredGridCells.Adaptive(minSize = 300.dp),
         modifier
-            .fillMaxHeight()
+            .fillMaxSize()
             .widthIn(max = 800.dp)
-            .fillMaxWidth(),
-        contentPadding = WindowInsets.systemBars.asPaddingValues()
+            .padding(WindowInsets.safeContent.asPaddingValues().horizontal()),
+        contentPadding = WindowInsets.safeContent.asPaddingValues()
+            .vertical() + VerticalBottomContentPadding
     ) {
         item {
             Clock(

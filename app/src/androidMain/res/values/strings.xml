@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">gclocks-multiplatform</string>
+    <string name="wallpaper_description">Clocks wallpaper</string>
+    <string name="widget_description">Clocks widget</string>
 </resources>
