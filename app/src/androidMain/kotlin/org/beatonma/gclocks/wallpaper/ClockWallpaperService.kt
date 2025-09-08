@@ -14,7 +14,8 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.beatonma.gclocks.android.AndroidCanvasHost
 import org.beatonma.gclocks.android.AndroidPath
-import org.beatonma.gclocks.app.settings.SettingsContext
+import org.beatonma.gclocks.app.settings.ContextClockOptions
+import org.beatonma.gclocks.app.settings.DisplayContext
 import org.beatonma.gclocks.app.settings.settingsRepository
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.ClockAnimator
@@ -46,10 +47,10 @@ class ClockWallpaperService : WallpaperService() {
     }
 
     private inner class ClockEngine : Engine() {
-        private val settings: Flow<Options<*>> = settingsRepository
+        private val settings: Flow<ContextClockOptions<*>> = settingsRepository
             .load()
             .mapLatest {
-                it.getOptions(SettingsContext.LiveWallpaper)
+                it.getOptions(DisplayContext.LiveWallpaper)
             }
         private val canvasHost = AndroidCanvasHost()
         private var animator: ClockAnimator<*, *>? = null
@@ -62,7 +63,7 @@ class ClockWallpaperService : WallpaperService() {
         init {
             engineScope.launch {
                 settings.collect {
-                    animator = createAnimator(it)
+                    animator = createAnimator(it.clock)
                     invalidate()
                 }
             }

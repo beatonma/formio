@@ -1,15 +1,10 @@
 package org.beatonma.gclocks.app.settings
 
-actual enum class SettingsContext {
-    Default,
-    Alternative
-    ;
-}
 
 actual val DefaultAppSettings: AppSettings
     get() = AppSettings(
         AppState(
-            SettingsContext.Default,
+            DisplayContext.Default,
             AppSettings.Clock.Form,
         ),
         AppSettings.DefaultSettings,

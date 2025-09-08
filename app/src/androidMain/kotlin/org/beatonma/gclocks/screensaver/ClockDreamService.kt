@@ -13,9 +13,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.launch
-import org.beatonma.gclocks.android.ClockView
-import org.beatonma.gclocks.app.settings.SettingsContext
+import org.beatonma.gclocks.app.settings.ContextClockOptions
+import org.beatonma.gclocks.app.settings.DisplayContext
 import org.beatonma.gclocks.app.settings.settingsRepository
 import org.beatonma.gclocks.core.options.Options
 
@@ -25,7 +24,7 @@ import org.beatonma.gclocks.core.options.Options
  */
 class ClockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwner {
     @OptIn(ExperimentalCoroutinesApi::class)
-    private lateinit var settings: Flow<Options<*>>
+    private lateinit var settings: Flow<ContextClockOptions<*>>
 
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
     override val savedStateRegistry: SavedStateRegistry
@@ -39,7 +38,7 @@ class ClockDreamService : DreamService(), LifecycleOwner, SavedStateRegistryOwne
         dispatcher.onServicePreSuperOnCreate()
         super.onCreate()
         settings = settingsRepository.load()
-            .mapLatest { it.getOptions(SettingsContext.Screensaver) }
+            .mapLatest { it.getOptions(DisplayContext.Screensaver) }
 
         savedStateRegistryController.performAttach()
         savedStateRegistryController.performRestore(null)

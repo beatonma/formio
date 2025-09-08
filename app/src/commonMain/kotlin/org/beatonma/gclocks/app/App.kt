@@ -10,9 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContent
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedButton
@@ -30,14 +27,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.beatonma.gclocks.app.settings.AppSettings
+import org.beatonma.gclocks.app.settings.AppState
+import org.beatonma.gclocks.app.settings.ContextClockOptions
 import org.beatonma.gclocks.app.theme.AppTheme
 import org.beatonma.gclocks.app.theme.Material3.extendedFloatingActionButton
 import org.beatonma.gclocks.compose.Loading
-import org.beatonma.gclocks.compose.VerticalBottomContentPadding
 import org.beatonma.gclocks.compose.components.Clock
-import org.beatonma.gclocks.compose.horizontal
-import org.beatonma.gclocks.compose.plus
-import org.beatonma.gclocks.compose.vertical
+import org.beatonma.gclocks.compose.components.settings.components.ScrollingColumn
 import org.beatonma.gclocks.core.options.Options
 import kotlin.enums.enumEntries
 
@@ -64,50 +60,38 @@ fun App(
     onSave: () -> Unit,
 ) {
     val state = appSettings.state
+
     AppTheme {
         Box(Modifier.fillMaxSize()) {
             ClockSettings(
                 appSettings.options,
                 onEditOptions = {
-                    onEditSettings(appSettings.copyWithOptions(it))
+                    onEditSettings(appSettings.copyWithOptions(it.clock, it.display))
                 },
                 key = "${state.context}_${state.clock}",
-//                modifier = Modifier.safeDrawingPadding()
             )
 
-            Row(
-                Modifier
-                    .align(Alignment.BottomEnd)
-                    .extendedFloatingActionButton(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Dropdown(state.context, {
-                    onEditSettings(appSettings.copy(state = appSettings.state.copy(context = it)))
-                })
-                Dropdown(state.clock, {
-                    onEditSettings(appSettings.copy(state = appSettings.state.copy(clock = it)))
-                })
-
-                ExtendedFloatingActionButton(onSave) {
-                    Text("Save changes")
-                }
-            }
+            Actions(
+                state,
+                onEditState = { onEditSettings(appSettings.copy(state = it)) },
+                onSave = onSave,
+                modifier = Modifier.align(Alignment.BottomEnd)
+            )
         }
     }
 }
 
 @Composable
 private fun <O : Options<*>> ClockSettings(
-    options: O,
-    onEditOptions: suspend (O) -> Unit,
+    options: ContextClockOptions<O>,
+    onEditOptions: suspend (ContextClockOptions<O>) -> Unit,
     key: String,
     modifier: Modifier = Modifier,
 ) {
-    val viewmodel: ClockSettingsViewModel<O> = viewModel(
+    val viewmodel: SettingsViewModel<O> = viewModel(
         key = key,
         factory = remember(options, onEditOptions) {
-            ClockSettingsViewModelFactory(
+            SettingsViewModelFactory(
                 options,
                 onEditOptions = onEditOptions,
             )
@@ -119,24 +103,16 @@ private fun <O : Options<*>> ClockSettings(
 
 @Composable
 private fun <O : Options<*>> ClockSettings(
-    viewModel: ClockSettingsViewModel<O>,
+    viewModel: SettingsViewModel<O>,
     modifier: Modifier = Modifier,
 ) {
-    val options by viewModel.options.collectAsState()
+    val options by viewModel.contextOptions.collectAsState()
     val richSettings by viewModel.richSettings.collectAsState()
 
-    LazyVerticalStaggeredGrid(
-        StaggeredGridCells.Adaptive(minSize = 300.dp),
-        modifier
-            .fillMaxSize()
-            .widthIn(max = 800.dp)
-            .padding(WindowInsets.safeContent.asPaddingValues().horizontal()),
-        contentPadding = WindowInsets.safeContent.asPaddingValues()
-            .vertical() + VerticalBottomContentPadding
-    ) {
+    ScrollingColumn(modifier.fillMaxSize().padding(WindowInsets.safeContent.asPaddingValues())) {
         item {
             Clock(
-                options,
+                options.clock,
                 Modifier.background(Color.DarkGray)
                     .heightIn(min = 200.dp, max = 400.dp)
             )
@@ -146,6 +122,72 @@ private fun <O : Options<*>> ClockSettings(
     }
 }
 
+
+//@Composable
+//private fun <O : Options<*>> ClockSettings(
+//    options: O,
+//    onEditOptions: suspend (O) -> Unit,
+//    key: String,
+//    modifier: Modifier = Modifier,
+//) {
+//    val viewmodel: ClockSettingsViewModel<O> = viewModel(
+//        key = key,
+//        factory = remember(options, onEditOptions) {
+//            ClockSettingsViewModelFactory(
+//                options,
+//                onEditOptions = onEditOptions,
+//            )
+//        }
+//    )
+//
+//    ClockSettings(viewmodel, modifier)
+//}
+//@Composable
+//private fun <O : Options<*>> ClockSettings(
+//    viewModel: ClockSettingsViewModel<O>,
+//    modifier: Modifier = Modifier,
+//) {
+//    val options by viewModel.options.collectAsState()
+//    val richSettings by viewModel.richSettings.collectAsState()
+//
+//    ScrollingColumn(modifier.fillMaxSize().padding(WindowInsets.safeContent.asPaddingValues())) {
+//        item {
+//            Clock(
+//                options,
+//                Modifier.background(Color.DarkGray)
+//                    .heightIn(min = 200.dp, max = 400.dp)
+//            )
+//        }
+//
+//        ClockSettingsItems(richSettings)
+//    }
+//}
+
+@Composable
+private fun Actions(
+    state: AppState,
+    onEditState: (AppState) -> Unit,
+    onSave: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier
+            .extendedFloatingActionButton(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Dropdown(state.context, {
+            onEditState(state.copy(context = it))
+        })
+        Dropdown(state.clock, {
+            onEditState(state.copy(clock = it))
+        })
+
+        ExtendedFloatingActionButton(onSave) {
+            Text("Save changes")
+        }
+    }
+}
 
 @Composable
 private inline fun <reified E : Enum<E>> Dropdown(

@@ -20,7 +20,7 @@ import androidx.glance.text.TextStyle
 import kotlinx.coroutines.flow.mapLatest
 import org.beatonma.gclocks.android.AndroidCanvasHost
 import org.beatonma.gclocks.android.AndroidPath
-import org.beatonma.gclocks.app.settings.SettingsContext
+import org.beatonma.gclocks.app.settings.DisplayContext
 import org.beatonma.gclocks.app.settings.settingsRepository
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.options.Options
@@ -56,7 +56,7 @@ class ClockWidget : GlanceAppWidget() {
         val density = context.resources.displayMetrics.density
         provideContent {
             val optionsState = context.settingsRepository.load()
-                .mapLatest { it.getOptions(SettingsContext.Widget) }
+                .mapLatest { it.getOptions(DisplayContext.Widget) }
                 .collectAsState(null)
             val options = optionsState.value ?: return@provideContent
 
@@ -72,7 +72,7 @@ class ClockWidget : GlanceAppWidget() {
             Image(
                 ImageProvider(
                     createBitmap(
-                        options,
+                        options.clock,
                         (size.width.value * density).roundToInt(),
                         (size.height.value * density).roundToInt()
                     )

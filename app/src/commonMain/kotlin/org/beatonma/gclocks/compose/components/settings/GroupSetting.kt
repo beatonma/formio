@@ -30,7 +30,6 @@ import org.beatonma.gclocks.compose.components.settings.components.SettingName
 import org.beatonma.gclocks.compose.components.settings.components.SettingValue
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.stringResource
-import kotlin.enums.EnumEntries
 
 
 @OptIn(ExperimentalResourceApi::class)
@@ -55,13 +54,13 @@ fun <E : Enum<E>> SingleSelectSetting(
 fun <E : Enum<E>> SingleSelectSetting(
     name: String,
     value: E,
-    values: EnumEntries<E>,
+    values: Set<E>,
     modifier: Modifier = Modifier,
     helpText: String? = null,
     onValueChange: (newValue: E) -> Unit,
 ) {
-    val resourceMap = remember { value::class.stringResourceMap }
-    val helpResourceMap = remember { value::class.helpStringResourceMap }
+    val resourceMap by remember(value) { mutableStateOf(value::class.stringResourceMap) }
+    val helpResourceMap by remember(value) { mutableStateOf(value::class.helpStringResourceMap) }
 
     CollapsibleGroup(name, modifier, helpText) {
         for (v in values) {
@@ -107,15 +106,15 @@ fun <E : Enum<E>> MultiSelectSetting(
 fun <E : Enum<E>> MultiSelectSetting(
     name: String,
     value: Set<E>,
-    values: EnumEntries<E>,
+    values: Set<E>,
     onValueChange: (newValue: Set<E>) -> Unit,
     modifier: Modifier = Modifier,
     helpText: String? = null,
     defaultValue: E = values.first(),
     allowEmptySet: Boolean = false,
 ) {
-    val resourceMap = remember { defaultValue::class.stringResourceMap }
-    val helpResourceMap = remember { defaultValue::class.helpStringResourceMap }
+    val resourceMap by remember(defaultValue) { mutableStateOf(defaultValue::class.stringResourceMap) }
+    val helpResourceMap by remember(defaultValue) { mutableStateOf(defaultValue::class.helpStringResourceMap) }
 
     CollapsibleGroup(name, modifier, helpText) {
         for (v in values) {

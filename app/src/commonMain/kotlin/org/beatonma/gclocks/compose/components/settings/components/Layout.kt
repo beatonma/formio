@@ -90,7 +90,6 @@ internal fun ScrollingColumn(
     scope: CoroutineScope = rememberCoroutineScope(),
     content: LazyListScope.() -> Unit,
 ) {
-
     LazyColumn(
         modifier.draggable(
             orientation = Orientation.Vertical,
