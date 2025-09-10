@@ -123,46 +123,6 @@ private fun <O : Options<*>> ClockSettings(
 }
 
 
-//@Composable
-//private fun <O : Options<*>> ClockSettings(
-//    options: O,
-//    onEditOptions: suspend (O) -> Unit,
-//    key: String,
-//    modifier: Modifier = Modifier,
-//) {
-//    val viewmodel: ClockSettingsViewModel<O> = viewModel(
-//        key = key,
-//        factory = remember(options, onEditOptions) {
-//            ClockSettingsViewModelFactory(
-//                options,
-//                onEditOptions = onEditOptions,
-//            )
-//        }
-//    )
-//
-//    ClockSettings(viewmodel, modifier)
-//}
-//@Composable
-//private fun <O : Options<*>> ClockSettings(
-//    viewModel: ClockSettingsViewModel<O>,
-//    modifier: Modifier = Modifier,
-//) {
-//    val options by viewModel.options.collectAsState()
-//    val richSettings by viewModel.richSettings.collectAsState()
-//
-//    ScrollingColumn(modifier.fillMaxSize().padding(WindowInsets.safeContent.asPaddingValues())) {
-//        item {
-//            Clock(
-//                options,
-//                Modifier.background(Color.DarkGray)
-//                    .heightIn(min = 200.dp, max = 400.dp)
-//            )
-//        }
-//
-//        ClockSettingsItems(richSettings)
-//    }
-//}
-
 @Composable
 private fun Actions(
     state: AppState,

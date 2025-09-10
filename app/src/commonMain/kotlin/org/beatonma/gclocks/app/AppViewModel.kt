@@ -11,20 +11,23 @@ import kotlinx.coroutines.launch
 import org.beatonma.gclocks.app.settings.AppSettings
 import kotlin.reflect.KClass
 
+private typealias OnSaveCallback = () -> Unit
 
 class AppViewModelFactory(
     private val repository: AppSettingsRepository,
+    private var onSave: OnSaveCallback? = null,
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(
         modelClass: KClass<T>,
         extras: CreationExtras,
     ): T {
-        return AppViewModel(repository) as T
+        return AppViewModel(repository, onSave) as T
     }
 }
 
 class AppViewModel(
     private val repository: AppSettingsRepository,
+    private var onSave: OnSaveCallback? = null,
 ) : ViewModel() {
     private val _appSettings: MutableStateFlow<AppSettings?> = MutableStateFlow(null)
     val appSettings: StateFlow<AppSettings?> = _appSettings.asStateFlow()
@@ -43,6 +46,7 @@ class AppViewModel(
         appSettings.value?.let { settings ->
             viewModelScope.launch {
                 repository.save(settings)
+                onSave?.invoke()
             }
         }
     }

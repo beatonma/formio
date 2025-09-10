@@ -39,6 +39,8 @@ private typealias CanvasAction = Canvas.() -> Unit
 interface Canvas : Path {
     fun measurePath(block: (scope: PathMeasureScope) -> Unit)
 
+    fun fill(color: Color)
+
     fun drawCircle(
         color: Color,
         centerX: Float,

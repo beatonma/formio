@@ -177,6 +177,10 @@ class ComposeCanvasHost(
             pathMeasure.apply(block)
         }
 
+        override fun fill(color: Color) {
+            drawRect(color, 0f, 0f, drawScope.size.width, drawScope.size.height, Fill)
+        }
+
         override fun drawCircle(
             color: Color,
             centerX: Float,

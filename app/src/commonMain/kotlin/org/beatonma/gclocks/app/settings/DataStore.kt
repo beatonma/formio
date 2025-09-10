@@ -7,8 +7,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
+import org.beatonma.gclocks.app.deserialize
+import org.beatonma.gclocks.app.serialize
 import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.core.util.dump
 import kotlin.enums.enumEntries
@@ -27,9 +28,9 @@ fun DataStore<Preferences>.loadAppSettings(): Flow<AppSettings> {
     return data.mapLatest { preferences ->
         try {
             return@mapLatest AppSettings(
-                state = Json.decodeFromString(preferences[CurrentStatePreference]!!),
+                state = deserialize(preferences[CurrentStatePreference]!!),
                 settings = enumEntries<DisplayContext>().associateWith {
-                    Json.decodeFromString(preferences[it.preference]!!)
+                    deserialize(preferences[it.preference]!!)
                 }
             )
         } catch (e: Exception) {
@@ -48,11 +49,11 @@ fun DataStore<Preferences>.loadAppSettings(): Flow<AppSettings> {
  */
 suspend fun DataStore<Preferences>.saveAppSettings(appSettings: AppSettings) {
     edit { prefs ->
-        prefs[CurrentStatePreference] = Json.encodeToString(appSettings.state)
+        prefs[CurrentStatePreference] = serialize(appSettings.state)
 
         enumEntries<DisplayContext>().forEach { context ->
             prefs[context.preference] =
-                Json.encodeToString(appSettings.settings[context].dump("${context.name}"))
+                serialize(appSettings.settings[context].dump("${context.name}"))
         }
     }
 }

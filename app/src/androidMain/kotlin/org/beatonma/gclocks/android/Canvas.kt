@@ -157,6 +157,10 @@ class AndroidCanvasHost(
     }
 
     inner class AndroidCanvas(private val canvas: PlatformCanvas) : Canvas, Path by path {
+        override fun fill(color: Color) {
+            canvas.drawColor(color.toArgbInt())
+        }
+
         override fun measurePath(block: (scope: PathMeasureScope) -> Unit) {
             pathMeasure.setPath(path)
             pathMeasure.apply(block)
@@ -314,7 +318,7 @@ class AndroidCanvasHost(
         }
 
         override fun clear() {
-            canvas.drawRGB(0, 0, 0)
+            canvas.drawARGB(0, 0, 0, 0)
         }
     }
 }

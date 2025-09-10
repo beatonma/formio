@@ -22,7 +22,7 @@ class ClockView(context: Context) : View(context) {
 
             invalidate()
         }
-    var animator: ClockAnimator<*, *>? = null
+    private var animator: ClockAnimator<*, *>? = null
     private val canvasHost = AndroidCanvasHost()
     private var constraints: MeasureConstraints = MeasureConstraints(0f, 0f)
 
