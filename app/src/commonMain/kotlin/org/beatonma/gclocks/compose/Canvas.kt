@@ -84,7 +84,7 @@ class ComposePath : Path {
         centerX: Float,
         centerY: Float,
         radius: Float,
-        direction: Path.Direction,
+        direction: Path.Direction, // Ignored in Compose!
     ) {
         composePath.addOval(
             PlatformRect(
@@ -92,8 +92,7 @@ class ComposePath : Path {
                 centerY - radius,
                 centerX + radius,
                 centerY + radius
-            ),
-            direction = direction.toCompose()
+            )
         )
     }
 
@@ -102,9 +101,9 @@ class ComposePath : Path {
         top: Float,
         right: Float,
         bottom: Float,
-        direction: Path.Direction,
+        direction: Path.Direction, // Ignored in Compose!
     ) {
-        composePath.addRect(PlatformRect(left, top, right, bottom), direction.toCompose())
+        composePath.addRect(PlatformRect(left, top, right, bottom))
     }
 
     override fun closePath() {
@@ -400,8 +399,3 @@ private fun StrokeJoin.toCompose(): PlatformStrokeJoin = when (this) {
 }
 
 private fun Offset.toPosition(): Point<Float> = FloatPoint(x, y)
-
-private fun Path.Direction.toCompose(): PlatformPath.Direction = when (this) {
-    Path.Direction.Clockwise -> PlatformPath.Direction.Clockwise
-    Path.Direction.AntiClockwise -> PlatformPath.Direction.CounterClockwise
-}

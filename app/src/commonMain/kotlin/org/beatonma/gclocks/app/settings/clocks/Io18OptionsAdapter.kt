@@ -36,31 +36,40 @@ private fun createAdapter(paints: Io18Paints, onUpdate: (Io18Paints) -> Unit): S
 private fun createAdapter(
     layoutOptions: Io18LayoutOptions,
     onUpdate: (Io18LayoutOptions) -> Unit,
-): Settings =
-    RichSettingsGroup(
-        settings = listOf(
-            chooseLayout(layoutOptions.layout, { onUpdate(layoutOptions.copy(layout = it)) }),
-            chooseHorizontalAlignment(
-                layoutOptions.horizontalAlignment,
-                { onUpdate(layoutOptions.copy(horizontalAlignment = it)) }
-            ),
-            chooseVerticalAlignment(
-                layoutOptions.verticalAlignment,
-                { onUpdate(layoutOptions.copy(verticalAlignment = it)) }
-            ),
-            chooseTimeFormat(
-                layoutOptions.format,
-                { onUpdate(layoutOptions.copy(format = it)) }
-            ),
-            chooseSpacing(
-                layoutOptions.spacingPx,
-                { onUpdate(layoutOptions.copy(spacingPx = it)) },
-                default = 13,
-                max = 64,
-            ),
-            chooseSecondScale(
-                layoutOptions.secondsGlyphScale,
-                { onUpdate(layoutOptions.copy(secondsGlyphScale = it)) }
+): Settings = RichSettingsGroup(
+    listOf(
+        RichSettingsGroup(
+            listOf(
+                chooseLayout(layoutOptions.layout, {
+                    onUpdate(layoutOptions.copy(layout = it))
+                }),
+                chooseHorizontalAlignment(
+                    layoutOptions.horizontalAlignment,
+                    { onUpdate(layoutOptions.copy(horizontalAlignment = it)) }
+                ),
+                chooseVerticalAlignment(
+                    layoutOptions.verticalAlignment,
+                    { onUpdate(layoutOptions.copy(verticalAlignment = it)) }
+                ),
+                chooseTimeFormat(
+                    layoutOptions.format,
+                    { onUpdate(layoutOptions.copy(format = it)) },
+                ),
+            )
+        ),
+        RichSettingsGroup(
+            listOf(
+                chooseSpacing(
+                    layoutOptions.spacingPx,
+                    { onUpdate(layoutOptions.copy(spacingPx = it)) },
+                    default = 8,
+                    max = 64,
+                ),
+                chooseSecondScale(
+                    layoutOptions.secondsGlyphScale,
+                    { onUpdate(layoutOptions.copy(secondsGlyphScale = it)) }
+                )
             )
         )
     )
+)

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <resources>
+    <!-- DisplayContext-dependent, but commonly used -->
+    <string name="setting_background_color">Background colour</string>
+
     <!-- Other -->
     <string name="setting_colors">Colours</string>
 </resources>

@@ -6,10 +6,11 @@ import org.beatonma.gclocks.app.settings.clocks.CommonKeys
 import org.beatonma.gclocks.app.settings.clocks.FormSettingsViewModel
 import org.beatonma.gclocks.app.settings.clocks.Io16SettingsViewModel
 import org.beatonma.gclocks.app.settings.clocks.Io18SettingsViewModel
-import org.beatonma.gclocks.compose.components.settings.Key
+import org.beatonma.gclocks.app.settings.clocks.chooseBackgroundColor
 import org.beatonma.gclocks.compose.components.settings.RichSetting
 import org.beatonma.gclocks.compose.components.settings.Settings
 import org.beatonma.gclocks.compose.components.settings.forEachSetting
+import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.core.options.TimeResolution
@@ -30,8 +31,9 @@ actual fun <O : Options<*>> buildSettingsViewModel(
     initial: ContextClockOptions<O>,
     onEditOptions: suspend (ContextClockOptions<O>) -> Unit,
 ): SettingsViewModel<O> {
-    return when (initial.clock) {
+    val viewmodel = when (initial.clock) {
         is FormOptions -> {
+            @Suppress("UNCHECKED_CAST")
             object : FormSettingsViewModel(
                 initial as ContextClockOptions<FormOptions>,
                 onEditOptions as suspend (ContextClockOptions<FormOptions>) -> Unit
@@ -47,6 +49,7 @@ actual fun <O : Options<*>> buildSettingsViewModel(
         }
 
         is Io16Options -> {
+            @Suppress("UNCHECKED_CAST")
             object : Io16SettingsViewModel(
                 initial as ContextClockOptions<Io16Options>,
                 onEditOptions as suspend (ContextClockOptions<Io16Options>) -> Unit
@@ -62,6 +65,7 @@ actual fun <O : Options<*>> buildSettingsViewModel(
         }
 
         is Io18Options -> {
+            @Suppress("UNCHECKED_CAST")
             object : Io18SettingsViewModel(
                 initial as ContextClockOptions<Io18Options>,
                 onEditOptions as suspend (ContextClockOptions<Io18Options>) -> Unit
@@ -77,57 +81,57 @@ actual fun <O : Options<*>> buildSettingsViewModel(
         }
 
         else -> throw NotImplementedError("Unhandled Options class ${initial.clock::class}")
-    } as SettingsViewModel<O>
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    return viewmodel as SettingsViewModel<O>
 }
 
-private val BackgroundColorKey = Key.ColorKey("background_color")
+
 private fun <O : Options<*>> SettingsViewModel<O>.displaySettings(displayOptions: DisplayContext.Options): List<Settings> {
     return when (displayOptions) {
         is DisplayContext.Options.Widget -> listOf()
 
         is DisplayContext.Options.Screensaver -> listOf(
-            RichSetting.Color(
-                key = BackgroundColorKey,
-                localized = LocalizedString(literal = "Background color"),
-                value = (contextOptions.value.display as DisplayContext.Options.Screensaver).backgroundColor,
-                onValueChange = {
-                    update(
-                        (contextOptions.value.display as DisplayContext.Options.Screensaver).copy(
-                            backgroundColor = it
-                        )
-                    )
-                }
+            chooseBackgroundColor(
+                value = displayOptions.backgroundColor,
+                onUpdate = { update(displayOptions.copy(backgroundColor = it)) }
             )
         )
 
         is DisplayContext.Options.Wallpaper -> listOf(
-            RichSetting.Color(
-                key = BackgroundColorKey,
-                localized = LocalizedString(literal = "Background color"),
-                value = (contextOptions.value.display as DisplayContext.Options.Wallpaper).backgroundColor,
-                onValueChange = {
-                    update(
-                        (contextOptions.value.display as DisplayContext.Options.Wallpaper).copy(
-                            backgroundColor = it
-                        )
-                    )
-                }
-            ))
+            chooseBackgroundColor(
+                value = displayOptions.backgroundColor,
+                onUpdate = { update(displayOptions.copy(backgroundColor = it)) }
+            )
+        )
     }
 }
 
+/**
+ * Widget only updates each minute so never shows seconds. Here we remove
+ * settings/setting values which reference seconds to avoid confusion.
+ */
 private fun filterWidgetSettings(settings: List<Settings>): List<Settings> {
     val out = mutableListOf<Settings>()
 
     settings.forEachSetting { setting ->
         when (setting.key) {
-            CommonKeys.clockTimeFormat -> {
-                @Suppress("UNCHECKED_CAST")
+            CommonKeys.clockLayout -> {
                 out.add(
-                    (setting as RichSetting.SingleSelect<TimeFormat>)
-                        .copy(values = setting.values.filter { it.resolution == TimeResolution.Minutes }
-                            .toSet())
+                    filterSingleSelect(setting) { it != Layout.Wrapped }
                 )
+            }
+
+            CommonKeys.clockTimeFormat -> {
+                // Remove TimeFormat values which have second resolution.
+                out.add(
+                    filterSingleSelect<TimeFormat>(setting) { it.resolution == TimeResolution.Minutes }
+                )
+            }
+
+            CommonKeys.clockSecondsScale -> {
+                // Remove clockSecondsScale setting
             }
 
             else -> out.add(setting)
@@ -135,4 +139,14 @@ private fun filterWidgetSettings(settings: List<Settings>): List<Settings> {
     }
 
     return out.toList()
+}
+
+private fun <E : Enum<E>> filterSingleSelect(
+    setting: RichSetting<*>,
+    filter: (E) -> Boolean,
+): RichSetting.SingleSelect<E> {
+    @Suppress("UNCHECKED_CAST")
+    return (setting as RichSetting.SingleSelect<E>).copy(
+        values = setting.values.filter(filter).toSet()
+    )
 }

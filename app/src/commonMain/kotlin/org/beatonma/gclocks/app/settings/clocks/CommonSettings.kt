@@ -3,6 +3,7 @@ package org.beatonma.gclocks.app.settings.clocks
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.setting_alignment_horizontal
 import gclocks_multiplatform.app.generated.resources.setting_alignment_vertical
+import gclocks_multiplatform.app.generated.resources.setting_background_color
 import gclocks_multiplatform.app.generated.resources.setting_clock_layout
 import gclocks_multiplatform.app.generated.resources.setting_clock_spacing
 import gclocks_multiplatform.app.generated.resources.setting_colors
@@ -29,6 +30,7 @@ object CommonKeys {
     val clockTimeFormat = Key.EnumKey<TimeFormat>("clock_time_format")
     val clockSpacing = Key.IntKey("clock_spacing")
     val clockSecondsScale = Key.FloatKey("clock_seconds_scale")
+    val backgroundColor = Key.ColorKey("background_color")
 }
 
 
@@ -119,3 +121,10 @@ internal fun chooseSecondScale(value: Float, onUpdate: (Float) -> Unit) =
         stepSize = 0.1f,
         onValueChange = onUpdate
     )
+
+internal fun chooseBackgroundColor(value: Color, onUpdate: (Color) -> Unit) = RichSetting.Color(
+    key = CommonKeys.backgroundColor,
+    localized = LocalizedString(Res.string.setting_background_color),
+    value = value,
+    onValueChange = onUpdate,
+)

@@ -28,8 +28,16 @@
     <string name="setting_help_time_format_HH_MM_12">12 hour, zero-padding, no seconds</string>
     <string name="setting_help_time_format_hh_MM_12">12 hour, no seconds</string>
 
+    <!-- DisplayContext-dependent, but commonly used -->
+    <string name="setting_background_color">Background color</string>
+
     <!-- Other -->
     <string name="setting_colors">Colors</string>
+    <string name="setting_color_contentdescription_selected">Selected color</string>
+    <string name="setting_color_contentdescription_edited">This color is being edited</string>
+    <string name="setting_color_label_hue_initial">H</string>
+    <string name="setting_color_label_saturation_initial">S</string>
+    <string name="setting_color_label_lightness_initial">L</string>
     <string name="setting_stroke_width">Stroke width</string>
 
     <string name="setting_clock_spacing">Spacing</string>

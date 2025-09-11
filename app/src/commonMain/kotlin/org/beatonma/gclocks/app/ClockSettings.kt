@@ -1,10 +1,9 @@
 package org.beatonma.gclocks.app
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import org.beatonma.gclocks.compose.components.settings.BooleanSetting
 import org.beatonma.gclocks.compose.components.settings.ColorSetting
 import org.beatonma.gclocks.compose.components.settings.FloatSetting
@@ -17,64 +16,67 @@ import org.beatonma.gclocks.compose.components.settings.Settings
 import org.beatonma.gclocks.compose.components.settings.SingleSelectSetting
 
 
-fun LazyListScope.ClockSettingsItems(settings: List<Settings>) {
-    settings.map { setting ->
-        SettingOrGroupItems(setting, Modifier.padding(bottom = 8.dp))
+fun LazyStaggeredGridScope.ClockSettingsItems(
+    settings: List<Settings>,
+    groupModifier: Modifier = Modifier,
+    itemModifier: Modifier = Modifier,
+) {
+    settings.forEach { setting ->
+        SettingOrGroupItems(setting, groupModifier, itemModifier)
     }
 }
 
-@Composable
-fun ClockSettingsItems(settings: List<Settings>) {
-    settings.map { setting ->
-        SettingOrGroup(setting, Modifier.padding(bottom = 8.dp))
-    }
-}
 
-
-private fun LazyListScope.SettingOrGroupItems(
+private fun LazyStaggeredGridScope.SettingOrGroupItems(
     item: Settings,
-    modifier: Modifier = Modifier,
+    groupModifier: Modifier,
+    itemModifier: Modifier,
 ) {
     when (item) {
-        is RichSettingsGroup -> GroupItems(item, modifier)
-        is RichSetting<*> -> item { Setting(item, modifier) }
+        is RichSettingsGroup -> GroupItems(item, groupModifier, itemModifier)
+        is RichSetting<*> -> item { Setting(item, itemModifier) }
     }
 }
 
 @Composable
-fun SettingOrGroup(item: Settings, modifier: Modifier = Modifier) {
-    when (item) {
-        is RichSettingsGroup -> Group(item, modifier)
-        is RichSetting<*> -> Setting(item, modifier)
-    }
-}
-
-private fun LazyListScope.GroupItems(
-    group: RichSettingsGroup,
-    modifier: Modifier = Modifier,
+fun SettingOrGroup(
+    item: Settings,
+    groupModifier: Modifier = Modifier,
+    itemModifier: Modifier = Modifier,
 ) {
-    group.settings.forEach {
-        SettingOrGroupItems(it, modifier)
+    when (item) {
+        is RichSettingsGroup -> Group(item, groupModifier, itemModifier)
+        is RichSetting<*> -> Setting(item, itemModifier)
+    }
+}
+
+private fun LazyStaggeredGridScope.GroupItems(
+    group: RichSettingsGroup, groupModifier: Modifier, itemModifier: Modifier,
+) {
+    item {
+        Group(group, groupModifier, itemModifier)
     }
 }
 
 @Composable
-private fun Group(group: RichSettingsGroup, modifier: Modifier = Modifier) {
-    group.settings.forEach { SettingOrGroup(it, modifier) }
+private fun Group(group: RichSettingsGroup, groupModifier: Modifier, itemModifier: Modifier) {
+    Column(groupModifier) {
+        group.settings.forEach { SettingOrGroup(it, groupModifier, itemModifier) }
+    }
 }
 
 @Composable
-private fun <T : Any> Setting(
-    setting: RichSetting<T>,
-    modifier: Modifier = Modifier,
+private fun Setting(
+    setting: RichSetting<*>,
+    modifier: Modifier,
 ) {
     when (setting) {
-        is RichSetting.Color -> ColorSetting(setting, modifier = modifier)
-        is RichSetting.Colors -> MultiColorSetting(setting, modifier = modifier)
-        is RichSetting.SingleSelect<*> -> SingleSelectSetting(setting, modifier = modifier)
-        is RichSetting.MultiSelect<*> -> MultiSelectSetting(setting, modifier = modifier)
-        is RichSetting.Bool -> BooleanSetting(setting, modifier = modifier)
-        is RichSetting.Int -> IntegerSetting(setting, modifier = modifier)
-        is RichSetting.Float -> FloatSetting(setting, modifier = modifier)
+        is RichSetting.Color -> ColorSetting(setting, modifier)
+        is RichSetting.Colors -> MultiColorSetting(setting, modifier)
+        is RichSetting.SingleSelect<*> -> SingleSelectSetting(setting, modifier)
+        is RichSetting.MultiSelect<*> -> MultiSelectSetting(setting, modifier)
+        is RichSetting.Bool -> BooleanSetting(setting, modifier)
+        is RichSetting.Int -> IntegerSetting(setting, modifier)
+        is RichSetting.Float -> FloatSetting(setting, modifier)
     }
 }

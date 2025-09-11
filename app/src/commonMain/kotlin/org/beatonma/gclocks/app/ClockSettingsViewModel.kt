@@ -90,7 +90,7 @@ abstract class SettingsViewModel<O : Options<*>>(
         displayOptions: DisplayContext.Options,
         clockOptions: O,
     ): List<Settings> {
-        val settings = buildClockSettings(clockOptions) + buildDisplaySettings(displayOptions)
+        val settings = buildDisplaySettings(displayOptions) + buildClockSettings(clockOptions)
         return filterSettings(settings)
     }
 }

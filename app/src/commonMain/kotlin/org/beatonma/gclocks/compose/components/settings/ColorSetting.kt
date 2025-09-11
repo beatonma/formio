@@ -31,6 +31,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import gclocks_multiplatform.app.generated.resources.Res
+import gclocks_multiplatform.app.generated.resources.setting_color_contentdescription_edited
+import gclocks_multiplatform.app.generated.resources.setting_color_contentdescription_selected
+import gclocks_multiplatform.app.generated.resources.setting_color_label_hue_initial
+import gclocks_multiplatform.app.generated.resources.setting_color_label_lightness_initial
+import gclocks_multiplatform.app.generated.resources.setting_color_label_saturation_initial
 import org.beatonma.gclocks.compose.AppIcon
 import org.beatonma.gclocks.compose.animation.EnterScale
 import org.beatonma.gclocks.compose.animation.EnterVertical
@@ -39,13 +45,15 @@ import org.beatonma.gclocks.compose.animation.ExitVertical
 import org.beatonma.gclocks.compose.components.settings.components.CollapsibleSettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.LabelledSlider
 import org.beatonma.gclocks.compose.components.settings.components.ScrollingRow
-import org.beatonma.gclocks.compose.components.settings.components.SettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
 import org.beatonma.gclocks.compose.components.settings.components.rememberMaterialColorSwatch
 import org.beatonma.gclocks.compose.toCompose
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.util.fastForEach
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.graphics.Color as ComposeColor
+
+private val EditablePatchSize = 64.dp
 
 @Composable
 fun MultiColorSetting(
@@ -74,7 +82,6 @@ fun MultiColorSetting(
     val swatch = rememberMaterialColorSwatch()
     var editingIndex: Int? by remember { mutableStateOf(null) }
     val editorOpenPadding by animateDpAsState(if (editingIndex != null) 48.dp else 0.dp)
-    val patchSize = 64.dp
 
     CollapsibleSettingLayout(editingIndex != null, modifier) {
         SettingName(name, Modifier.padding(bottom = 4.dp))
@@ -82,7 +89,7 @@ fun MultiColorSetting(
         ScrollingRow(
             Modifier
                 .fillMaxWidth().padding(bottom = 8.dp)
-                .requiredHeight(patchSize + (editorOpenPadding * 2f)),
+                .requiredHeight(EditablePatchSize + (editorOpenPadding * 2f)),
             horizontalArrangement = Arrangement.spacedBy(
                 16.dp,
                 Alignment.CenterHorizontally
@@ -91,35 +98,22 @@ fun MultiColorSetting(
             itemsIndexed(colors) { index, color ->
                 val isSelected = index == editingIndex
                 val padding by animateDpAsState(if (isSelected) editorOpenPadding else 0.dp)
-                val patchScale by animateFloatAsState(if (isSelected) 1.2f else 1f)
 
-                Patch(
-                    color.toCompose(),
-                    onClick = {
+                EditablePreviewPatch(
+                    Modifier.padding(
+                        top = padding * 1.5f,
+                        start = padding * 0.5f,
+                        end = padding * 0.5f
+                    ),
+                    color,
+                    isSelected,
+                    {
                         editingIndex = when (isSelected) {
                             true -> null
                             false -> index
                         }
-                    },
-                    size = patchSize * patchScale,
-                    modifier = Modifier.padding(
-                        top = padding * 1.5f,
-                        start = padding * 0.5f,
-                        end = padding * 0.5f
-                    )
-                ) {
-                    AnimatedVisibility(
-                        visible = isSelected,
-                        enter = EnterScale,
-                        exit = ExitScale,
-                    ) {
-                        Icon(
-                            AppIcon.ArrowDown,
-                            "This color is being edited",
-                            Modifier.requiredSize(32.dp)
-                        )
                     }
-                }
+                )
             }
         }
 
@@ -157,10 +151,15 @@ fun ColorSetting(
 ) {
     var isEditing by remember { mutableStateOf(false) }
 
-    SettingLayout(modifier) {
+    CollapsibleSettingLayout(isEditing, modifier) {
         SettingName(name, Modifier.padding(bottom = 4.dp))
 
-        Patch(value.toCompose(), onClick = { isEditing = true })
+        EditablePreviewPatch(
+            Modifier,
+            value,
+            isEditing,
+            onClick = { isEditing = !isEditing },
+        )
         ColorEditor(isEditing, colors, value, onValueChange)
     }
 }
@@ -213,7 +212,7 @@ private fun ColorEditor(
                         {
                             Icon(
                                 AppIcon.Checkmark,
-                                contentDescription = "Selected color",
+                                contentDescription = stringResource(Res.string.setting_color_contentdescription_selected),
                             )
                         }
                     } else null,
@@ -229,21 +228,21 @@ private fun ColorEditor(
             ColorComponent(
                 hsl.hue,
                 { hsl.hue = it },
-                "H",
+                stringResource(Res.string.setting_color_label_hue_initial),
                 0f,
                 360f,
             )
             ColorComponent(
                 hsl.saturation,
                 { hsl.saturation = it },
-                "S",
+                stringResource(Res.string.setting_color_label_saturation_initial),
                 0f,
                 1f,
             )
             ColorComponent(
                 hsl.lightness,
                 { hsl.lightness = it },
-                "L",
+                stringResource(Res.string.setting_color_label_lightness_initial),
                 0f,
                 1f,
             )
@@ -323,6 +322,35 @@ private fun Patch(
             Box(contentAlignment = Alignment.Center) {
                 content.invoke()
             }
+        }
+    }
+}
+
+@Composable
+private fun EditablePreviewPatch(
+    modifier: Modifier,
+    color: Color,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+) {
+    val patchScale by animateFloatAsState(if (isSelected) 1.2f else 1f)
+
+    Patch(
+        color.toCompose(),
+        onClick = onClick,
+        size = EditablePatchSize * patchScale,
+        modifier = modifier
+    ) {
+        AnimatedVisibility(
+            visible = isSelected,
+            enter = EnterScale,
+            exit = ExitScale,
+        ) {
+            Icon(
+                AppIcon.ArrowDown,
+                stringResource(Res.string.setting_color_contentdescription_edited),
+                Modifier.requiredSize(32.dp)
+            )
         }
     }
 }

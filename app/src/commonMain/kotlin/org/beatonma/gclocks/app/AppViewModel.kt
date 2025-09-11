@@ -4,11 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.beatonma.gclocks.app.settings.AppSettings
+import org.beatonma.gclocks.app.settings.AppState
 import kotlin.reflect.KClass
 
 private typealias OnSaveCallback = () -> Unit
@@ -31,6 +34,8 @@ class AppViewModel(
 ) : ViewModel() {
     private val _appSettings: MutableStateFlow<AppSettings?> = MutableStateFlow(null)
     val appSettings: StateFlow<AppSettings?> = _appSettings.asStateFlow()
+
+    val currentState: Flow<AppState?> = appSettings.mapLatest { it?.state }
 
     init {
         viewModelScope.launch {

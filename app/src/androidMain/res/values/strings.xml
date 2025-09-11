@@ -2,4 +2,10 @@
     <string name="app_name">gclocks-multiplatform</string>
     <string name="wallpaper_description">Clocks wallpaper</string>
     <string name="widget_description">Clocks widget</string>
+    <string name="permission_widget_alarms"><![CDATA[
+    Permission `SCHEDULE_EXACT_ALARM` is required to allow the homescreen widget
+        to update each minute. The widget will not be able to show the current time unless you grant this permission.
+    ]]>
+    </string>
+    <string name="permission_widget_alarms_action_label">Grant</string>
 </resources>

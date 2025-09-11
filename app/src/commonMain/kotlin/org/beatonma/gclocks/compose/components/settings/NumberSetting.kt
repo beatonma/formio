@@ -114,9 +114,8 @@ private fun <N : Number> NumberSettingLayout(
     steps: Int,
     modifier: Modifier,
 ) {
-    SettingLayout(helpText = helpText) {
+    SettingLayout(modifier, helpText) {
         Column(
-            modifier.padding(horizontal = 8.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {

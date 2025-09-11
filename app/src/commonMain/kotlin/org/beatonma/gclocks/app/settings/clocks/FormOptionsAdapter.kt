@@ -23,19 +23,20 @@ abstract class FormSettingsViewModel(
             },
         )
     }
+}
 
+private fun createAdapter(paints: FormPaints, onUpdate: (FormPaints) -> Unit): Settings =
+    createColorsAdapter(paints) { colors ->
+        onUpdate(paints.copy(colors = colors.toTypedArray()))
+    }
 
-    private fun createAdapter(paints: FormPaints, onUpdate: (FormPaints) -> Unit): Settings =
-        createColorsAdapter(paints) { colors ->
-            onUpdate(paints.copy(colors = colors.toTypedArray()))
-        }
-
-    private fun createAdapter(
-        layoutOptions: FormLayoutOptions,
-        onUpdate: (FormLayoutOptions) -> Unit,
-    ): Settings =
+private fun createAdapter(
+    layoutOptions: FormLayoutOptions,
+    onUpdate: (FormLayoutOptions) -> Unit,
+): Settings = RichSettingsGroup(
+    listOf(
         RichSettingsGroup(
-            settings = listOf(
+            listOf(
                 chooseLayout(layoutOptions.layout, {
                     onUpdate(layoutOptions.copy(layout = it))
                 }),
@@ -51,6 +52,10 @@ abstract class FormSettingsViewModel(
                     layoutOptions.format,
                     { onUpdate(layoutOptions.copy(format = it)) },
                 ),
+            )
+        ),
+        RichSettingsGroup(
+            listOf(
                 chooseSpacing(
                     layoutOptions.spacingPx,
                     { onUpdate(layoutOptions.copy(spacingPx = it)) },
@@ -63,4 +68,5 @@ abstract class FormSettingsViewModel(
                 )
             )
         )
-}
+    )
+)
