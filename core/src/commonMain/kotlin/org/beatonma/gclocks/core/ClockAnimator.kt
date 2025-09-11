@@ -23,7 +23,6 @@ interface ClockAnimator<P : Paints, G : ClockGlyph<P>> : ConstrainedLayout {
     }
 
     fun render(canvas: Canvas) {
-        canvas.clear()
         renderers.fastForEach { it.draw(canvas, layout) }
 
         scheduleNextFrame(max(0, 1000 - layout.animationTimeMillis))

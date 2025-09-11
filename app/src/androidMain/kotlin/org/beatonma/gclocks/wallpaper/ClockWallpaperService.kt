@@ -6,9 +6,8 @@ import android.service.wallpaper.WallpaperService
 import android.view.SurfaceHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
@@ -20,15 +19,14 @@ import org.beatonma.gclocks.app.settings.settingsRepository
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
+import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.options.Options
 
 
 class ClockWallpaperService : WallpaperService() {
     private var engine: ClockEngine? = null
     private val path: AndroidPath = AndroidPath()
-    private val serviceSupervisor: Job = SupervisorJob()
-    private val serviceScope: CoroutineScope =
-        CoroutineScope(serviceSupervisor + Dispatchers.Default)
+    private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     override fun onCreateEngine(): Engine? {
         engine = ClockEngine()
@@ -41,12 +39,13 @@ class ClockWallpaperService : WallpaperService() {
 
     override fun onDestroy() {
         super.onDestroy()
-        serviceSupervisor.cancel()
+        serviceScope.cancel()
         engine?.onDestroy()
         engine = null
     }
 
     private inner class ClockEngine : Engine() {
+        private val engineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
         private val settings: Flow<ContextClockOptions<*>> = settingsRepository
             .load()
             .mapLatest {
@@ -54,15 +53,14 @@ class ClockWallpaperService : WallpaperService() {
             }
         private val canvasHost = AndroidCanvasHost()
         private var animator: ClockAnimator<*, *>? = null
-        private val engineSupervisor: Job = SupervisorJob(serviceSupervisor)
-        private val engineScope: CoroutineScope =
-            CoroutineScope(engineSupervisor + Dispatchers.Default)
-
         private var constraints = MeasureConstraints(0f, 0f)
+        private var backgroundColor: Int = 0xff000000.toInt()
 
         init {
             engineScope.launch {
                 settings.collect {
+                    backgroundColor =
+                        (it.display as DisplayContext.Options.Wallpaper).backgroundColor.toRgbInt()
                     animator = createAnimator(it.clock)
                     invalidate()
                 }
@@ -75,8 +73,7 @@ class ClockWallpaperService : WallpaperService() {
 
         private fun createAnimator(options: Options<*>): ClockAnimator<*, *> {
             return createAnimatorFromOptions(options, path) { delayMillis ->
-                serviceScope.launch {
-                    delay(delayMillis.toLong())
+                serviceScope.launch(Dispatchers.Main) {
                     invalidate()
                 }
             }.apply { setConstraints(constraints) }
@@ -95,23 +92,25 @@ class ClockWallpaperService : WallpaperService() {
 
         private fun draw() {
             val animator = animator ?: return
-            val surface = surfaceHolder
             var _canvas: Canvas? = null
             try {
-                _canvas = surface.lockCanvas() ?: return
+                _canvas = surfaceHolder.lockCanvas() ?: return
 
                 canvasHost.withCanvas(_canvas) { canvas ->
+                    canvas.fill(Color(backgroundColor))
                     animator.tick()
                     animator.render(canvas)
                 }
             } finally {
-                surface.unlockCanvasAndPost(_canvas)
+                if (_canvas != null) {
+                    surfaceHolder.unlockCanvasAndPost(_canvas)
+                }
             }
         }
 
         override fun onDestroy() {
             super.onDestroy()
-            engineSupervisor.cancel()
+            engineScope.cancel()
         }
     }
 }
