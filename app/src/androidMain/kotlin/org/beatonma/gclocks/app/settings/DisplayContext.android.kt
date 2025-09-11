@@ -6,13 +6,13 @@ import org.beatonma.gclocks.core.graphics.Color
 
 actual enum class DisplayContext {
     Widget {
-        override fun defaultOptions(): Options = Options.Widget
+        override fun defaultOptions(): Options.Widget = Options.Widget
     },
     LiveWallpaper {
-        override fun defaultOptions(): Options = Options.Wallpaper()
+        override fun defaultOptions(): Options.Wallpaper = Options.Wallpaper()
     },
     Screensaver {
-        override fun defaultOptions(): Options = Options.Screensaver()
+        override fun defaultOptions(): Options.Screensaver = Options.Screensaver()
     },
     ;
 

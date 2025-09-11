@@ -2,13 +2,20 @@ package org.beatonma.gclocks.android
 
 import android.content.Context
 import android.graphics.Canvas
+import android.util.AttributeSet
 import android.view.View
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.options.Options
 
-class ClockView(context: Context) : View(context) {
+class ClockView @JvmOverloads constructor(
+    context: Context,
+    attributeSet: AttributeSet? = null,
+    defStyleAttr: Int = 0,
+    defStyleRes: Int = 0,
+) : View(context, attributeSet, defStyleAttr, defStyleRes) {
+
     var options: Options<*>? = null
         set(value) {
             field = value

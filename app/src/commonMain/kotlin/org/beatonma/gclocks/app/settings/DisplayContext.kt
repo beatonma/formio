@@ -13,9 +13,7 @@ expect enum class DisplayContext {
 
     abstract fun defaultOptions(): Options
 
-    sealed interface Options {
-
-    }
+    sealed interface Options
 }
 
 
