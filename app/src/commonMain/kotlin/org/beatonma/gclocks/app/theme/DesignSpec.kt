@@ -15,6 +15,7 @@ object DesignSpec {
     fun Modifier.floatingActionButton(): Modifier = padding(16.dp).safeDrawingPadding()
 
     // https://m3.material.io/foundations/designing/structure#1057f862-b8f1-42a1-9239-7077b8763a48
+    val TouchTargetPadding = 8.dp
     val TouchTargetMinSize = 48.dp
     fun Modifier.touchTargetSize(): Modifier =
         sizeIn(

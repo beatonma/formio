@@ -1,21 +1,26 @@
 package org.beatonma.gclocks.compose.components.settings
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,21 +46,25 @@ import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.size
 import androidx.compose.ui.unit.width
 import gclocks_multiplatform.app.generated.resources.Res
+import gclocks_multiplatform.app.generated.resources.ui_align_horizontal_center
+import gclocks_multiplatform.app.generated.resources.ui_align_reset
+import gclocks_multiplatform.app.generated.resources.ui_align_vertical_center
 import gclocks_multiplatform.app.generated.resources.ui_save_changes
 import org.beatonma.gclocks.app.LocalClockPreview
-import org.beatonma.gclocks.app.theme.DesignSpec.TouchTargetMinSize
+import org.beatonma.gclocks.app.theme.DesignSpec
 import org.beatonma.gclocks.app.theme.DesignSpec.floatingActionButton
 import org.beatonma.gclocks.compose.AppIcon
 import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.components.FullScreenOverlay
 import org.beatonma.gclocks.compose.components.settings.components.SettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
+import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.geometry.RectF
 import org.jetbrains.compose.resources.stringResource
 
 
-private val MinBoundarySize = TouchTargetMinSize * 2f
-private val DragHandleSize = TouchTargetMinSize
+private val MinBoundarySize = DesignSpec.TouchTargetMinSize * 2f
+private val DragHandleSize = DesignSpec.TouchTargetMinSize
 private val DragHandleOffset = DragHandleSize / 2f
 
 
@@ -113,29 +122,9 @@ private fun PositionEditor(
             .background(backgroundColor)
             .fillMaxSize()
     ) {
-        val density = LocalDensity.current
         val containerSize = DpSize(maxWidth, maxHeight)
-        var bounds by remember {
-            with(density) {
-                val containerWidthPx: Float = constraints.maxWidth.toFloat()
-                val containerHeightPx: Float = constraints.maxHeight.toFloat()
-                val pixelBounds = RectF(
-                    value.left * containerWidthPx,
-                    value.top * containerHeightPx,
-                    value.right * containerWidthPx,
-                    value.bottom * containerHeightPx
-                )
-
-                mutableStateOf(
-                    DpRect(
-                        pixelBounds.left.toDp(),
-                        pixelBounds.top.toDp(),
-                        pixelBounds.right.toDp(),
-                        pixelBounds.bottom.toDp(),
-                    )
-                )
-            }
-        }
+        var bounds by remember { mutableStateOf(relativeToDp(value, containerSize)) }
+        val density = LocalDensity.current
 
         TransformableBoundary(bounds, { bounds = it }, containerSize, density) {
             if (clockPreview != null) {
@@ -143,8 +132,11 @@ private fun PositionEditor(
             }
         }
 
-        FloatingActionButton(
-            onClick = {
+        ToolButtons(
+            bounds,
+            { bounds = it },
+            containerSize = containerSize,
+            onSave = {
                 val normalizedRect = RectF(
                     left = (bounds.left / containerSize.width).coerceIn(0f, 1f),
                     top = (bounds.top / containerSize.height).coerceIn(0f, 1f),
@@ -153,10 +145,8 @@ private fun PositionEditor(
                 )
                 onSaveChanges(normalizedRect)
             },
-            Modifier.align(Alignment.BottomEnd).floatingActionButton()
-        ) {
-            Icon(AppIcon.Checkmark, stringResource(Res.string.ui_save_changes))
-        }
+            modifier = Modifier.align(Alignment.BottomEnd).floatingActionButton()
+        )
     }
 }
 
@@ -269,6 +259,43 @@ private fun DragHandle(
     )
 }
 
+@Composable
+private fun ToolButtons(
+    bounds: DpRect,
+    onChange: (DpRect) -> Unit,
+    containerSize: DpSize,
+    onSave: () -> Unit,
+    modifier: Modifier,
+) {
+    Column(
+        modifier,
+        verticalArrangement = Arrangement.spacedBy(DesignSpec.TouchTargetPadding),
+        horizontalAlignment = Alignment.End,
+    ) {
+        AnimatedVisibility(bounds.height > containerSize.height * .8f || bounds.width > containerSize.width * .8f) {
+            OutlinedIconButton({ onChange(shrink(containerSize)) }) {
+                Icon(
+                    AppIcon.Reset,
+                    stringResource(Res.string.ui_align_reset)
+                )
+            }
+        }
+
+        FilledTonalIconButton({ onChange(centerHorizontal(bounds, containerSize)) }) {
+            Icon(
+                AppIcon.AlignCenterHorizontal,
+                stringResource(Res.string.ui_align_horizontal_center)
+            )
+        }
+        FilledTonalIconButton({ onChange(centerVertical(bounds, containerSize)) }) {
+            Icon(AppIcon.AlignCenterVertical, stringResource(Res.string.ui_align_vertical_center))
+        }
+        FloatingActionButton(onSave) {
+            Icon(AppIcon.Checkmark, stringResource(Res.string.ui_save_changes))
+        }
+    }
+}
+
 /**
  * Return the result of scaling [rect] by [scale] while ensuring the result
  * never overflows the [container].
@@ -364,4 +391,29 @@ private fun pan(rect: DpRect, container: DpSize, x: Dp, y: Dp): DpRect {
         right = left + rect.width,
         bottom = top + rect.height,
     )
+}
+
+private fun centerHorizontal(rect: DpRect, container: DpSize): DpRect {
+    val left = (container.width - rect.width) / 2f
+    return rect.copy(left = left, right = left + rect.width)
+}
+
+private fun centerVertical(rect: DpRect, container: DpSize): DpRect {
+    val top = (container.height - rect.height) / 2f
+    return rect.copy(top = top, bottom = top + rect.height)
+}
+
+private fun relativeToDp(relative: RectF, container: DpSize): DpRect = DpRect(
+    container.width * relative.left,
+    container.height * relative.top,
+    container.width * relative.right,
+    container.height * relative.bottom
+)
+
+/**
+ * It's possible to set the bounds so large that they extend behind system bars
+ * in all directions on Android - so this lets us get out of that situation.
+ */
+private fun shrink(container: DpSize): DpRect {
+    return relativeToDp(MutableRectF(0f, 0f, 1f, 1f).inset(.25f).toRect(), container)
 }
