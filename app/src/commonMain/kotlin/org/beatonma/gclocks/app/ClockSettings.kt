@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import org.beatonma.gclocks.compose.components.settings.BooleanSetting
+import org.beatonma.gclocks.compose.components.settings.ClockPositionSetting
 import org.beatonma.gclocks.compose.components.settings.ColorSetting
 import org.beatonma.gclocks.compose.components.settings.FloatSetting
 import org.beatonma.gclocks.compose.components.settings.IntegerSetting
@@ -78,5 +79,6 @@ private fun Setting(
         is RichSetting.Bool -> BooleanSetting(setting, modifier)
         is RichSetting.Int -> IntegerSetting(setting, modifier)
         is RichSetting.Float -> FloatSetting(setting, modifier)
+        is RichSetting.RectF -> ClockPositionSetting(setting, modifier)
     }
 }

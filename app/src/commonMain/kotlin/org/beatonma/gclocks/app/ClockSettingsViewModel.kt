@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.beatonma.gclocks.app.settings.ContextClockOptions
@@ -50,7 +51,7 @@ abstract class SettingsViewModel<O : Options<*>>(
     init {
         viewModelScope.launch {
             _options.mapLatest { buildOptionsAdapter(it.display, it.clock) }
-                .collect { rich -> _richSettings.value = rich }
+                .collectLatest { rich -> _richSettings.value = rich }
         }
     }
 

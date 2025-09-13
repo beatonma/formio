@@ -1,9 +1,9 @@
 package org.beatonma.gclocks.core.geometry
 
+import kotlinx.serialization.Serializable
 import org.beatonma.gclocks.core.util.debug
-import kotlin.math.min
 import kotlin.math.max
-import kotlin.properties.Delegates
+import kotlin.math.min
 
 
 interface Rect<T : Number> {
@@ -83,32 +83,35 @@ interface MutableRect<T : Number> : Rect<T> {
     fun clear(): MutableRect<T>
 }
 
+@Serializable
 data class RectF(
     override val left: Float,
     override val top: Float,
     override val right: Float,
     override val bottom: Float,
-) : FloatRect
+) : FloatRect {
+    constructor(other: Rect<Float>) : this(other.left, other.top, other.right, other.bottom)
+
+    fun toMutable(): MutableRectF = MutableRectF(this)
+}
 
 
-class MutableRectF(
-    left: Float = Float.NaN,
-    top: Float = Float.NaN,
-    right: Float = Float.NaN,
-    bottom: Float = Float.NaN,
+@Serializable
+data class MutableRectF(
+    override var left: Float = Float.NaN,
+    override var top: Float = Float.NaN,
+    override var right: Float = Float.NaN,
+    override var bottom: Float = Float.NaN,
 ) : MutableRect<Float>, FloatRect {
-    override var left by Delegates.notNull<Float>()
-    override var top by Delegates.notNull<Float>()
-    override var right by Delegates.notNull<Float>()
-    override var bottom by Delegates.notNull<Float>()
-
     constructor(other: Rect<Float>) : this(other.left, other.top, other.right, other.bottom)
 
     init {
         set(left, top, right, bottom)
     }
 
-    override fun set(left: Float, top: Float, right: Float, bottom: Float): MutableRect<Float> {
+    fun toRect(): RectF = RectF(this)
+
+    override fun set(left: Float, top: Float, right: Float, bottom: Float): MutableRectF {
         this.left = min(left, right)
         this.top = min(top, bottom)
         this.right = max(left, right)
@@ -121,7 +124,7 @@ class MutableRectF(
         top: Float,
         right: Float,
         bottom: Float,
-    ): MutableRect<Float> = set(
+    ): MutableRectF = set(
         this.left + left,
         this.top + top,
         this.right - right,
@@ -133,14 +136,14 @@ class MutableRectF(
         top: Float,
         right: Float,
         bottom: Float,
-    ): MutableRect<Float> = set(
+    ): MutableRectF = set(
         this.left - left,
         this.top - top,
         this.right + right,
         this.bottom + bottom,
     )
 
-    override fun add(left: Float, top: Float, right: Float, bottom: Float): MutableRect<Float> =
+    override fun add(left: Float, top: Float, right: Float, bottom: Float): MutableRectF =
         set(
             this.left + left,
             this.top + top,
@@ -148,11 +151,10 @@ class MutableRectF(
             this.bottom + bottom,
         )
 
-
     override fun translate(
         x: Float,
         y: Float,
-    ): MutableRect<Float> =
+    ): MutableRectF =
         set(left + x, top + y, right + x, bottom + y)
 
     override fun include(other: Rect<Float>): Boolean {
@@ -192,7 +194,7 @@ class MutableRectF(
 
     override fun include(other: Point<Float>): Boolean = include(other.x, other.y)
 
-    override fun clear(): MutableRect<Float> = set(Float.NaN, Float.NaN, Float.NaN, Float.NaN)
+    override fun clear(): MutableRectF = set(Float.NaN, Float.NaN, Float.NaN, Float.NaN)
 
     override fun toString(): String {
         return "MutableFloatRect($left, $top, $right, $bottom)"

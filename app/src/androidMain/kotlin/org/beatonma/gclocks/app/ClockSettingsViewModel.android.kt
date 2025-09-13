@@ -7,6 +7,7 @@ import org.beatonma.gclocks.app.settings.clocks.FormSettingsViewModel
 import org.beatonma.gclocks.app.settings.clocks.Io16SettingsViewModel
 import org.beatonma.gclocks.app.settings.clocks.Io18SettingsViewModel
 import org.beatonma.gclocks.app.settings.clocks.chooseBackgroundColor
+import org.beatonma.gclocks.app.settings.clocks.chooseClockPosition
 import org.beatonma.gclocks.compose.components.settings.RichSetting
 import org.beatonma.gclocks.compose.components.settings.Settings
 import org.beatonma.gclocks.compose.components.settings.forEachSetting
@@ -93,13 +94,21 @@ private fun <O : Options<*>> SettingsViewModel<O>.displaySettings(displayOptions
         is DisplayContext.Options.Widget -> listOf()
 
         is DisplayContext.Options.Screensaver -> listOf(
+            chooseClockPosition(
+                value = displayOptions.position,
+                onUpdate = { update(displayOptions.copy(position = it)) }
+            ),
             chooseBackgroundColor(
                 value = displayOptions.backgroundColor,
                 onUpdate = { update(displayOptions.copy(backgroundColor = it)) }
-            )
+            ),
         )
 
         is DisplayContext.Options.Wallpaper -> listOf(
+            chooseClockPosition(
+                value = displayOptions.position,
+                onUpdate = { update(displayOptions.copy(position = it)) }
+            ),
             chooseBackgroundColor(
                 value = displayOptions.backgroundColor,
                 onUpdate = { update(displayOptions.copy(backgroundColor = it)) }

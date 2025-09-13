@@ -5,6 +5,7 @@ import gclocks_multiplatform.app.generated.resources.setting_alignment_horizonta
 import gclocks_multiplatform.app.generated.resources.setting_alignment_vertical
 import gclocks_multiplatform.app.generated.resources.setting_background_color
 import gclocks_multiplatform.app.generated.resources.setting_clock_layout
+import gclocks_multiplatform.app.generated.resources.setting_clock_position
 import gclocks_multiplatform.app.generated.resources.setting_clock_spacing
 import gclocks_multiplatform.app.generated.resources.setting_colors
 import gclocks_multiplatform.app.generated.resources.setting_help_clock_spacing
@@ -15,6 +16,7 @@ import org.beatonma.gclocks.app.LocalizedString
 import org.beatonma.gclocks.compose.components.settings.Key
 import org.beatonma.gclocks.compose.components.settings.RichSetting
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
+import org.beatonma.gclocks.core.geometry.RectF
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Paints
@@ -31,6 +33,7 @@ object CommonKeys {
     val clockSpacing = Key.IntKey("clock_spacing")
     val clockSecondsScale = Key.FloatKey("clock_seconds_scale")
     val backgroundColor = Key.ColorKey("background_color")
+    val clockPosition = Key.RectFKey("clock_position")
 }
 
 
@@ -125,6 +128,13 @@ internal fun chooseSecondScale(value: Float, onUpdate: (Float) -> Unit) =
 internal fun chooseBackgroundColor(value: Color, onUpdate: (Color) -> Unit) = RichSetting.Color(
     key = CommonKeys.backgroundColor,
     localized = LocalizedString(Res.string.setting_background_color),
+    value = value,
+    onValueChange = onUpdate,
+)
+
+internal fun chooseClockPosition(value: RectF, onUpdate: (RectF) -> Unit) = RichSetting.RectF(
+    key = CommonKeys.clockPosition,
+    localized = LocalizedString(Res.string.setting_clock_position),
     value = value,
     onValueChange = onUpdate,
 )

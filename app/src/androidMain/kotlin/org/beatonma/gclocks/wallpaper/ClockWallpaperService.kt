@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.beatonma.gclocks.android.AndroidCanvasHost
@@ -19,6 +20,7 @@ import org.beatonma.gclocks.app.settings.settingsRepository
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
+import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.options.Options
 
@@ -53,14 +55,20 @@ class ClockWallpaperService : WallpaperService() {
             }
         private val canvasHost = AndroidCanvasHost()
         private var animator: ClockAnimator<*, *>? = null
-        private var constraints = MeasureConstraints(0f, 0f)
         private var backgroundColor: Int = 0xff000000.toInt()
+        private val relativeBounds: MutableRectF = MutableRectF(0f, 0f, 1f, 1f)
+        private val absoluteBounds: MutableRectF = MutableRectF(0f, 0f, 0f, 0f)
+        private var width = 0
+        private var height = 0
 
         init {
             engineScope.launch {
-                settings.collect {
-                    backgroundColor =
-                        (it.display as DisplayContext.Options.Wallpaper).backgroundColor.toRgbInt()
+                settings.collectLatest {
+                    val wallpaperOptions = it.display as DisplayContext.Options.Wallpaper
+
+                    backgroundColor = wallpaperOptions.backgroundColor.toRgbInt()
+                    relativeBounds.set(wallpaperOptions.position)
+
                     animator = createAnimator(it.clock)
                     invalidate()
                 }
@@ -72,11 +80,14 @@ class ClockWallpaperService : WallpaperService() {
         }
 
         private fun createAnimator(options: Options<*>): ClockAnimator<*, *> {
+            val constraints = updateConstraints()
             return createAnimatorFromOptions(options, path) { delayMillis ->
                 serviceScope.launch(Dispatchers.Main) {
                     invalidate()
                 }
-            }.apply { setConstraints(constraints) }
+            }.apply {
+                setConstraints(constraints)
+            }
         }
 
         override fun onSurfaceChanged(
@@ -86,8 +97,29 @@ class ClockWallpaperService : WallpaperService() {
             height: Int,
         ) {
             super.onSurfaceChanged(holder, format, width, height)
-            constraints = MeasureConstraints(width.toFloat(), height.toFloat())
+            this.width = width
+            this.height = height
+
+            updateConstraints()
+        }
+
+        private fun updateConstraints(): MeasureConstraints {
+            val w = width.toFloat()
+            val h = height.toFloat()
+
+            absoluteBounds.set(
+                relativeBounds.left * w,
+                relativeBounds.top * h,
+                relativeBounds.right * w,
+                relativeBounds.bottom * h
+            )
+            val constraints = MeasureConstraints(
+                absoluteBounds.width,
+                absoluteBounds.height
+            )
+
             animator?.setConstraints(constraints)
+            return constraints
         }
 
         private fun draw() {
@@ -99,7 +131,9 @@ class ClockWallpaperService : WallpaperService() {
                 canvasHost.withCanvas(_canvas) { canvas ->
                     canvas.fill(Color(backgroundColor))
                     animator.tick()
-                    animator.render(canvas)
+                    canvas.withTranslation(absoluteBounds.left, absoluteBounds.top) {
+                        animator.render(canvas)
+                    }
                 }
             } finally {
                 if (_canvas != null) {

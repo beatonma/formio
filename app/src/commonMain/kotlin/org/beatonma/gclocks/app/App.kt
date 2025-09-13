@@ -24,13 +24,17 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -67,6 +71,13 @@ private fun Modifier.horizontalMarginModifier() = composed {
     padding(horizontal = HorizontalMargin)
         .padding(WindowInsets.waterfall.asPaddingValues())
 }
+
+data class ClockPreview(
+    val options: Options<*>,
+    val background: Color,
+)
+
+val LocalClockPreview: ProvidableCompositionLocal<ClockPreview?> = compositionLocalOf { null }
 
 
 @Composable
@@ -153,46 +164,53 @@ private fun ClockSettingsScaffold(
             richSettings.firstOrNull { it is RichSetting<*> && it.key == CommonKeys.backgroundColor }
                 ?.let { it as? RichSetting.Color }?.value?.toCompose() ?: colorScheme.surface
 
-        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
-            LazyVerticalStaggeredGrid(
-                StaggeredGridCells.Adaptive(minSize = 300.dp),
-                Modifier.widthIn(max = 700.dp),
-                gridState,
-                contentPadding = contentPadding + VerticalBottomContentPadding,
-                verticalItemSpacing = 24.dp,
-                horizontalArrangement = Arrangement.spacedBy(
-                    HorizontalMargin,
-                    Alignment.CenterHorizontally
-                )
-            ) {
-                item(span = StaggeredGridItemSpan.FullLine) {
-                    ClockSelector(
-                        appSettings.state.clock,
-                        Modifier.horizontalMarginModifier(),
-                    ) { selected ->
-                        onEditSettings(
-                            appSettings.copy(
-                                state = appSettings.state.copy(clock = selected)
+        CompositionLocalProvider(
+            LocalClockPreview provides ClockPreview(
+                options.clock,
+                backgroundColor
+            )
+        ) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+                LazyVerticalStaggeredGrid(
+                    StaggeredGridCells.Adaptive(minSize = 300.dp),
+                    Modifier.widthIn(max = 700.dp),
+                    gridState,
+                    contentPadding = contentPadding + VerticalBottomContentPadding,
+                    verticalItemSpacing = 24.dp,
+                    horizontalArrangement = Arrangement.spacedBy(
+                        HorizontalMargin,
+                        Alignment.CenterHorizontally
+                    )
+                ) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        ClockSelector(
+                            appSettings.state.clock,
+                            Modifier.horizontalMarginModifier(),
+                        ) { selected ->
+                            onEditSettings(
+                                appSettings.copy(
+                                    state = appSettings.state.copy(clock = selected)
+                                )
                             )
+                        }
+                    }
+
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        Clock(
+                            options.clock,
+                            Modifier
+                                .background(backgroundColor)
+                                .padding(64.dp)
+                                .animateContentSize()
                         )
                     }
-                }
 
-                item(span = StaggeredGridItemSpan.FullLine) {
-                    Clock(
-                        options.clock,
-                        Modifier
-                            .background(backgroundColor)
-                            .padding(64.dp)
-                            .animateContentSize()
+                    ClockSettingsItems(
+                        richSettings,
+                        groupModifier = Modifier.padding(vertical = 8.dp),
+                        itemModifier = Modifier.horizontalMarginModifier().padding(vertical = 4.dp)
                     )
                 }
-
-                ClockSettingsItems(
-                    richSettings,
-                    groupModifier = Modifier.padding(vertical = 8.dp),
-                    itemModifier = Modifier.horizontalMarginModifier().padding(vertical = 4.dp)
-                )
             }
         }
     }

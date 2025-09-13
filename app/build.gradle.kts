@@ -94,7 +94,6 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.skiko.awt.runtime.linux.x64)
             implementation(libs.androidx.collection.ktx)
-            implementation(libs.ui.backhandler)
         }
     }
 }

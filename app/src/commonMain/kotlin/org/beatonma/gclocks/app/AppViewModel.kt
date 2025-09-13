@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.beatonma.gclocks.app.settings.AppSettings
@@ -39,7 +40,7 @@ class AppViewModel(
 
     init {
         viewModelScope.launch {
-            repository.load().collect { _appSettings.value = it }
+            repository.load().collectLatest { _appSettings.value = it }
         }
     }
 

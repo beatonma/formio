@@ -2,6 +2,7 @@ package org.beatonma.gclocks.compose.components.settings
 
 import org.beatonma.gclocks.app.LocalizedString
 import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.geometry.RectF as GeometryRectF
 import org.beatonma.gclocks.core.graphics.Color as GraphicsColor
 
 
@@ -89,6 +90,14 @@ sealed interface RichSetting<T : Any> : Settings {
         override val value: Boolean,
         override val onValueChange: (Boolean) -> Unit,
     ) : RichSetting<Boolean>
+
+    data class RectF(
+        override val key: Key.RectFKey,
+        override val localized: LocalizedString,
+        override val helpText: LocalizedString? = null,
+        override val value: GeometryRectF,
+        override val onValueChange: (GeometryRectF) -> Unit,
+    ) : RichSetting<GeometryRectF>
 }
 
 
@@ -112,6 +121,9 @@ sealed interface Key {
 
     @JvmInline
     value class EnumKey<E : Enum<E>>(override val value: String) : Key
+
+    @JvmInline
+    value class RectFKey(override val value: String) : Key
 }
 
 

@@ -32,9 +32,9 @@ fun DataStore<Preferences>.loadAppSettings(): Flow<AppSettings> {
                 settings = enumEntries<DisplayContext>().associateWith {
                     deserialize(preferences[it.preference]!!)
                 }
-            )
+            ).dump("load")
         } catch (e: Exception) {
-            debug("Failed to load preferences: $e")
+            debug("Failed to load preferences: $e\n$preferences")
         }
         return@mapLatest DefaultAppSettings
     }
@@ -49,11 +49,12 @@ fun DataStore<Preferences>.loadAppSettings(): Flow<AppSettings> {
  */
 suspend fun DataStore<Preferences>.saveAppSettings(appSettings: AppSettings) {
     edit { prefs ->
+        debug("save: $appSettings")
         prefs[CurrentStatePreference] = serialize(appSettings.state)
 
         enumEntries<DisplayContext>().forEach { context ->
             prefs[context.preference] =
-                serialize(appSettings.settings[context].dump("${context.name}"))
+                serialize(appSettings.settings[context].dump("save ${context.name}"))
         }
     }
 }
