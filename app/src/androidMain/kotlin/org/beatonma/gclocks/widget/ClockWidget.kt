@@ -16,6 +16,7 @@ import org.beatonma.gclocks.android.appContext
 import org.beatonma.gclocks.android.componentNameOf
 import org.beatonma.gclocks.android.widgetManager
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
+import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.core.util.getTime
@@ -106,7 +107,8 @@ interface ClockWidget {
                     canvas,
                     width.toFloat(),
                     height.toFloat(),
-                    getTime().copy(millisecond = 0)
+                    state = GlyphState.Active,
+                    time = getTime().copy(millisecond = 0)
                 )
             }
 

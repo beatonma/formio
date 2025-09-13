@@ -34,10 +34,21 @@ interface ClockAnimator<P : Paints, G : ClockGlyph<P>> : ConstrainedLayout {
      * Generally better to choreograph each of these steps separately,
      * but if you just need to render a single frame then this will do the job.
      */
-    fun renderOnce(canvas: Canvas, width: Float, height: Float, time: TimeOfDay = getTime()) {
+    fun renderOnce(
+        canvas: Canvas,
+        width: Float,
+        height: Float,
+        state: GlyphState = GlyphState.Active,
+        time: TimeOfDay = getTime(),
+    ) {
+        setState(state, force = true)
         setConstraints(MeasureConstraints(width, height))
         tick(time)
         render(canvas)
+    }
+
+    fun setState(state: GlyphState, force: Boolean) {
+        layout.setState(state, force)
     }
 
     override fun setConstraints(constraints: MeasureConstraints): ScaledSize =

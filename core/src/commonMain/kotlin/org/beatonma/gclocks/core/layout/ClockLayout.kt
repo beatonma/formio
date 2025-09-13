@@ -2,6 +2,7 @@ package org.beatonma.gclocks.core.layout
 
 import org.beatonma.gclocks.core.ClockFont
 import org.beatonma.gclocks.core.ClockGlyph
+import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.geometry.ConstrainedLayout
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.NativeSize
@@ -74,6 +75,10 @@ class ClockLayout<P : Paints, G : ClockGlyph<P>>(
 
     internal fun measureFrame(callback: OnMeasure) {
         layout.measureFrame(glyphs.glyphs, callback)
+    }
+
+    fun setState(state: GlyphState, force: Boolean = true) {
+        glyphs.setState(state, force)
     }
 
     override fun toString(): String {

@@ -41,6 +41,10 @@ internal class Glyphs<P : Paints, G : Glyph<P>>(
         updateGlyphs(nowString, nextString)
     }
 
+    fun setState(state: GlyphState, force: Boolean) {
+        glyphs.forEach { it.glyph.setState(state, force) }
+    }
+
     private fun updateGlyphs(now: String, next: String) {
         for (index in 0 until stringLength) {
             var isAnimated = false
