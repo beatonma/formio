@@ -107,9 +107,20 @@ data class AppSettings(
     }
 
     companion object {
-        val DefaultSettings get() = DisplayContext.entries.associateWith { ContextSettings(it) }
+        /**
+         * Naive mapping of default [ContextSettings] for each [DisplayContext].
+         * This can be used as a base for [DefaultAppSettings], but may
+         * need to be altered for different [DisplayContext]s on the platform.
+         */
+        val DefaultSettings: Map<DisplayContext, ContextSettings>
+            get() = DisplayContext.entries.associateWith { ContextSettings(it) }
     }
 }
 
-
+/**
+ * Nuanced per-platform settings.
+ *
+ * This may use [AppSettings.DefaultSettings] as a base, but should apply
+ * alterations for each [DisplayContext] available on the platform as needed.
+ */
 expect val DefaultAppSettings: AppSettings

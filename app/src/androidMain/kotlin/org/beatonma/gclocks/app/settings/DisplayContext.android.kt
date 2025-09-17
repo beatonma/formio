@@ -5,7 +5,7 @@ import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.geometry.RectF
 import org.beatonma.gclocks.core.graphics.Color
 
-private val DefaultPosition: RectF = MutableRectF(0f, 0f, 1f, 1f).inset(0.0f).toRect()
+private val DefaultPosition: RectF = MutableRectF(0f, 0f, 1f, 1f).inset(0.1f).toRect()
 
 actual enum class DisplayContext {
     Widget {
@@ -28,13 +28,13 @@ actual enum class DisplayContext {
 
         @Serializable
         data class Wallpaper(
-            val backgroundColor: Color = Color.Blue,
+            val backgroundColor: Color = Color(0xff222222),
             val position: RectF = DefaultPosition,
         ) : Options
 
         @Serializable
         data class Screensaver(
-            val backgroundColor: Color = Color.Green,
+            val backgroundColor: Color = Color(0xff222222),
             val position: RectF = DefaultPosition,
         ) : Options
     }
