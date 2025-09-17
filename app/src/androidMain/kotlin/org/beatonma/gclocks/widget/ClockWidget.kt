@@ -1,7 +1,6 @@
 package org.beatonma.gclocks.widget
 
 import android.app.AlarmManager
-import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
@@ -14,6 +13,7 @@ import org.beatonma.gclocks.android.AppContext
 import org.beatonma.gclocks.android.alarmManager
 import org.beatonma.gclocks.android.appContext
 import org.beatonma.gclocks.android.componentNameOf
+import org.beatonma.gclocks.android.getBroadcastPendingIntent
 import org.beatonma.gclocks.android.widgetManager
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.GlyphState
@@ -32,8 +32,7 @@ interface ClockWidget {
     }
 
     fun cancelUpdates(context: AppContext) {
-        val pendingIntent = getBroadcastIntent(
-            context,
+        val pendingIntent = context.getBroadcastPendingIntent(
             Intent(context.value, this::class.java).apply {
                 action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
             }
@@ -84,7 +83,7 @@ interface ClockWidget {
             action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
             putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds)
         }
-        val pendingIntent = getBroadcastIntent(context, intent)
+        val pendingIntent = context.getBroadcastPendingIntent(intent)
         alarmManager.setExact(AlarmManager.RTC, timeEpochMillis, pendingIntent)
         debug("Update scheduled for $time | $timeEpochMillis")
     }
@@ -116,8 +115,7 @@ interface ClockWidget {
         }
 
         fun refreshWidgets(context: AppContext, widgetProviderClass: KClass<*>) {
-            getBroadcastIntent(
-                context,
+            context.getBroadcastPendingIntent(
                 Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE).apply {
                     val widgetIds = context.widgetManager.getAppWidgetIds(
                         context.componentNameOf(widgetProviderClass)
@@ -128,9 +126,3 @@ interface ClockWidget {
         }
     }
 }
-
-
-private fun getBroadcastIntent(context: AppContext, intent: Intent) = PendingIntent.getBroadcast(
-    context.value, 0, intent,
-    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-)

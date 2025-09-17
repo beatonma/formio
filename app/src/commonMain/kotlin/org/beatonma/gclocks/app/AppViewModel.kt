@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +26,7 @@ class AppViewModelFactory(
         modelClass: KClass<T>,
         extras: CreationExtras,
     ): T {
+        @Suppress("UNCHECKED_CAST")
         return AppViewModel(repository, onSave) as T
     }
 }
@@ -36,11 +38,12 @@ class AppViewModel(
     private val _appSettings: MutableStateFlow<AppSettings?> = MutableStateFlow(null)
     val appSettings: StateFlow<AppSettings?> = _appSettings.asStateFlow()
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     val currentState: Flow<AppState?> = appSettings.mapLatest { it?.state }
 
     init {
         viewModelScope.launch {
-            repository.load().collectLatest { _appSettings.value = it }
+            repository.loadAppSettings().collectLatest { _appSettings.value = it }
         }
     }
 

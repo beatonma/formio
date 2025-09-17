@@ -2,7 +2,6 @@ package org.beatonma.gclocks.app
 
 import android.app.WallpaperManager
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
@@ -14,21 +13,28 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.core.app.AlarmManagerCompat.canScheduleExactAlarms
+import androidx.core.net.toUri
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import org.beatonma.R
 import org.beatonma.gclocks.android.alarmManager
 import org.beatonma.gclocks.android.appContext
 import org.beatonma.gclocks.android.componentNameOf
 import org.beatonma.gclocks.app.settings.DisplayContext
+import org.beatonma.gclocks.app.settings.DisplayMetrics
 import org.beatonma.gclocks.app.settings.settingsRepository
 import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.wallpaper.ClockWallpaperService
 import org.beatonma.gclocks.widget.ClockWidgetProvider
 
 class MainActivity : ComponentActivity() {
-    private var shouldShowWidgetPermissionRequest = true
+    private var shouldShowWidgetPermissionRequest by mutableStateOf(true)
     private val requestAlarmPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
@@ -41,6 +47,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         shouldShowWidgetPermissionRequest = !canScheduleExactAlarms(appContext.alarmManager)
+        lifecycleScope.launch { updateDisplayMetrics() }
 
         setAppContent()
     }
@@ -52,11 +59,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val viewModel: AppViewModel = viewModel(factory = factory)
-            val currentState = viewModel.currentState.collectAsState(null)
+            val currentState by viewModel.currentState.collectAsState(null)
             val snackbarHostState = remember { SnackbarHostState() }
 
-            LaunchedEffect(currentState.value, shouldShowWidgetPermissionRequest) {
-                if (currentState.value?.context == DisplayContext.Widget && shouldShowWidgetPermissionRequest) {
+            LaunchedEffect(currentState, shouldShowWidgetPermissionRequest) {
+                if (currentState?.context == DisplayContext.Widget && shouldShowWidgetPermissionRequest) {
                     showWidgetPermissionRequest(snackbarHostState)
                 }
             }
@@ -105,7 +112,7 @@ class MainActivity : ComponentActivity() {
                 requestAlarmPermissionLauncher.launch(
                     Intent(
                         Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
-                        Uri.parse("package:$packageName")
+                        "package:$packageName".toUri()
                     )
                 )
 
@@ -116,5 +123,17 @@ class MainActivity : ComponentActivity() {
                 shouldShowWidgetPermissionRequest = false
             }
         }
+    }
+
+    /**
+     * Live wallpaper frame scheduling is better with knowledge of the device
+     * frame rate, but that is not directly accessible from the LWP service context.
+     * As a workaround, we retrieve it on app creation and store it in the settings
+     * repository which is accessible from the LWP.
+     */
+    private suspend fun updateDisplayMetrics() {
+        val refreshRate: Float = display.refreshRate
+
+        settingsRepository.save(DisplayMetrics(refreshRate = refreshRate))
     }
 }

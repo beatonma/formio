@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
@@ -16,8 +17,10 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.beatonma.gclocks.android.AndroidCanvasHost
 import org.beatonma.gclocks.android.AndroidPath
+import org.beatonma.gclocks.app.loadDisplayMetrics
 import org.beatonma.gclocks.app.settings.ContextClockOptions
 import org.beatonma.gclocks.app.settings.DisplayContext
+import org.beatonma.gclocks.app.settings.DisplayMetrics
 import org.beatonma.gclocks.app.settings.settingsRepository
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.ClockAnimator
@@ -51,8 +54,10 @@ class ClockWallpaperService : WallpaperService() {
 
         @OptIn(ExperimentalCoroutinesApi::class)
         private val settings: Flow<ContextClockOptions<*>> = settingsRepository
-            .load()
+            .loadAppSettings()
             .mapLatest { it.getOptions(DisplayContext.LiveWallpaper) }
+
+        private val displayMetrics: Flow<DisplayMetrics> = settingsRepository.loadDisplayMetrics()
 
         private val canvasHost = AndroidCanvasHost()
         private val path: AndroidPath = AndroidPath()
@@ -62,6 +67,7 @@ class ClockWallpaperService : WallpaperService() {
         private val absoluteBounds: MutableRectF = MutableRectF(0f, 0f, 0f, 0f)
         private var width = 0
         private var height = 0
+        private var frameDelayMillis: Long = (1000f / 60f).toLong()
 
         init {
             initialize()
@@ -71,7 +77,11 @@ class ClockWallpaperService : WallpaperService() {
             if (engineScope?.isActive != true) {
                 engineScope = createCoroutineScope()
             }
-            engineScope?.launch {
+            val scope = engineScope ?: run {
+                debug("Failed to initialize wallpaper: engineScope is null")
+                return
+            }
+            scope.launch {
                 settings.collectLatest {
                     val wallpaperOptions = it.display as DisplayContext.Options.Wallpaper
 
@@ -81,16 +91,22 @@ class ClockWallpaperService : WallpaperService() {
                     animator = createAnimator(it.clock)
                     invalidate()
                 }
-            } ?: debug("Failed to load settings: engineScope is null")
+            }
+
+            scope.launch {
+                displayMetrics.collectLatest { metrics ->
+                    frameDelayMillis = metrics.frameDelayMillis
+                }
+            }
         }
 
         fun invalidate() {
             draw()
         }
 
-        private fun postInvalidate(delayMillis: Int) {
+        private fun postInvalidate(delayMillis: Long) {
             engineScope?.launch(Dispatchers.Main) {
-                // TODO delay(delayMillis.toLong())
+                delay(delayMillis)
                 invalidate()
             } ?: debug("postInvalidate failed: engineScope is null")
         }
@@ -112,20 +128,18 @@ class ClockWallpaperService : WallpaperService() {
             super.onVisibilityChanged(visible)
 
             when (visible) {
-                true -> {
-                    initialize()
-                }
-
+                true -> initialize()
                 false -> engineScope?.cancel()
             }
         }
 
         private fun createAnimator(options: Options<*>): ClockAnimator<*, *> {
             val constraints = updateConstraints()
-            return createAnimatorFromOptions(options, path, onScheduleNextFrame = ::postInvalidate)
-                .apply {
-                    setConstraints(constraints)
-                }
+            return createAnimatorFromOptions(options, path, onScheduleNextFrame = {
+                postInvalidate(frameDelayMillis)
+            }).apply {
+                setConstraints(constraints)
+            }
         }
 
         private fun updateConstraints(): MeasureConstraints {

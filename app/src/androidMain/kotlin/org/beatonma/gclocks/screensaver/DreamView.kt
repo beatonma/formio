@@ -34,7 +34,7 @@ class DreamView @JvmOverloads constructor(
         super.onAttachedToWindow()
 
         coroutineScope.launch {
-            context.settingsRepository.load()
+            context.settingsRepository.loadAppSettings()
                 .mapLatest { it.getOptions(DisplayContext.Screensaver) }
                 .collectLatest { settings ->
                     val screensaverOptions = settings.display as DisplayContext.Options.Screensaver

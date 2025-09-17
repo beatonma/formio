@@ -5,13 +5,13 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 import okio.Path.Companion.toPath
 import org.beatonma.gclocks.app.deserialize
 import org.beatonma.gclocks.app.serialize
 import org.beatonma.gclocks.core.util.debug
-import org.beatonma.gclocks.core.util.dump
 import kotlin.enums.enumEntries
 
 internal const val DataStoreFileName = ".clocks.preferences_pb"
@@ -24,6 +24,7 @@ fun createDataStore(producePath: () -> String): DataStore<Preferences> =
         produceFile = { producePath().toPath() }
     )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 fun DataStore<Preferences>.loadAppSettings(): Flow<AppSettings> {
     return data.mapLatest { preferences ->
         try {
@@ -32,7 +33,7 @@ fun DataStore<Preferences>.loadAppSettings(): Flow<AppSettings> {
                 settings = enumEntries<DisplayContext>().associateWith {
                     deserialize(preferences[it.preference]!!)
                 }
-            ).dump("load")
+            )
         } catch (e: Exception) {
             debug("Failed to load preferences: $e\n$preferences")
         }
@@ -49,12 +50,10 @@ fun DataStore<Preferences>.loadAppSettings(): Flow<AppSettings> {
  */
 suspend fun DataStore<Preferences>.saveAppSettings(appSettings: AppSettings) {
     edit { prefs ->
-        debug("save: $appSettings")
         prefs[CurrentStatePreference] = serialize(appSettings.state)
 
         enumEntries<DisplayContext>().forEach { context ->
-            prefs[context.preference] =
-                serialize(appSettings.settings[context].dump("save ${context.name}"))
+            prefs[context.preference] = serialize(appSettings.settings[context])
         }
     }
 }

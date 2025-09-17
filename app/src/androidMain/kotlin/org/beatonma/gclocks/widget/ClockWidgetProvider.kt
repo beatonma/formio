@@ -1,5 +1,6 @@
 package org.beatonma.gclocks.widget
 
+import android.annotation.SuppressLint
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
@@ -23,6 +24,7 @@ import org.beatonma.gclocks.core.util.debug
 
 
 class ClockWidgetProvider : AppWidgetProvider(), ClockWidget {
+    @SuppressLint("UnsafeProtectedBroadcastReceiver") // Intent action handled in super calls.
     override fun onReceive(context: Context, intent: Intent) {
         super<ClockWidget>.onReceive(context, intent)
         super<AppWidgetProvider>.onReceive(context, intent)
@@ -78,7 +80,7 @@ class ClockWidgetProvider : AppWidgetProvider(), ClockWidget {
 
         val repository = context.settingsRepository
         val appSettings: AppSettings = runBlocking {
-            repository.load().firstOrNull() ?: DefaultAppSettings
+            repository.loadAppSettings().firstOrNull() ?: DefaultAppSettings
         }
         val remoteViews = RemoteViews(context.packageName, R.layout.widget)
 

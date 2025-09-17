@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.json.Json
@@ -15,13 +16,12 @@ inline fun <reified T> serialize(value: T): String = Json.encodeToString<T>(valu
 inline fun <reified T> deserialize(str: String): T = Json.decodeFromString<T>(str)
 
 interface AppSettingsRepository {
+    fun loadAppSettings(): Flow<AppSettings>
     suspend fun save(appSettings: AppSettings)
-    fun load(): Flow<AppSettings>
 
     suspend fun save(key: String, value: String)
     fun loadString(key: String): Flow<String?>
     suspend fun forgetString(key: String)
-
 }
 
 class DataStoreAppSettingsRepository(
@@ -31,10 +31,11 @@ class DataStoreAppSettingsRepository(
         dataStore.saveAppSettings(appSettings)
     }
 
-    override fun load(): Flow<AppSettings> {
+    override fun loadAppSettings(): Flow<AppSettings> {
         return dataStore.loadAppSettings()
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun loadString(key: String): Flow<String?> {
         return dataStore.data.mapLatest { it[stringPreferencesKey(key)] }
     }
