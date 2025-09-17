@@ -2,6 +2,7 @@ package org.beatonma.gclocks.app
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,12 +52,13 @@ import org.beatonma.gclocks.compose.components.ButtonGroup
 import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.components.settings.RichSetting
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
+import org.beatonma.gclocks.compose.onlyIf
 import org.beatonma.gclocks.compose.plus
 import org.beatonma.gclocks.compose.toCompose
 import org.beatonma.gclocks.core.options.Options
 import org.jetbrains.compose.resources.stringResource
 
-interface Screen {
+internal interface Screen {
     val displayContext: DisplayContext
     val label: LocalizedString
     val contentDescription: LocalizedString
@@ -72,6 +74,10 @@ private fun Modifier.horizontalMarginModifier() = composed {
         .padding(WindowInsets.waterfall.asPaddingValues())
 }
 
+
+/**
+ * Data needed to render a preview of a clock with current settings.
+ */
 data class ClockPreview(
     val options: Options<*>,
     val background: Color,
@@ -80,10 +86,16 @@ data class ClockPreview(
 val LocalClockPreview: ProvidableCompositionLocal<ClockPreview?> = compositionLocalOf { null }
 
 
+data class AppAdapter(
+    val snackbarHostState: SnackbarHostState? = null,
+    val onClickPreview: ((DisplayContext) -> Unit)? = null,
+)
+
+
 @Composable
 fun App(
     viewModel: AppViewModel,
-    snackbarHostState: SnackbarHostState? = null,
+    appAdapter: AppAdapter? = null,
 ) {
     val settings by viewModel.appSettings.collectAsState()
 
@@ -95,7 +107,7 @@ fun App(
         onSave = {
             viewModel.save()
         },
-        snackbarHostState = snackbarHostState,
+        appAdapter = appAdapter,
     )
 }
 
@@ -104,7 +116,7 @@ fun NavigationSuiteApp(
     appSettings: AppSettings,
     onEditSettings: (AppSettings) -> Unit,
     onSave: () -> Unit,
-    snackbarHostState: SnackbarHostState? = null,
+    appAdapter: AppAdapter?,
 ) {
     val currentScreen =
         Screens.entries.find { it.displayContext == appSettings.state.context }
@@ -125,7 +137,7 @@ fun NavigationSuiteApp(
                 }
             }
         ) {
-            ClockSettingsScaffold(appSettings, onEditSettings, onSave, snackbarHostState)
+            ClockSettingsScaffold(appSettings, onEditSettings, onSave, appAdapter)
         }
     }
 }
@@ -136,7 +148,7 @@ private fun ClockSettingsScaffold(
     appSettings: AppSettings,
     onEditSettings: (AppSettings) -> Unit,
     onSave: () -> Unit,
-    snackbarHostState: SnackbarHostState?,
+    appAdapter: AppAdapter?,
 ) {
     val state = appSettings.state
     val clockViewModel = clockSettingsViewModel(
@@ -153,7 +165,7 @@ private fun ClockSettingsScaffold(
     }
 
     Scaffold(
-        snackbarHost = { snackbarHostState?.let { SnackbarHost(it) } },
+        snackbarHost = { appAdapter?.snackbarHostState?.let { SnackbarHost(it) } },
         floatingActionButton = {
             ExtendedFloatingActionButton(onSave) {
                 Text("Save changes")
@@ -199,6 +211,9 @@ private fun ClockSettingsScaffold(
                         Clock(
                             options.clock,
                             Modifier
+                                .onlyIf(appAdapter?.onClickPreview) { onClick ->
+                                    clickable(onClick = { onClick(state.context) })
+                                }
                                 .background(backgroundColor)
                                 .padding(64.dp)
                                 .animateContentSize()

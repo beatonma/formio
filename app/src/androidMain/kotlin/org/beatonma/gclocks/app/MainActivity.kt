@@ -1,5 +1,6 @@
 package org.beatonma.gclocks.app
 
+import android.app.WallpaperManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -19,9 +20,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import org.beatonma.R
 import org.beatonma.gclocks.android.alarmManager
 import org.beatonma.gclocks.android.appContext
+import org.beatonma.gclocks.android.componentNameOf
 import org.beatonma.gclocks.app.settings.DisplayContext
 import org.beatonma.gclocks.app.settings.settingsRepository
 import org.beatonma.gclocks.core.util.debug
+import org.beatonma.gclocks.wallpaper.ClockWallpaperService
 import org.beatonma.gclocks.widget.ClockWidgetProvider
 
 class MainActivity : ComponentActivity() {
@@ -60,7 +63,32 @@ class MainActivity : ComponentActivity() {
 
             App(
                 viewModel,
-                snackbarHostState = snackbarHostState,
+                appAdapter = AppAdapter(
+                    snackbarHostState = snackbarHostState,
+                    onClickPreview = { context ->
+                        when (context) {
+                            DisplayContext.LiveWallpaper -> {
+                                val intent =
+                                    Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER).apply {
+                                        putExtra(
+                                            WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
+                                            appContext.componentNameOf(ClockWallpaperService::class)
+                                        )
+                                    }
+                                startActivity(intent)
+                            }
+
+                            DisplayContext.Screensaver -> {
+                                val intent = Intent(Settings.ACTION_DREAM_SETTINGS)
+                                startActivity(intent)
+                            }
+
+                            else -> {
+                                debug("onClickPreview is not implemented for $context")
+                            }
+                        }
+                    }
+                )
             )
         }
     }
