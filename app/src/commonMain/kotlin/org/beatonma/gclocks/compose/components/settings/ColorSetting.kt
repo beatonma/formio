@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import gclocks_multiplatform.app.generated.resources.Res
@@ -37,6 +36,7 @@ import gclocks_multiplatform.app.generated.resources.setting_color_contentdescri
 import gclocks_multiplatform.app.generated.resources.setting_color_label_hue_initial
 import gclocks_multiplatform.app.generated.resources.setting_color_label_lightness_initial
 import gclocks_multiplatform.app.generated.resources.setting_color_label_saturation_initial
+import org.beatonma.gclocks.app.theme.rememberContentColor
 import org.beatonma.gclocks.compose.AppIcon
 import org.beatonma.gclocks.compose.animation.EnterScale
 import org.beatonma.gclocks.compose.animation.EnterVertical
@@ -285,21 +285,10 @@ private fun ColorComponent(
         min = min,
         max = max,
         startLabel = name,
+        modifier = Modifier.fillMaxWidth()
     )
 }
 
-
-@Composable
-private fun rememberContentColor(color: ComposeColor): ComposeColor {
-    return remember(color) {
-        mutableStateOf(
-            when {
-                color.luminance() > 0.5f -> ComposeColor.Black
-                else -> ComposeColor.White
-            }.copy(alpha = 0.72f)
-        )
-    }.value
-}
 
 @Composable
 private fun Patch(

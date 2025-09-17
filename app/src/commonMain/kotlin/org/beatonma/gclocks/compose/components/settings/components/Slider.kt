@@ -2,7 +2,6 @@ package org.beatonma.gclocks.compose.components.settings.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,12 +16,13 @@ internal fun LabelledSlider(
     onValueChange: (Float) -> Unit,
     min: Float,
     max: Float,
+    modifier: Modifier = Modifier,
     steps: Int = 0,
     startLabel: String? = null,
     endLabel: String? = null,
 ) {
     Row(
-        Modifier.fillMaxWidth(),
+        modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {

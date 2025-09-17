@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
@@ -53,6 +54,7 @@ import gclocks_multiplatform.app.generated.resources.ui_save_changes
 import org.beatonma.gclocks.app.LocalClockPreview
 import org.beatonma.gclocks.app.theme.DesignSpec
 import org.beatonma.gclocks.app.theme.DesignSpec.floatingActionButton
+import org.beatonma.gclocks.app.theme.rememberContentColor
 import org.beatonma.gclocks.compose.AppIcon
 import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.components.FullScreenOverlay
@@ -115,6 +117,7 @@ private fun PositionEditor(
 ) {
     val clockPreview = LocalClockPreview.current
     val backgroundColor = clockPreview?.background ?: colorScheme.surface
+    val boundaryColor = rememberContentColor(backgroundColor, alpha = 0.08f)
 
     @Suppress("UnusedBoxWithConstraintsScope")
     BoxWithConstraints(
@@ -126,7 +129,13 @@ private fun PositionEditor(
         var bounds by remember { mutableStateOf(relativeToDp(value, containerSize)) }
         val density = LocalDensity.current
 
-        TransformableBoundary(bounds, { bounds = it }, containerSize, density) {
+        TransformableBoundary(
+            bounds,
+            { bounds = it },
+            containerSize,
+            density,
+            boundaryColor
+        ) {
             if (clockPreview != null) {
                 Clock(clockPreview.options)
             }
@@ -156,6 +165,7 @@ private fun TransformableBoundary(
     onBoundsChange: (DpRect) -> Unit,
     containerSize: DpSize,
     density: Density,
+    backgroundColor: Color,
     content: (@Composable BoxScope.() -> Unit)?,
 ) {
     val currentBounds by rememberUpdatedState(bounds)
@@ -164,6 +174,7 @@ private fun TransformableBoundary(
         Modifier
             .offset(currentBounds.left, currentBounds.top)
             .size(currentBounds.size)
+            .background(backgroundColor)
             .border(Dp.Hairline, colorScheme.surface)
             .border(Dp.Hairline, colorScheme.onSurface)
             .pointerInput(Unit) {
