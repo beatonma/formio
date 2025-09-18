@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,6 +38,7 @@ internal fun SettingLayout(
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             content()
         }
@@ -75,19 +77,30 @@ internal fun CheckableSettingLayout(
     helpText: String? = null,
     onClick: (() -> Unit),
     role: Role,
-    text: @Composable () -> Unit,
-    checkable: @Composable () -> Unit,
+    text: @Composable RowScope.() -> Unit,
+    checkable: @Composable RowScope.() -> Unit,
 ) {
     TooltipLayout(helpText, modifier) {
         Row(
             Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick, role = role),
+                .clickable(onClick = onClick, role = role)
+                .padding(horizontal = 8.dp)
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            text()
-            checkable()
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                text()
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                checkable()
+            }
         }
     }
 }

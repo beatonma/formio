@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,13 +17,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextOverflow
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.ui_show_less
 import gclocks_multiplatform.app.generated.resources.ui_show_more
 import org.beatonma.gclocks.app.Localization.helpStringResourceMap
 import org.beatonma.gclocks.app.Localization.stringResourceMap
 import org.beatonma.gclocks.compose.AppIcon
+import org.beatonma.gclocks.compose.animation.EnterFade
 import org.beatonma.gclocks.compose.animation.EnterVertical
+import org.beatonma.gclocks.compose.animation.ExitFade
 import org.beatonma.gclocks.compose.animation.ExitVertical
 import org.beatonma.gclocks.compose.components.settings.components.CheckableSettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.CollapsibleSettingLayout
@@ -62,7 +66,12 @@ fun <E : Enum<E>> SingleSelectSetting(
     val resourceMap by remember(value) { mutableStateOf(value::class.stringResourceMap) }
     val helpResourceMap by remember(value) { mutableStateOf(value::class.helpStringResourceMap) }
 
-    CollapsibleGroup(name, modifier, helpText) {
+    GroupSetting(
+        name,
+        modifier,
+        helpText = helpText,
+        valueDescription = resourceMap.getValue(value).resolve()
+    ) {
         for (v in values) {
             val onClick = { onValueChange(v) }
 
@@ -116,7 +125,12 @@ fun <E : Enum<E>> MultiSelectSetting(
     val resourceMap by remember(defaultValue) { mutableStateOf(defaultValue::class.stringResourceMap) }
     val helpResourceMap by remember(defaultValue) { mutableStateOf(defaultValue::class.helpStringResourceMap) }
 
-    CollapsibleGroup(name, modifier, helpText) {
+    GroupSetting(
+        name,
+        modifier,
+        helpText = helpText,
+        valueDescription = values.map { resourceMap.getValue(it).resolve() }.joinToString(", ")
+    ) {
         for (v in values) {
             val onClick = {
                 if (v in value) {
@@ -147,10 +161,11 @@ fun <E : Enum<E>> MultiSelectSetting(
 }
 
 @Composable
-private fun CollapsibleGroup(
+private fun GroupSetting(
     name: String,
     modifier: Modifier,
     helpText: String?,
+    valueDescription: String,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -163,9 +178,18 @@ private fun CollapsibleGroup(
             helpText = helpText,
             onClick = onClick,
             role = Role.DropdownList,
-            text = { SettingName(name) }
+            text = {
+                SettingName(name)
+            }
         ) {
-            IconButton(onClick = onClick) {
+            AnimatedVisibility(!expanded, enter = EnterFade, exit = ExitFade) {
+                SettingValue(
+                    valueDescription,
+                    color = colorScheme.onSurfaceVariant,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            IconButton(onClick = onClick, Modifier.weight(1f, false)) {
                 Icon(
                     AppIcon.ArrowDropdown,
                     stringResource(

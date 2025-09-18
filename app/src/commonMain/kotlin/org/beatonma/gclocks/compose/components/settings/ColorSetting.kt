@@ -102,11 +102,11 @@ fun MultiColorSetting(
     val editorOpenPadding by animateDpAsState(if (editingIndex != null) 48.dp else 0.dp)
 
     CollapsibleSettingLayout(editingIndex != null, modifier) {
-        SettingName(name, Modifier.padding(bottom = 4.dp))
+        SettingName(name)
 
         ScrollingRow(
             Modifier
-                .fillMaxWidth().padding(bottom = 8.dp)
+                .fillMaxWidth()
                 .requiredHeight(EditablePatchSize + (editorOpenPadding * 2f)),
             horizontalArrangement = Arrangement.spacedBy(
                 16.dp,
@@ -118,11 +118,6 @@ fun MultiColorSetting(
                 val padding by animateDpAsState(if (isSelected) editorOpenPadding else 0.dp)
 
                 EditablePreviewPatch(
-                    Modifier.padding(
-                        top = padding * 1.5f,
-                        start = padding * 0.5f,
-                        end = padding * 0.5f
-                    ),
                     color,
                     isSelected,
                     {
@@ -130,7 +125,12 @@ fun MultiColorSetting(
                             true -> null
                             false -> index
                         }
-                    }
+                    },
+                    Modifier.padding(
+                        top = padding * 1.5f,
+                        start = padding * 0.5f,
+                        end = padding * 0.5f
+                    ),
                 )
             }
         }
@@ -168,14 +168,14 @@ fun ColorSetting(
     var isEditing by remember { mutableStateOf(false) }
 
     CollapsibleSettingLayout(isEditing, modifier) {
-        SettingName(name, Modifier.padding(bottom = 4.dp))
+        SettingName(name)
 
         EditablePreviewPatch(
-            Modifier,
-            value,
-            isEditing,
+            color = value,
+            isSelected = isEditing,
             onClick = { isEditing = !isEditing },
         )
+
         ColorEditor(isEditing, value, onValueChange)
     }
 }
@@ -460,10 +460,10 @@ private fun Patch(
 
 @Composable
 private fun EditablePreviewPatch(
-    modifier: Modifier,
     color: Color,
     isSelected: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val patchScale by animateFloatAsState(if (isSelected) 1.2f else 1f)
 

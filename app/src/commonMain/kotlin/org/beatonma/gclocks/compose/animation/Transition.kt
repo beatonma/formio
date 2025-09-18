@@ -21,6 +21,17 @@ private const val DurationHalf: Int = (Duration * 1f / 2f).toInt()
 private const val DurationMedium: Int = (Duration * 2f / 3f).toInt()
 private val EaseInOut = CubicBezierEasing(0.4f, 0f, 0.8f, 1f)
 
+val EnterFade: EnterTransition = fadeIn(
+    tween(
+        durationMillis = DurationHalf,
+        easing = FastOutSlowInEasing,
+    )
+)
+
+val ExitFade: ExitTransition = fadeOut(
+    tween(durationMillis = DurationShort, easing = FastOutLinearInEasing)
+)
+
 val EnterVertical: EnterTransition =
     fadeIn(
         tween(
