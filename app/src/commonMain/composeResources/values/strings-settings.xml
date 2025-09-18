@@ -32,13 +32,22 @@
     <string name="setting_background_color">Background color</string>
     <string name="setting_clock_position">Position</string>
 
-    <!-- Other -->
+    <!-- Colors -->
     <string name="setting_colors">Colors</string>
     <string name="setting_color_contentdescription_selected">Selected color</string>
     <string name="setting_color_contentdescription_edited">This color is being edited</string>
-    <string name="setting_color_label_hue_initial">H</string>
-    <string name="setting_color_label_saturation_initial">S</string>
-    <string name="setting_color_label_lightness_initial">L</string>
+    <string name="setting_color_label_hsl_hue_initial">H</string>
+    <string name="setting_color_label_hsl_saturation_initial">S</string>
+    <string name="setting_color_label_hsl_lightness_initial">L</string>
+    <string name="setting_color_label_rgb_red_initial">R</string>
+    <string name="setting_color_label_rgb_green_initial">G</string>
+    <string name="setting_color_label_rgb_blue_initial">B</string>
+    <string name="setting_color_label_samples">Samples</string>
+    <string name="setting_color_label_hsl">HSL</string>
+    <string name="setting_color_label_rgb">RGB</string>
+    <string name="setting_color_label_hex">Hex</string>
+
+    <!-- Other -->
     <string name="setting_stroke_width">Stroke width</string>
 
     <string name="setting_clock_spacing">Spacing</string>

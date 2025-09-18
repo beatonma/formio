@@ -14,21 +14,24 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 
-private const val Scale = 0.95f
-private const val Duration = 300
+private const val Scale: Float = 0.95f
+private const val Duration: Int = 300
+private const val DurationShort: Int = (Duration * 1f / 3f).toInt()
+private const val DurationHalf: Int = (Duration * 1f / 2f).toInt()
+private const val DurationMedium: Int = (Duration * 2f / 3f).toInt()
 private val EaseInOut = CubicBezierEasing(0.4f, 0f, 0.8f, 1f)
 
 val EnterVertical: EnterTransition =
     fadeIn(
         tween(
-            durationMillis = Duration * 1 / 2,
-            delayMillis = Duration * 1 / 2,
+            durationMillis = DurationHalf,
+            delayMillis = DurationHalf,
             easing = FastOutSlowInEasing,
         )
     ) + scaleIn(
         tween(
-            durationMillis = Duration * 2 / 3,
-            delayMillis = Duration * 1 / 3,
+            durationMillis = DurationMedium,
+            delayMillis = DurationShort,
             easing = LinearEasing,
         ),
         initialScale = Scale,
@@ -42,28 +45,28 @@ val EnterVertical: EnterTransition =
 
 val ExitVertical: ExitTransition =
     fadeOut(
-        tween(durationMillis = Duration, easing = FastOutLinearInEasing)
+        tween(durationMillis = DurationShort, easing = FastOutLinearInEasing)
     ) + scaleOut(
         tween(durationMillis = Duration, easing = LinearEasing),
         targetScale = Scale,
     ) + shrinkVertically(
         tween(
-            durationMillis = Duration * 1 / 2,
-            delayMillis = Duration * 1 / 2,
+            durationMillis = DurationHalf,
+            delayMillis = DurationHalf,
             easing = EaseInOut
         )
     )
 
 val EnterScale: EnterTransition = fadeIn(
     tween(
-        durationMillis = Duration * 1 / 2,
-        delayMillis = Duration * 1 / 2,
+        durationMillis = DurationHalf,
+        delayMillis = DurationHalf,
         easing = FastOutSlowInEasing,
     )
 ) + scaleIn(
     tween(
-        durationMillis = Duration * 2 / 3,
-        delayMillis = Duration * 1 / 3,
+        durationMillis = DurationMedium,
+        delayMillis = DurationShort,
         easing = LinearEasing,
     ),
     initialScale = Scale,

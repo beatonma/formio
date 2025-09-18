@@ -3,6 +3,8 @@
     <!-- DisplayContext-dependent, but commonly used -->
     <string name="setting_background_color">Background colour</string>
 
-    <!-- Other -->
+    <!-- Colours -->
+    <string name="setting_color_contentdescription_selected">Selected colour</string>
+    <string name="setting_color_contentdescription_edited">This colour is being edited</string>
     <string name="setting_colors">Colours</string>
 </resources>

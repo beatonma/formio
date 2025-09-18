@@ -8,40 +8,52 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowHeightSizeClass
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.setting_color_contentdescription_edited
 import gclocks_multiplatform.app.generated.resources.setting_color_contentdescription_selected
-import gclocks_multiplatform.app.generated.resources.setting_color_label_hue_initial
-import gclocks_multiplatform.app.generated.resources.setting_color_label_lightness_initial
-import gclocks_multiplatform.app.generated.resources.setting_color_label_saturation_initial
+import gclocks_multiplatform.app.generated.resources.setting_color_label_hsl_hue_initial
+import gclocks_multiplatform.app.generated.resources.setting_color_label_hsl_lightness_initial
+import gclocks_multiplatform.app.generated.resources.setting_color_label_hsl_saturation_initial
+import gclocks_multiplatform.app.generated.resources.setting_color_label_rgb_blue_initial
+import gclocks_multiplatform.app.generated.resources.setting_color_label_rgb_green_initial
+import gclocks_multiplatform.app.generated.resources.setting_color_label_rgb_red_initial
+import org.beatonma.gclocks.app.Localization.stringResourceMap
 import org.beatonma.gclocks.app.theme.rememberContentColor
 import org.beatonma.gclocks.compose.AppIcon
 import org.beatonma.gclocks.compose.animation.EnterScale
 import org.beatonma.gclocks.compose.animation.EnterVertical
 import org.beatonma.gclocks.compose.animation.ExitScale
 import org.beatonma.gclocks.compose.animation.ExitVertical
+import org.beatonma.gclocks.compose.components.ButtonGroup
+import org.beatonma.gclocks.compose.components.ButtonGroupSize
 import org.beatonma.gclocks.compose.components.settings.components.CollapsibleSettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.LabelledSlider
 import org.beatonma.gclocks.compose.components.settings.components.ScrollingRow
@@ -49,6 +61,13 @@ import org.beatonma.gclocks.compose.components.settings.components.SettingName
 import org.beatonma.gclocks.compose.components.settings.components.rememberMaterialColorSwatch
 import org.beatonma.gclocks.compose.toCompose
 import org.beatonma.gclocks.core.graphics.Color
+import org.beatonma.gclocks.core.graphics.toColor
+import org.beatonma.gclocks.core.graphics.withBlue
+import org.beatonma.gclocks.core.graphics.withGreen
+import org.beatonma.gclocks.core.graphics.withHue
+import org.beatonma.gclocks.core.graphics.withLightness
+import org.beatonma.gclocks.core.graphics.withRed
+import org.beatonma.gclocks.core.graphics.withSaturation
 import org.beatonma.gclocks.core.util.fastForEach
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.graphics.Color as ComposeColor
@@ -79,7 +98,6 @@ fun MultiColorSetting(
     onValueChange: (index: Int, color: Color) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val swatch = rememberMaterialColorSwatch()
     var editingIndex: Int? by remember { mutableStateOf(null) }
     val editorOpenPadding by animateDpAsState(if (editingIndex != null) 48.dp else 0.dp)
 
@@ -119,7 +137,6 @@ fun MultiColorSetting(
 
         ColorEditor(
             editingIndex != null,
-            swatch,
             colors[editingIndex ?: 0],
             { color -> onValueChange(editingIndex ?: 0, color) },
         )
@@ -146,7 +163,6 @@ fun ColorSetting(
     name: String,
     value: Color,
     modifier: Modifier = Modifier,
-    colors: List<Color> = rememberMaterialColorSwatch(),
     onValueChange: (newValue: Color) -> Unit,
 ) {
     var isEditing by remember { mutableStateOf(false) }
@@ -160,14 +176,13 @@ fun ColorSetting(
             isEditing,
             onClick = { isEditing = !isEditing },
         )
-        ColorEditor(isEditing, colors, value, onValueChange)
+        ColorEditor(isEditing, value, onValueChange)
     }
 }
 
 @Composable
 private fun ColorEditor(
     isVisible: Boolean,
-    colors: List<Color>,
     value: Color,
     onValueChange: (Color) -> Unit,
     modifier: Modifier = Modifier,
@@ -177,98 +192,203 @@ private fun ColorEditor(
         enter = EnterVertical,
         exit = ExitVertical,
     ) {
-        ColorEditor(colors, value, onValueChange, modifier)
+        ColorEditor(value, onValueChange, modifier)
     }
+}
+
+
+enum class ColorEditorMode {
+    Samples,
+    HSL,
+    RGB,
+    HEX,
 }
 
 @Composable
 private fun ColorEditor(
-    colors: List<Color>,
-    value: Color,
-    onValueChange: (Color) -> Unit,
+    color: Color,
+    onColorChange: (Color) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val hsl = rememberHsl(value)
+    var mode by rememberSaveable { mutableStateOf(ColorEditorMode.Samples) }
+    val localizedModes = remember { ColorEditorMode::class.stringResourceMap }
 
-    LaunchedEffect(hsl.hue, hsl.saturation, hsl.lightness) {
-        onValueChange(Color.hsla(hsl.hue, hsl.saturation, hsl.lightness))
+    Column(
+        modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        ButtonGroup(
+            mode,
+            { localizedModes[it]?.resolve() ?: it.name },
+            { mode = it },
+            ColorEditorMode.entries,
+            size = ButtonGroupSize.Small
+        )
+
+        when (mode) {
+            ColorEditorMode.Samples -> SampleColors(color, onColorChange, Modifier.fillMaxWidth())
+            ColorEditorMode.HSL -> HslComponents(color, onColorChange, Modifier.fillMaxWidth())
+            ColorEditorMode.RGB -> RgbComponents(color, onColorChange, Modifier.fillMaxWidth())
+            ColorEditorMode.HEX -> HexEditor(color, onColorChange, Modifier.fillMaxWidth())
+        }
     }
+}
 
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        FlowRow(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(
-                4.dp,
-                alignment = Alignment.CenterHorizontally
-            ),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            maxItemsInEachRow = 5
-        ) {
-            colors.fastForEach { color ->
-                Patch(
-                    color = color.toCompose(),
-                    onClick = { hsl.set(color) },
-                    content = if (color == value) {
-                        {
-                            Icon(
-                                AppIcon.Checkmark,
-                                contentDescription = stringResource(Res.string.setting_color_contentdescription_selected),
-                            )
-                        }
-                    } else null,
-                    modifier = Modifier.padding(8.dp)
-                )
+
+@Composable
+private fun ColumnScope.HslComponents(
+    color: Color,
+    onColorChange: (Color) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val (hue, saturation, lightness) = color.hsl()
+
+    ColorComponent(
+        hue,
+        { onColorChange(color.withHue(it)) },
+        stringResource(Res.string.setting_color_label_hsl_hue_initial),
+        0f,
+        360f,
+        modifier,
+    )
+    ColorComponent(
+        saturation,
+        { onColorChange(color.withSaturation(it)) },
+        stringResource(Res.string.setting_color_label_hsl_saturation_initial),
+        0f,
+        1f,
+        modifier,
+    )
+    ColorComponent(
+        lightness,
+        { onColorChange(color.withLightness(it)) },
+        stringResource(Res.string.setting_color_label_hsl_lightness_initial),
+        0f,
+        1f,
+        modifier,
+    )
+}
+
+@Composable
+private fun ColumnScope.RgbComponents(
+    color: Color,
+    onColorChange: (Color) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    ColorComponent(
+        color.red,
+        { onColorChange(color.withRed(it)) },
+        stringResource(Res.string.setting_color_label_rgb_red_initial),
+        0,
+        255,
+        modifier,
+    )
+    ColorComponent(
+        color.green,
+        { onColorChange(color.withGreen(it)) },
+        stringResource(Res.string.setting_color_label_rgb_green_initial),
+        0,
+        255,
+        modifier,
+    )
+    ColorComponent(
+        color.blue,
+        { onColorChange(color.withBlue(it)) },
+        stringResource(Res.string.setting_color_label_rgb_blue_initial),
+        0,
+        255,
+        modifier,
+    )
+}
+
+@Composable
+private fun HexEditor(
+    color: Color,
+    onColorChange: (Color) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var text by rememberSaveable(color) { mutableStateOf(color.toStringRgb()) }
+
+    TextField(
+        text,
+        {
+            if (!it.matches(Regex("[\\da-fA-F]*"))) return@TextField
+            text = it
+            if (it.length != 6) return@TextField
+
+            try {
+                onColorChange(it.toColor())
+            } catch (e: NumberFormatException) {
+                // Invalid color -> don't change anything
+            }
+        },
+        modifier,
+        placeholder = { Text("123abc", color = LocalContentColor.current.copy(alpha = 0.72f)) },
+        prefix = { Text("#") },
+        maxLines = 1,
+        isError = text.length != 6
+    )
+}
+
+@Composable
+private fun SampleColors(
+    value: Color,
+    onValueChange: (Color) -> Unit,
+    modifier: Modifier,
+) {
+    val swatch = rememberMaterialColorSwatch()
+    val spacing = 12.dp
+    val horizontalArrangement =
+        Arrangement.spacedBy(spacing, alignment = Alignment.CenterHorizontally)
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass
+
+    when (windowSizeClass) {
+        WindowHeightSizeClass.COMPACT,
+        WindowHeightSizeClass.MEDIUM,
+            -> {
+            ScrollingRow(modifier, horizontalArrangement = horizontalArrangement) {
+                items(swatch) { color ->
+                    SampleColorPatch(color, onValueChange, color == value)
+                }
             }
         }
 
-        Column(
-            Modifier.padding(horizontal = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            ColorComponent(
-                hsl.hue,
-                { hsl.hue = it },
-                stringResource(Res.string.setting_color_label_hue_initial),
-                0f,
-                360f,
-            )
-            ColorComponent(
-                hsl.saturation,
-                { hsl.saturation = it },
-                stringResource(Res.string.setting_color_label_saturation_initial),
-                0f,
-                1f,
-            )
-            ColorComponent(
-                hsl.lightness,
-                { hsl.lightness = it },
-                stringResource(Res.string.setting_color_label_lightness_initial),
-                0f,
-                1f,
-            )
+        else -> {
+            FlowRow(
+                modifier,
+                horizontalArrangement = horizontalArrangement,
+                verticalArrangement = Arrangement.spacedBy(spacing),
+                maxItemsInEachRow = 5
+            ) {
+                swatch.fastForEach { color ->
+                    SampleColorPatch(color, onValueChange, color == value)
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun rememberHsl(color: Color): HslColor = remember(color) { color.toHslColor() }
-
-private class HslColor(h: Float, s: Float, l: Float) {
-    var hue by mutableFloatStateOf(h)
-    var saturation by mutableFloatStateOf(s)
-    var lightness by mutableFloatStateOf(l)
-
-    fun set(color: Color) {
-        val (h, s, l) = color.hsl()
-        hue = h
-        saturation = s
-        lightness = l
-    }
-}
-
-private fun Color.toHslColor(): HslColor {
-    val (h, s, l) = hsl()
-    return HslColor(h, s, l)
+private fun SampleColorPatch(
+    value: Color,
+    onValueChange: (Color) -> Unit,
+    isSelected: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    Patch(
+        color = value.toCompose(),
+        onClick = { onValueChange(value) },
+        content = if (isSelected) {
+            {
+                Icon(
+                    AppIcon.Checkmark,
+                    contentDescription = stringResource(Res.string.setting_color_contentdescription_selected),
+                )
+            }
+        } else null,
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -278,6 +398,8 @@ private fun ColorComponent(
     name: String,
     min: Float,
     max: Float,
+    modifier: Modifier = Modifier,
+    steps: Int = 0,
 ) {
     LabelledSlider(
         value = value,
@@ -285,10 +407,31 @@ private fun ColorComponent(
         min = min,
         max = max,
         startLabel = name,
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier,
+        steps = steps,
     )
 }
 
+@Composable
+private fun ColorComponent(
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    name: String,
+    min: Int,
+    max: Int,
+    modifier: Modifier = Modifier,
+    steps: Int = 0,
+) {
+    LabelledSlider(
+        value = value.toFloat(),
+        onValueChange = { onValueChange(it.toInt()) },
+        min = min.toFloat(),
+        max = max.toFloat(),
+        startLabel = name,
+        modifier = modifier,
+        steps = steps,
+    )
+}
 
 @Composable
 private fun Patch(

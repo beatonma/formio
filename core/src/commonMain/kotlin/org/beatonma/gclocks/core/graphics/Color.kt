@@ -84,6 +84,9 @@ value class Color(val value: ULong) {
         fun argb(alpha: Float, red: Float, green: Float, blue: Float): Color =
             argb(alpha.toUByte(), red.toUByte(), green.toUByte(), blue.toUByte())
 
+        fun argb(alpha: Int, red: Int, green: Int, blue: Int): Color =
+            argb(alpha.toUByte(), red.toUByte(), green.toUByte(), blue.toUByte())
+
         /**
          * Conversion algorithm: https://en.wikipedia.org/wiki/HSL_and_HSV#HSL_to_RGB_alternative
          */
@@ -143,6 +146,25 @@ fun Int.toColor(): Color = Color(this)
 fun ULong.toColor(): Color = Color(this)
 fun Color(value: Long): Color = Color(value.toULong())
 fun Long.toColor(): Color = Color(toULong())
+
+fun Color.withHue(hue: Float): Color {
+    val (_, s, l, a) = hsla()
+    return Color.hsla(hue, s, l, a)
+}
+
+fun Color.withSaturation(saturation: Float): Color {
+    val (h, _, l, a) = hsla()
+    return Color.hsla(h, saturation, l, a)
+}
+
+fun Color.withLightness(lightness: Float): Color {
+    val (h, s, _, a) = hsla()
+    return Color.hsla(h, s, lightness, a)
+}
+
+fun Color.withRed(red: Int): Color = Color.argb(alpha, red, green, blue)
+fun Color.withGreen(green: Int): Color = Color.argb(alpha, red, green, blue)
+fun Color.withBlue(blue: Int): Color = Color.argb(alpha, red, green, blue)
 
 /**
  * Convert 0f..1f -> 0..255

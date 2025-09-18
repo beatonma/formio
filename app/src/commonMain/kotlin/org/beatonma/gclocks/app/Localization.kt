@@ -11,6 +11,10 @@ import gclocks_multiplatform.app.generated.resources.setting_alignment_vertical_
 import gclocks_multiplatform.app.generated.resources.setting_clock_layout_horizontal
 import gclocks_multiplatform.app.generated.resources.setting_clock_layout_vertical
 import gclocks_multiplatform.app.generated.resources.setting_clock_layout_wrapped
+import gclocks_multiplatform.app.generated.resources.setting_color_label_hex
+import gclocks_multiplatform.app.generated.resources.setting_color_label_hsl
+import gclocks_multiplatform.app.generated.resources.setting_color_label_rgb
+import gclocks_multiplatform.app.generated.resources.setting_color_label_samples
 import gclocks_multiplatform.app.generated.resources.setting_help_time_format_HH_MM_12
 import gclocks_multiplatform.app.generated.resources.setting_help_time_format_HH_MM_24
 import gclocks_multiplatform.app.generated.resources.setting_help_time_format_HH_MM_SS_12
@@ -19,6 +23,7 @@ import gclocks_multiplatform.app.generated.resources.setting_help_time_format_hh
 import gclocks_multiplatform.app.generated.resources.setting_help_time_format_hh_MM_24
 import gclocks_multiplatform.app.generated.resources.setting_help_time_format_hh_MM_SS_12
 import gclocks_multiplatform.app.generated.resources.setting_help_time_format_hh_MM_SS_24
+import org.beatonma.gclocks.compose.components.settings.ColorEditorMode
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
 import org.beatonma.gclocks.core.options.Layout
@@ -67,6 +72,7 @@ internal object Localization {
             Layout::class -> layoutStrings
             HorizontalAlignment::class -> horizontalAlignmentStrings
             VerticalAlignment::class -> verticalAlignmentStrings
+            ColorEditorMode::class -> colorEditorModeStrings
 
             else -> throw IllegalArgumentException("Unhandled class $this")
         } as Map<E, LocalizedString>
@@ -107,5 +113,12 @@ internal object Localization {
         TimeFormat.hh_MM_SS_12 to LocalizedString(Res.string.setting_help_time_format_hh_MM_SS_12),
         TimeFormat.HH_MM_12 to LocalizedString(Res.string.setting_help_time_format_HH_MM_12),
         TimeFormat.hh_MM_12 to LocalizedString(Res.string.setting_help_time_format_hh_MM_12),
+    )
+
+    private val colorEditorModeStrings = mapOf(
+        ColorEditorMode.Samples to LocalizedString(Res.string.setting_color_label_samples),
+        ColorEditorMode.HSL to LocalizedString(Res.string.setting_color_label_hsl),
+        ColorEditorMode.RGB to LocalizedString(Res.string.setting_color_label_rgb),
+        ColorEditorMode.HEX to LocalizedString(Res.string.setting_color_label_hex),
     )
 }
