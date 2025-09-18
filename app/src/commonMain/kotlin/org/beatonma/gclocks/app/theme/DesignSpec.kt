@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.dp
 object DesignSpec {
     // https://m3.material.io/components/extended-fab/specs#17471317-9cd9-450c-8fa8-708cfb29c73e
     fun Modifier.extendedFloatingActionButton(): Modifier =
-        padding(16.dp).safeDrawingPadding()//.systemBarsPadding()
+        padding(16.dp).safeDrawingPadding()
 
     // https://m3.material.io/components/floating-action-button/specs#7712fa7f-cd29-4852-86a9-fa2f4a01f6bc
     fun Modifier.floatingActionButton(): Modifier = padding(16.dp).safeDrawingPadding()

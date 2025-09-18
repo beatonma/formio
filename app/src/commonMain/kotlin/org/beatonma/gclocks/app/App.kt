@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.waterfall
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -167,7 +168,7 @@ private fun ClockSettingsScaffold(
     Scaffold(
         snackbarHost = { appAdapter?.snackbarHostState?.let { SnackbarHost(it) } },
         floatingActionButton = {
-            ExtendedFloatingActionButton(onSave) {
+            ExtendedFloatingActionButton(onSave, Modifier.safeDrawingPadding()) {
                 Text("Save changes")
             }
         },
