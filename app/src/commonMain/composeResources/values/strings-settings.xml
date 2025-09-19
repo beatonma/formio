@@ -30,7 +30,7 @@
 
     <!-- DisplayContext-dependent, but commonly used -->
     <string name="setting_background_color">Background color</string>
-    <string name="setting_clock_position">Position</string>
+    <string name="setting_clock_position">Position and size</string>
 
     <!-- Colors -->
     <string name="setting_colors">Colors</string>

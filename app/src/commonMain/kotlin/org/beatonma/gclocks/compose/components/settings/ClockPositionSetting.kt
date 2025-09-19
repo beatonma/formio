@@ -3,7 +3,6 @@ package org.beatonma.gclocks.compose.components.settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.OutlinedIconButton
@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpRect
@@ -58,7 +59,7 @@ import org.beatonma.gclocks.app.theme.rememberContentColor
 import org.beatonma.gclocks.compose.AppIcon
 import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.components.FullScreenOverlay
-import org.beatonma.gclocks.compose.components.settings.components.SettingLayout
+import org.beatonma.gclocks.compose.components.settings.components.CheckableSettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
 import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.geometry.RectF
@@ -93,10 +94,14 @@ fun ClockPositionSetting(
 ) {
     var isEditMode by rememberSaveable { mutableStateOf(false) }
 
-    SettingLayout(modifier) {
-        SettingName(name, Modifier.clickable {
-            isEditMode = true
-        })
+    CheckableSettingLayout(
+        modifier,
+        onClick = { isEditMode = true },
+        role = Role.Button,
+        text = { SettingName(name) }) {
+        IconButton({ isEditMode = true }) {
+            Icon(AppIcon.PositionAndSize, null)
+        }
     }
 
     FullScreenOverlay(

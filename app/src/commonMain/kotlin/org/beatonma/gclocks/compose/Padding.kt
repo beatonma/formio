@@ -34,4 +34,4 @@ fun PaddingValues.horizontal(): PaddingValues = run {
     )
 }
 
-val VerticalBottomContentPadding = PaddingValues(bottom = 256.dp)
+val VerticalBottomContentPadding = PaddingValues(bottom = 128.dp)

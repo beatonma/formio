@@ -448,7 +448,7 @@ private fun Patch(
         color = color,
         contentColor = contentColor,
         shape = shapes.extraSmall,
-        border = BorderStroke(1.dp, colorScheme.onBackground.copy(alpha = 0.2f))
+        border = BorderStroke(1.dp, colorScheme.onBackground.copy(alpha = 0.3f))
     ) {
         content?.let {
             Box(contentAlignment = Alignment.Center) {

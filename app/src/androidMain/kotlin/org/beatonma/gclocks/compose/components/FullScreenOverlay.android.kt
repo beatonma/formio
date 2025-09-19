@@ -27,7 +27,9 @@ fun FullScreenOverlay(
             val window = (LocalView.current.parent as DialogWindowProvider).window
             LaunchedEffect(Unit) {
                 window.apply {
+                    @Suppress("DEPRECATION")
                     statusBarColor = Color.TRANSPARENT
+                    @Suppress("DEPRECATION")
                     navigationBarColor = Color.TRANSPARENT
                 }
             }

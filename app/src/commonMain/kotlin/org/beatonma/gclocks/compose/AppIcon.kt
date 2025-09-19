@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.AlignVerticalCenter
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CropFree
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.MoreVert
@@ -25,4 +26,5 @@ object AppIcon {
     val Reset get() = Icons.Default.Refresh
 
     val DragHandle get() = Icons.Default.DragHandle
+    val PositionAndSize get() = Icons.Default.CropFree
 }
