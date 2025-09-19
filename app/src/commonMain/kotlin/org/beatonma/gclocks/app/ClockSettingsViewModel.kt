@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.beatonma.gclocks.app.settings.ContextClockOptions
 import org.beatonma.gclocks.app.settings.DisplayContext
-import org.beatonma.gclocks.compose.components.settings.Settings
+import org.beatonma.gclocks.compose.components.settings.RichSettings
 import org.beatonma.gclocks.core.options.Options
 import kotlin.reflect.KClass
 
@@ -24,6 +24,7 @@ class SettingsViewModelFactory<O : Options<*>>(
         modelClass: KClass<T>,
         extras: CreationExtras,
     ): T {
+        @Suppress("UNCHECKED_CAST")
         return buildSettingsViewModel(initial, onEditOptions) as T
     }
 }
@@ -45,11 +46,12 @@ abstract class SettingsViewModel<O : Options<*>>(
     private val _options = MutableStateFlow(initial)
     val contextOptions = _options.asStateFlow()
 
-    private val _richSettings = MutableStateFlow<List<Settings>>(emptyList())
+    private val _richSettings = MutableStateFlow<RichSettings?>(null)
     val richSettings = _richSettings.asStateFlow()
 
     init {
         viewModelScope.launch {
+            @Suppress("OPT_IN_USAGE")
             _options.mapLatest { buildOptionsAdapter(it.display, it.clock) }
                 .collectLatest { rich -> _richSettings.value = rich }
         }
@@ -74,24 +76,32 @@ abstract class SettingsViewModel<O : Options<*>>(
     /**
      * Build a list of settings to allow editing the values of [clockOptions].
      */
-    abstract fun buildClockSettings(clockOptions: O): List<Settings>
+    abstract fun buildClockSettings(settings: RichSettings, clockOptions: O): RichSettings
 
     /**
      * Build a list of settings for [DisplayContext]-dependent options.
      */
-    abstract fun buildDisplaySettings(displayOptions: DisplayContext.Options): List<Settings>
+    abstract fun buildDisplaySettings(
+        settings: RichSettings,
+        displayOptions: DisplayContext.Options,
+    ): RichSettings
 
     /**
      * Post-process the results of [buildClockSettings] and [buildDisplaySettings] to remove
      * or edit any settings that require some kind of special treatment for the current context.
      */
-    abstract fun filterSettings(settings: List<Settings>): List<Settings>
+    abstract fun filterSettings(settings: RichSettings): RichSettings
 
     fun buildOptionsAdapter(
         displayOptions: DisplayContext.Options,
         clockOptions: O,
-    ): List<Settings> {
-        val settings = buildDisplaySettings(displayOptions) + buildClockSettings(clockOptions)
-        return filterSettings(settings)
+    ): RichSettings {
+        var settings = RichSettings()
+
+        settings = buildClockSettings(settings, clockOptions)
+        settings = buildDisplaySettings(settings, displayOptions)
+        settings = filterSettings(settings)
+
+        return settings.applyGroups()
     }
 }

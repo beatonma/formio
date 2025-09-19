@@ -6,16 +6,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.waterfall
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -52,6 +53,8 @@ import org.beatonma.gclocks.compose.VerticalBottomContentPadding
 import org.beatonma.gclocks.compose.components.ButtonGroup
 import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.components.settings.RichSetting
+import org.beatonma.gclocks.compose.components.settings.RichSettings
+import org.beatonma.gclocks.compose.components.settings.components.SettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
 import org.beatonma.gclocks.compose.onlyIf
 import org.beatonma.gclocks.compose.plus
@@ -174,7 +177,7 @@ private fun ClockSettingsScaffold(
         },
     ) { contentPadding ->
         val backgroundColor =
-            richSettings.firstOrNull { it is RichSetting<*> && it.key == CommonKeys.backgroundColor }
+            richSettings?.colors?.firstOrNull { it is RichSetting<*> && it.key == CommonKeys.backgroundColor }
                 ?.let { it as? RichSetting.Color }?.value?.toCompose() ?: colorScheme.surface
 
         CompositionLocalProvider(
@@ -184,51 +187,71 @@ private fun ClockSettingsScaffold(
             )
         ) {
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
-                LazyVerticalStaggeredGrid(
-                    StaggeredGridCells.Adaptive(minSize = 300.dp),
-                    Modifier.widthIn(max = 700.dp),
-                    gridState,
-                    contentPadding = contentPadding + VerticalBottomContentPadding,
-                    verticalItemSpacing = 24.dp,
-                    horizontalArrangement = Arrangement.spacedBy(
-                        HorizontalMargin,
-                        Alignment.CenterHorizontally
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Clock(
+                        options.clock,
+                        Modifier
+                            .sizeIn(maxWidth = 600.dp, maxHeight = 400.dp)
+                            .onlyIf(appAdapter?.onClickPreview) { onClick ->
+                                clickable(onClick = { onClick(state.context) })
+                            }
+                            .background(backgroundColor)
+                            .padding(64.dp)
+                            .animateContentSize()
                     )
-                ) {
-                    item(span = StaggeredGridItemSpan.FullLine) {
-                        ClockSelector(
-                            appSettings.state.clock,
-                            Modifier.horizontalMarginModifier(),
-                        ) { selected ->
-                            onEditSettings(
-                                appSettings.copy(
-                                    state = appSettings.state.copy(clock = selected)
-                                )
-                            )
-                        }
-                    }
 
-                    item(span = StaggeredGridItemSpan.FullLine) {
-                        Clock(
-                            options.clock,
-                            Modifier
-                                .onlyIf(appAdapter?.onClickPreview) { onClick ->
-                                    clickable(onClick = { onClick(state.context) })
-                                }
-                                .background(backgroundColor)
-                                .padding(64.dp)
-                                .animateContentSize()
-                        )
-                    }
-
-                    ClockSettingsItems(
-                        richSettings,
-                        groupModifier = Modifier.padding(vertical = 8.dp),
-                        itemModifier = Modifier.horizontalMarginModifier().padding(vertical = 4.dp)
+                    SettingsGrid(
+                        appSettings,
+                        onEditSettings,
+                        richSettings ?: return@Column Loading(),
+                        gridState = gridState,
+                        contentPadding = contentPadding + VerticalBottomContentPadding,
                     )
                 }
             }
         }
+    }
+}
+
+
+@Composable
+private fun SettingsGrid(
+    appSettings: AppSettings,
+    onEditSettings: (AppSettings) -> Unit,
+    richSettings: RichSettings,
+    modifier: Modifier = Modifier,
+    gridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
+    contentPadding: PaddingValues = PaddingValues(),
+) {
+    LazyVerticalStaggeredGrid(
+        StaggeredGridCells.Adaptive(minSize = 350.dp),
+        modifier,
+        gridState,
+        contentPadding = contentPadding,
+        verticalItemSpacing = 24.dp,
+        horizontalArrangement = Arrangement.spacedBy(
+            HorizontalMargin,
+            Alignment.CenterHorizontally
+        )
+    ) {
+        item {
+            ClockSelector(
+                appSettings.state.clock,
+                Modifier.horizontalMarginModifier(),
+            ) { selected ->
+                onEditSettings(
+                    appSettings.copy(
+                        state = appSettings.state.copy(clock = selected)
+                    )
+                )
+            }
+        }
+
+        ClockSettingsItems(
+            richSettings.colors + richSettings.layout + richSettings.sizes,
+            groupModifier = Modifier.padding(vertical = 16.dp),
+            itemModifier = Modifier.horizontalMarginModifier().padding(vertical = 8.dp)
+        )
     }
 }
 
@@ -239,18 +262,14 @@ private fun ClockSelector(
     modifier: Modifier = Modifier,
     onSelect: (AppSettings.Clock) -> Unit,
 ) {
-    Column(
-        modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
+    SettingLayout(modifier) {
         SettingName(stringResource(Res.string.ui_choose_clock_style))
 
         ButtonGroup(
             selected,
             { it.name },
             onSelect,
-            AppSettings.Clock.entries.toList(),
+            AppSettings.Clock.entries,
         )
     }
 }

@@ -1,6 +1,7 @@
 package org.beatonma.gclocks.app
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,12 +14,12 @@ import org.beatonma.gclocks.compose.components.settings.MultiColorSetting
 import org.beatonma.gclocks.compose.components.settings.MultiSelectSetting
 import org.beatonma.gclocks.compose.components.settings.RichSetting
 import org.beatonma.gclocks.compose.components.settings.RichSettingsGroup
-import org.beatonma.gclocks.compose.components.settings.Settings
+import org.beatonma.gclocks.compose.components.settings.Setting
 import org.beatonma.gclocks.compose.components.settings.SingleSelectSetting
 
 
 fun LazyStaggeredGridScope.ClockSettingsItems(
-    settings: List<Settings>,
+    settings: List<Setting>,
     groupModifier: Modifier = Modifier,
     itemModifier: Modifier = Modifier,
 ) {
@@ -27,9 +28,18 @@ fun LazyStaggeredGridScope.ClockSettingsItems(
     }
 }
 
+fun LazyListScope.ClockSettingsItems(
+    settings: List<Setting>,
+    groupModifier: Modifier = Modifier,
+    itemModifier: Modifier = Modifier,
+) {
+    settings.forEach { setting ->
+        SettingOrGroupItems(setting, groupModifier, itemModifier)
+    }
+}
 
 private fun LazyStaggeredGridScope.SettingOrGroupItems(
-    item: Settings,
+    item: Setting,
     groupModifier: Modifier,
     itemModifier: Modifier,
 ) {
@@ -39,15 +49,14 @@ private fun LazyStaggeredGridScope.SettingOrGroupItems(
     }
 }
 
-@Composable
-fun SettingOrGroup(
-    item: Settings,
-    groupModifier: Modifier = Modifier,
-    itemModifier: Modifier = Modifier,
+private fun LazyListScope.SettingOrGroupItems(
+    item: Setting,
+    groupModifier: Modifier,
+    itemModifier: Modifier,
 ) {
     when (item) {
-        is RichSettingsGroup -> Group(item, groupModifier, itemModifier)
-        is RichSetting<*> -> Setting(item, itemModifier)
+        is RichSettingsGroup -> GroupItems(item, groupModifier, itemModifier)
+        is RichSetting<*> -> item { Setting(item, itemModifier) }
     }
 }
 
@@ -56,6 +65,26 @@ private fun LazyStaggeredGridScope.GroupItems(
 ) {
     item {
         Group(group, groupModifier, itemModifier)
+    }
+}
+
+private fun LazyListScope.GroupItems(
+    group: RichSettingsGroup, groupModifier: Modifier, itemModifier: Modifier,
+) {
+    item {
+        Group(group, groupModifier, itemModifier)
+    }
+}
+
+@Composable
+fun SettingOrGroup(
+    item: Setting,
+    groupModifier: Modifier = Modifier,
+    itemModifier: Modifier = Modifier,
+) {
+    when (item) {
+        is RichSettingsGroup -> Group(item, groupModifier, itemModifier)
+        is RichSetting<*> -> Setting(item, itemModifier)
     }
 }
 

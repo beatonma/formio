@@ -20,6 +20,7 @@ actual enum class DisplayContext {
 
     @Serializable
     actual sealed interface Options {
+        @Serializable
         object Empty : Options
     }
 }

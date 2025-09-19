@@ -2,23 +2,48 @@ package org.beatonma.gclocks.compose.components.settings
 
 import org.beatonma.gclocks.app.LocalizedString
 import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.util.warn
 import org.beatonma.gclocks.core.geometry.RectF as GeometryRectF
 import org.beatonma.gclocks.core.graphics.Color as GraphicsColor
 
 
-interface Settings
+sealed interface Setting
+
+
+data class RichSettings(
+    val colors: List<Setting> = listOf(),
+    val layout: List<Setting> = listOf(),
+    val sizes: List<Setting> = listOf(),
+) {
+    fun append(
+        colors: List<Setting> = listOf(),
+        layout: List<Setting> = listOf(),
+        sizes: List<Setting> = listOf(),
+    ): RichSettings =
+        copy(
+            colors = this.colors + colors,
+            layout = this.layout + layout,
+            sizes = this.sizes + sizes,
+        )
+
+    fun applyGroups(): RichSettings = copy(
+        colors = listOf(RichSettingsGroup(colors)),
+        layout = listOf(RichSettingsGroup(layout)),
+        sizes = listOf(RichSettingsGroup(sizes))
+    )
+}
 
 
 data class RichSettingsGroup(
-    val settings: List<Settings>,
-) : Settings
+    val settings: List<Setting>,
+) : Setting
 
 
 /**
  * Wrapper for a specific [Options] field, with localized display test and
  * (optional) help text.
  */
-sealed interface RichSetting<T : Any> : Settings {
+sealed interface RichSetting<T : Any> : Setting {
     val key: Key
     val localized: LocalizedString
     val helpText: LocalizedString?
@@ -127,11 +152,35 @@ sealed interface Key {
 }
 
 
-fun List<Settings>.forEachSetting(block: (RichSetting<*>) -> Unit) {
+fun List<Setting>.forEachSetting(block: (RichSetting<*>) -> Unit) {
     for (setting in this) {
         when (setting) {
             is RichSettingsGroup -> setting.settings.forEachSetting(block)
             is RichSetting<*> -> block(setting)
         }
     }
+}
+
+fun List<Setting>.insertBefore(key: Key, setting: Setting): List<Setting> {
+    val index = indexOfFirst { it is RichSetting<*> && it.key == key }
+
+    return toMutableList().apply {
+        if (index >= 0) {
+            add(index, setting)
+        } else {
+            warn("insertBefore: Setting with key $key not found.")
+        }
+    }.toList()
+}
+
+fun List<Setting>.insertAfter(key: Key, setting: Setting): List<Setting> {
+    val index = indexOfFirst { it is RichSetting<*> && it.key == key }
+
+    return toMutableList().apply {
+        if (index >= 0) {
+            add(index + 1, setting)
+        } else {
+            warn("insertAfter: Setting with key $key not found.")
+        }
+    }.toList()
 }
