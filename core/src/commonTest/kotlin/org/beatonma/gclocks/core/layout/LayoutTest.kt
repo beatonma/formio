@@ -5,135 +5,199 @@ import org.beatonma.gclocks.core.fixtures.TestOptions
 import org.beatonma.gclocks.core.fixtures.getTestLayout
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
-import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
+import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.core.util.TimeOfDay
-import org.beatonma.gclocks.core.options.Layout as LayoutOption
 import org.beatonma.gclocks.test.shouldbe
 import kotlin.test.Test
+import org.beatonma.gclocks.core.options.Layout as LayoutOption
+
+private val Unbound = MeasureConstraints.Infinity
+
+data class LayoutConfig(
+    val layout: LayoutOption,
+    val nativeWidth: Float,
+    val nativeHeight: Float,
+    val expectedCenterHorizontalX: Float, // Expected x position when centered in a container twice its nativeWidth
+    val expectedCenterVerticalY: Float, // Expected y position when centered in a container twice its nativeHeight
+    val expectedRowsWithSeconds: Int, // How many rows there should be in this layout when seconds are included
+    val expectedRowsWithoutSeconds: Int, // How many rows there should be when seconds are omitted.
+    val expectedEndHorizontalX: Float = nativeWidth, // Expected x position when aligned to end of a container twice its nativeWidth
+    val expectedEndVerticalY: Float = nativeHeight, // Expected y position when aligned to end of a container twice its nativeHeight
+)
+
+private val HorizontalLayoutConfig = LayoutConfig(
+    LayoutOption.Horizontal,
+    nativeWidth = 500f,
+    nativeHeight = 100f,
+    expectedRowsWithSeconds = 1,
+    expectedRowsWithoutSeconds = 1,
+    expectedCenterHorizontalX = 250f,
+    expectedCenterVerticalY = 50f,
+)
+private val VerticalLayoutConfig = LayoutConfig(
+    LayoutOption.Vertical,
+    nativeWidth = 200f,
+    nativeHeight = 250f,
+    expectedRowsWithSeconds = 3,
+    expectedRowsWithoutSeconds = 2,
+    expectedCenterHorizontalX = 100f,
+    expectedCenterVerticalY = 125f,
+)
+private val WrappedLayoutConfig = LayoutConfig(
+    LayoutOption.Wrapped,
+    nativeWidth = 400f,
+    nativeHeight = 150f,
+    expectedRowsWithSeconds = 2,
+    expectedRowsWithoutSeconds = 1,
+    expectedCenterHorizontalX = 200f,
+    expectedCenterVerticalY = 75f,
+)
+
+class HorizontalLayoutMeasureTest : LayoutMeasureTest(HorizontalLayoutConfig)
+class VerticalLayoutMeasureTest : LayoutMeasureTest(VerticalLayoutConfig)
+class WrappedLayoutMeasureTest : LayoutMeasureTest(WrappedLayoutConfig)
 
 
-class LayoutTest {
-    private val NativeWidth = 500f
-    private val NativeHeight = 100f
+abstract class LayoutMeasureTest(val config: LayoutConfig) {
+    private fun withLayout(
+        horizontalAlignment: HorizontalAlignment,
+        verticalAlignment: VerticalAlignment,
+        format: TimeFormat = TimeFormat.HH_MM_SS_24,
+        block: ClockLayout<*, *>.() -> Unit,
+    ) {
+        val layout = getTestLayout(
+            TestOptions(
+                layout = TestLayoutOptions(
+                    layout = config.layout,
+                    horizontalAlignment = horizontalAlignment,
+                    verticalAlignment = verticalAlignment,
+                    format = format,
+                    spacingPx = 0,
+                    secondsGlyphScale = 0.5f,
+                )
+            ),
+        ).apply {
+            update(TimeOfDay(12, 0, 0))
+        }
 
-    /* Height that is large enough to ensure that width will determine the scale */
-    private val UnboundHeight = MeasureConstraints.Infinity
+        with(layout, block)
+    }
 
-    private fun getLayout(
-        horizontalAlignment: HorizontalAlignment = HorizontalAlignment.Start,
-        verticalAlignment: VerticalAlignment = VerticalAlignment.Top,
-    ) = getTestLayout(
-        TestOptions(
-            layout = TestLayoutOptions(
-                layout = LayoutOption.Horizontal,
-                horizontalAlignment = horizontalAlignment,
-                verticalAlignment = verticalAlignment,
-                format = TimeFormat.HH_MM_SS_24,
-                spacingPx = 0,
-            )
-        ),
-    ).apply {
-        update(TimeOfDay(12, 0, 0))
+    @Test
+    fun `MeasureScope values are correct`() {
+        forEachAlignment { horizontalAlignment, verticalAlignment ->
+            withLayout(horizontalAlignment, verticalAlignment, format = TimeFormat.HH_MM_SS_24) {
+                setConstraints(MeasureConstraints(config.nativeWidth, config.nativeHeight))
+                measureFrame { _, _, _ ->
+                    this.rowSizes.size shouldbe config.expectedRowsWithSeconds
+                }
+            }
+            withLayout(horizontalAlignment, verticalAlignment, format = TimeFormat.HH_MM_24) {
+                setConstraints(MeasureConstraints(config.nativeWidth, config.nativeHeight))
+                measureFrame { _, _, _ ->
+                    this.rowSizes.size shouldbe config.expectedRowsWithoutSeconds
+                }
+            }
+        }
     }
 
     @Test
     fun `measureFrame scale is correct`() {
-        with(
-            getLayout(HorizontalAlignment.Start)
-        ) {
-            setConstraints(MeasureConstraints(NativeWidth, UnboundHeight))
-            measureFrame { _, _, scale ->
-                scale shouldbe 1f
+        forEachAlignment { horizontalAlignment, verticalAlignment ->
+            withLayout(horizontalAlignment, verticalAlignment) {
+                setConstraints(MeasureConstraints(config.nativeWidth, Unbound))
+                measureFrame { _, _, scale ->
+                    scale shouldbe 1f
+                }
+
+                setConstraints(MeasureConstraints(config.nativeWidth * 2f, Unbound))
+                measureFrame { _, _, scale ->
+                    scale shouldbe 2f
+                }
+
+                setConstraints(MeasureConstraints(config.nativeWidth * 0.5f, Unbound))
+                measureFrame { _, _, scale ->
+                    scale shouldbe 0.5f
+                }
             }
 
-            setConstraints(MeasureConstraints(NativeWidth * 2f, UnboundHeight))
-            measureFrame { _, _, scale ->
-                scale shouldbe 2f
-            }
-
-            setConstraints(MeasureConstraints(NativeWidth * 0.5f, UnboundHeight))
-            measureFrame { _, _, scale ->
-                scale shouldbe 0.5f
-            }
-        }
-
-        with(
-            getLayout(HorizontalAlignment.Start)
-        ) {
-            setConstraints(MeasureConstraints(NativeWidth * 2f, NativeHeight))
-            measureFrame { _, _, scale ->
-                scale shouldbe 1f
+            withLayout(horizontalAlignment, verticalAlignment) {
+                setConstraints(MeasureConstraints(Unbound, config.nativeHeight))
+                measureFrame { _, _, scale ->
+                    scale shouldbe 1f
+                }
             }
         }
     }
 
     @Test
     fun `measureFrame horizontal alignment is correct`() {
-        with(
-            getLayout(HorizontalAlignment.Start)
-        ) {
-            setConstraints(MeasureConstraints(NativeWidth * 2f, NativeHeight))
-            measureFrame { translationX, _, _ ->
-                translationX shouldbe 0f
+        val constraints = MeasureConstraints(config.nativeWidth * 2f, config.nativeHeight)
+        forEachVerticalAlignment { verticalAlignment ->
+            withLayout(HorizontalAlignment.Start, verticalAlignment) {
+                setConstraints(constraints)
+                measureFrame { translationX, _, _ ->
+                    translationX shouldbe 0f
+                }
             }
-        }
-
-        with(
-            getLayout(HorizontalAlignment.Center)
-        ) {
-            setConstraints(MeasureConstraints(NativeWidth * 2f, NativeHeight))
-            measureFrame { translationX, _, _ ->
-                translationX shouldbe 250f
+            withLayout(HorizontalAlignment.Center, verticalAlignment) {
+                setConstraints(constraints)
+                measureFrame { translationX, _, _ ->
+                    translationX shouldbe config.expectedCenterHorizontalX
+                }
             }
-        }
-
-        with(
-            getLayout(HorizontalAlignment.End)
-        ) {
-            setConstraints(MeasureConstraints(NativeWidth * 2f, NativeHeight))
-            measureFrame { translationX, _, _ ->
-                translationX shouldbe 500f
+            withLayout(HorizontalAlignment.End, verticalAlignment) {
+                setConstraints(constraints)
+                measureFrame { translationX, _, _ ->
+                    translationX shouldbe config.expectedEndHorizontalX
+                }
             }
         }
     }
 
     @Test
     fun `measureFrame vertical alignment is correct`() {
-        with(
-            getLayout(verticalAlignment = VerticalAlignment.Top)
-        ) {
-            setConstraints(MeasureConstraints(NativeWidth, UnboundHeight))
-            measureFrame { _, translationY, _ ->
-                translationY shouldbe 0f
+        val constraints = MeasureConstraints(config.nativeWidth, config.nativeHeight * 2f)
+        forEachHorizontalAlignment { horizontalAlignment ->
+            withLayout(horizontalAlignment, VerticalAlignment.Top) {
+                setConstraints(constraints)
+                measureFrame { _, translationY, _ ->
+                    translationY shouldbe 0f
+                }
+            }
+            withLayout(horizontalAlignment, VerticalAlignment.Center) {
+                setConstraints(constraints)
+                measureFrame { _, translationY, _ ->
+                    translationY shouldbe config.expectedCenterVerticalY
+                }
+            }
+            withLayout(horizontalAlignment, VerticalAlignment.Bottom) {
+                setConstraints(constraints)
+                measureFrame { _, translationY, _ ->
+                    translationY shouldbe config.expectedEndVerticalY
+                }
             }
         }
+    }
+}
 
-        with(
-            getLayout(verticalAlignment = VerticalAlignment.Center)
-        ) {
-            setConstraints(MeasureConstraints(NativeWidth, 1000f))
-            measureFrame { _, translationY, _ ->
-                translationY shouldbe 450f
-            }
-        }
 
-        with(
-            getLayout(verticalAlignment = VerticalAlignment.Bottom)
-        ) {
-            setConstraints(MeasureConstraints(NativeWidth, 1000f)) /* 1x scale */
-            measureFrame { _, translationY, _ ->
-                translationY shouldbe 900f
-            }
-        }
-        with(
-            getLayout(verticalAlignment = VerticalAlignment.Bottom)
-        ) {
-            setConstraints(MeasureConstraints(NativeWidth * 2f, 1000f)) /* 2x scale */
-            measureFrame { _, translationY, scale ->
-                scale shouldbe 2f
-                translationY shouldbe 800f
-            }
+private inline fun forEachHorizontalAlignment(block: (HorizontalAlignment) -> Unit) {
+    HorizontalAlignment.entries.forEach(block)
+}
+
+private inline fun forEachVerticalAlignment(block: (VerticalAlignment) -> Unit) {
+    VerticalAlignment.entries.forEach(block)
+}
+
+private inline fun forEachAlignment(block: (HorizontalAlignment, VerticalAlignment) -> Unit) {
+    forEachHorizontalAlignment { horizontal ->
+        forEachVerticalAlignment { vertical ->
+            block(
+                horizontal,
+                vertical
+            )
         }
     }
 }

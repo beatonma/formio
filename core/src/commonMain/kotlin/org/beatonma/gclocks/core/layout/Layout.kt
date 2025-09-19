@@ -2,17 +2,17 @@ package org.beatonma.gclocks.core.layout
 
 import org.beatonma.gclocks.core.Glyph
 import org.beatonma.gclocks.core.GlyphRole
-import org.beatonma.gclocks.core.geometry.NativeSize
-import org.beatonma.gclocks.core.geometry.MutableRectF
-import org.beatonma.gclocks.core.geometry.MutableRect
-import org.beatonma.gclocks.core.geometry.Rect
-import org.beatonma.gclocks.core.geometry.ScaledSize
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
+import org.beatonma.gclocks.core.geometry.MutableRect
+import org.beatonma.gclocks.core.geometry.MutableRectF
+import org.beatonma.gclocks.core.geometry.NativeSize
+import org.beatonma.gclocks.core.geometry.Rect
+import org.beatonma.gclocks.core.geometry.ScaledSize
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.options.LayoutOptions
-import org.beatonma.gclocks.core.options.Layout as LayoutOption
 import org.beatonma.gclocks.core.util.fastForEach
+import org.beatonma.gclocks.core.options.Layout as LayoutOption
 
 
 internal typealias GlyphCallback<G> = (
@@ -23,12 +23,11 @@ internal typealias GlyphCallback<G> = (
 
 
 /**
- * Values made available via context of the [OnMeasure] callback,
+ * Values made available in the receiver scope of the [OnMeasure] callback,
  * mostly for debugging purposes.
- * */
+ */
 interface OnMeasureScope {
     val nativeSize: NativeSize
-    val scale: Float
     val rowSizes: List<NativeSize>
     val drawBounds: Rect<Float>
 }
@@ -86,17 +85,18 @@ sealed class Layout<P : Paints, G : Glyph<P>>(
     protected var stage: LayoutPass = LayoutPass.Measurement
         private set
 
-    final override var scale: Float = 1f
+    var scale: Float = 1f
         private set
 
+    /**
+     * The maximum scaled size that this layout requires for the current [constraints].
+     * For the size of the current render frame use [drawBounds] instead.
+     */
     private var measuredSize: ScaledSize = ScaledSize.Init
 
     lateinit var constraints: MeasureConstraints
 
-    abstract fun layoutPass(
-        glyphs: List<GlyphStatus<G>>,
-        callback: GlyphCallback<G>,
-    )
+    abstract fun isLineBreak(glyph: G): Boolean
 
     fun setScale(scale: Float): ScaledSize {
         this.scale = scale
@@ -108,8 +108,8 @@ sealed class Layout<P : Paints, G : Glyph<P>>(
         glyphs: List<GlyphStatus<G>>,
         onMeasure: OnMeasure,
     ) {
-        layoutPass(glyphs) { _, _, rect ->
-            if (rect.top != _currentRowSize.top) {
+        layoutPass(glyphs) { glyph, _, rect ->
+            if (isLineBreak(glyph)) {
                 // Start a new row
                 storeCurrentRowSize()
                 _currentRowSize.set(rect)
@@ -151,61 +151,11 @@ sealed class Layout<P : Paints, G : Glyph<P>>(
         stage = LayoutPass.Measurement
     }
 
-    protected fun MutableRect<Float>.applyStrokeOffset(
-        glyphScaledStrokeWidth: Float,
-        glyphScaledHalfStrokeWidth: Float,
-    ): MutableRect<Float> = apply {
-        if (width > 0f) {
-            when (stage) {
-                LayoutPass.Measurement -> add(
-                    0f, 0f,
-                    right = glyphScaledStrokeWidth,
-                    bottom = glyphScaledStrokeWidth
-                )
-
-                LayoutPass.Rendering -> translate(
-                    glyphScaledHalfStrokeWidth,
-                    glyphScaledHalfStrokeWidth
-                )
-            }
-        }
-    }
-}
-
-private class HorizontalLayout<P : Paints, G : Glyph<P>>(
-    options: LayoutOptions, paints: P,
-    nativeSize: NativeSize,
-) : MultilineLayout<P, G>(options, paints, nativeSize) {
-    override fun isLineBreak(glyph: G): Boolean = false
-}
-
-private class VerticalLayout<P : Paints, G : Glyph<P>>(
-    options: LayoutOptions, paints: P,
-    nativeSize: NativeSize,
-) : MultilineLayout<P, G>(options, paints, nativeSize) {
-    override fun isLineBreak(glyph: G): Boolean = glyph.role.isSeparator
-}
-
-private class WrappedLayout<P : Paints, G : Glyph<P>>(
-    options: LayoutOptions, paints: P,
-    nativeSize: NativeSize,
-) : MultilineLayout<P, G>(options, paints, nativeSize) {
-    override fun isLineBreak(glyph: G): Boolean =
-        glyph.role == GlyphRole.SeparatorMinutesSeconds
-}
-
-
-private abstract class MultilineLayout<P : Paints, G : Glyph<P>>(
-    options: LayoutOptions, paints: P,
-    nativeSize: NativeSize,
-) : Layout<P, G>(options, paints, nativeSize) {
-    abstract fun isLineBreak(glyph: G): Boolean
-
-    final override fun layoutPass(
+    fun layoutPass(
         glyphs: List<GlyphStatus<G>>,
         callback: GlyphCallback<G>,
     ) {
-        val spacingPx = options.spacingPx
+        val spacingPx = options.spacingPx.toFloat()
         val horizontalAlignment = options.innerHorizontalAlignment
         val verticalAlignment = options.innerVerticalAlignment
         var lineIndex = 0
@@ -267,10 +217,7 @@ private abstract class MultilineLayout<P : Paints, G : Glyph<P>>(
      */
     private fun getAlignedXForRow(alignment: HorizontalAlignment, lineIndex: Int): Float =
         when (stage) {
-            LayoutPass.Rendering -> alignment.apply(
-                rowSizes[lineIndex].width,
-                nativeSize.width
-            )
+            LayoutPass.Rendering -> alignment.apply(rowSizes[lineIndex].width, nativeSize.width)
 
             /*
              * Alignment not possible (or necessary) yet - we need to know
@@ -278,4 +225,46 @@ private abstract class MultilineLayout<P : Paints, G : Glyph<P>>(
              */
             LayoutPass.Measurement -> 0f
         }
+
+    private fun MutableRect<Float>.applyStrokeOffset(
+        glyphScaledStrokeWidth: Float,
+        glyphScaledHalfStrokeWidth: Float,
+    ): MutableRect<Float> = apply {
+        if (width > 0f) {
+            when (stage) {
+                LayoutPass.Measurement -> add(
+                    0f, 0f,
+                    right = glyphScaledStrokeWidth,
+                    bottom = glyphScaledStrokeWidth
+                )
+
+                LayoutPass.Rendering -> translate(
+                    glyphScaledHalfStrokeWidth,
+                    glyphScaledHalfStrokeWidth
+                )
+            }
+        }
+    }
+}
+
+private class HorizontalLayout<P : Paints, G : Glyph<P>>(
+    options: LayoutOptions, paints: P,
+    nativeSize: NativeSize,
+) : Layout<P, G>(options, paints, nativeSize) {
+    override fun isLineBreak(glyph: G): Boolean = false
+}
+
+private class VerticalLayout<P : Paints, G : Glyph<P>>(
+    options: LayoutOptions, paints: P,
+    nativeSize: NativeSize,
+) : Layout<P, G>(options, paints, nativeSize) {
+    override fun isLineBreak(glyph: G): Boolean = glyph.role.isSeparator
+}
+
+private class WrappedLayout<P : Paints, G : Glyph<P>>(
+    options: LayoutOptions, paints: P,
+    nativeSize: NativeSize,
+) : Layout<P, G>(options, paints, nativeSize) {
+    override fun isLineBreak(glyph: G): Boolean =
+        glyph.role == GlyphRole.SeparatorMinutesSeconds
 }

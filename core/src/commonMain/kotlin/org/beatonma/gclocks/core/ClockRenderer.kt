@@ -2,10 +2,12 @@ package org.beatonma.gclocks.core
 
 import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.geometry.Rect
+import org.beatonma.gclocks.core.geometry.Size
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.graphics.Stroke
+import org.beatonma.gclocks.core.graphics.drawDebugRect
 import org.beatonma.gclocks.core.layout.ClockLayout
 import org.beatonma.gclocks.core.util.debug
 
@@ -33,52 +35,19 @@ interface ClockRenderer<P : Paints, G : ClockGlyph<P>> {
                     }
 
                     debug(false) {
-                        // Show measured native width of each glyph at this moment
-                        withTranslation(rect.left, rect.top) {
-                            drawText("Width: ${rect.width}")
-                        }
+                        canvas.debugDrawGlyphBoundary(rect)
                     }
-
-                    debug(false) {
-                        drawGlyphBoundary(
-                            canvas,
-                            paints,
-                            MutableRectF(rect).extrude(paints.strokeWidth / 2f)
-                        )
-                    }
-                }
-
-                debug(false) {
-                    // Show scaled bounds
-                    canvas.drawRect(Color.Green, drawBounds, Stroke.Default)
-                    canvas.drawRect(Color.Yellow, nativeSize.toRect(), Stroke.Default)
                 }
             }
 
             debug(false) {
                 // Show bounds at native scale
-                canvas.drawRect(Color.Green, drawBounds, Stroke.Default)
-                canvas.drawRect(Color.Yellow, nativeSize.toRect(), Stroke.Default)
+                canvas.debugDrawBounds(drawBounds, nativeSize)
+                layout.layoutPass { glyph, glyphAnimationProgress, rect ->
+                    canvas.debugDrawGlyphBoundary(rect)
+                }
             }
         }
-    }
-
-    fun drawGlyphBoundary(canvas: Canvas, paints: P, boundary: Rect<Float>) {
-        canvas.drawRect(Color.Grey, boundary, Stroke.Default)
-        canvas.drawLine(
-            Color.Grey,
-            boundary.left,
-            boundary.top,
-            boundary.right,
-            boundary.bottom
-        )
-        canvas.drawLine(
-            Color.Grey,
-            boundary.right,
-            boundary.top,
-            boundary.left,
-            boundary.bottom
-        )
     }
 
     fun drawGlyph(
@@ -95,5 +64,14 @@ interface ClockRenderer<P : Paints, G : ClockGlyph<P>> {
             // Render a skeleton view of any active paths
             canvas.drawPath(Color.Black, Stroke.Default)
         }
+    }
+
+    private fun Canvas.debugDrawBounds(drawBounds: Rect<Float>, nativeSize: Size<Float>) {
+        drawDebugRect(Color.Green, drawBounds)
+        drawDebugRect(Color.Yellow, nativeSize.toRect())
+    }
+
+    private fun Canvas.debugDrawGlyphBoundary(boundary: Rect<Float>) {
+        drawDebugRect(Color.Magenta, MutableRectF(boundary).extrude(paints.strokeWidth / 2f))
     }
 }

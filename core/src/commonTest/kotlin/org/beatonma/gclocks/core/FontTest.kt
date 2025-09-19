@@ -17,7 +17,7 @@ abstract class FontLayoutTest {
 
     val hoursWidth = glyphWidth * 2f
     val minutesWidth = glyphWidth * 2f
-    val secondsWidth = glyphWidth
+    val secondsWidth = glyphWidth * 2f * (0.5f /* Options.DefaultSecondsGlyphScale */)
 
     val separator = 8f
     val spacing = 10
@@ -29,7 +29,9 @@ private fun options(
     spacingPx: Int,
 ) = TestOptions(
     layout = TestLayoutOptions(
-        format = format, layout = layout, spacingPx = spacingPx
+        format = format,
+        layout = layout,
+        spacingPx = spacingPx,
     ),
     paints = TestPaints(strokeWidth = 0f)
 )

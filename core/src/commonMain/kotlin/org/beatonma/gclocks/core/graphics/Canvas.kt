@@ -237,3 +237,23 @@ interface Canvas : Path {
 
     fun clear()
 }
+
+
+fun Canvas.drawDebugRect(
+    color: Color,
+    left: Float,
+    top: Float,
+    right: Float,
+    bottom: Float,
+    style: Stroke = Stroke.Default,
+) {
+    drawRect(color, left, top, right, bottom, style)
+    drawLine(color, left, top, right, bottom, style)
+    drawLine(color, right, top, left, bottom, style)
+}
+
+fun Canvas.drawDebugRect(
+    color: Color,
+    rect: Rect<Float>,
+    style: Stroke = Stroke.Default,
+) = drawDebugRect(color, rect.left, rect.top, rect.right, rect.bottom, style)

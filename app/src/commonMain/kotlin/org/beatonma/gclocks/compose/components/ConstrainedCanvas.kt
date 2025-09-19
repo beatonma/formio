@@ -22,6 +22,15 @@ fun ConstrainedCanvas(
         }
     ) { measurables, constraints ->
         val measuredSize = constrainedLayout.setConstraints(constraints.toMeasureConstraints())
+
+        // Once measured, re-set constraints to measured size so that alignment
+        // is applied correctly in the measured size of ConstrainedCanvas.
+        constrainedLayout.setConstraints(
+            MeasureConstraints(
+                maxWidth = measuredSize.width,
+                maxHeight = measuredSize.height
+            )
+        )
         val placeable = measurables.first().measure(
             Constraints.fixed(
                 measuredSize.width.toInt(),
