@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import android.widget.FrameLayout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
@@ -34,6 +35,7 @@ class DreamView @JvmOverloads constructor(
         super.onAttachedToWindow()
 
         coroutineScope.launch {
+            @OptIn(ExperimentalCoroutinesApi::class)
             context.settingsRepository.loadAppSettings()
                 .mapLatest { it.getOptions(DisplayContext.Screensaver) }
                 .collectLatest { settings ->
