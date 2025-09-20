@@ -9,6 +9,7 @@ import org.beatonma.gclocks.compose.components.settings.Key
 import org.beatonma.gclocks.compose.components.settings.RichSetting
 import org.beatonma.gclocks.compose.components.settings.RichSettings
 import org.beatonma.gclocks.compose.components.settings.Setting
+import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.io16.Io16LayoutOptions
 import org.beatonma.gclocks.io16.Io16Options
 import org.beatonma.gclocks.io16.Io16Paints
@@ -89,5 +90,11 @@ private fun buildTimeSettings(
     onUpdate: (Io16LayoutOptions) -> Unit,
 ): List<Setting> = chooseTimeFormat(
     layoutOptions.format,
-    { onUpdate(layoutOptions.copy(format = it)) },
+    { format ->
+        // If seconds are not visible, revert Layout.Wrapped to Layout.Horizontal
+        val layout = if (!format.showSeconds && layoutOptions.layout == Layout.Wrapped) {
+            Layout.Horizontal
+        } else layoutOptions.layout
+        onUpdate(layoutOptions.copy(layout = layout, format = format))
+    },
 )

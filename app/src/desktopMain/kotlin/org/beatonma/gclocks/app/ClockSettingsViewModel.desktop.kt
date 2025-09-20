@@ -28,10 +28,6 @@ actual fun <O : Options<*>> buildSettingsViewModel(
                 ): RichSettings {
                     return settings
                 }
-
-                override fun filterSettings(settings: RichSettings): RichSettings {
-                    return settings
-                }
             }
         }
 
@@ -46,10 +42,6 @@ actual fun <O : Options<*>> buildSettingsViewModel(
                 ): RichSettings {
                     return settings
                 }
-
-                override fun filterSettings(settings: RichSettings): RichSettings {
-                    return settings
-                }
             }
         }
 
@@ -62,10 +54,6 @@ actual fun <O : Options<*>> buildSettingsViewModel(
                     settings: RichSettings,
                     displayOptions: DisplayContext.Options,
                 ): RichSettings {
-                    return settings
-                }
-
-                override fun filterSettings(settings: RichSettings): RichSettings {
                     return settings
                 }
             }

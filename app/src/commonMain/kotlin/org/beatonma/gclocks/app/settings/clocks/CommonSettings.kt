@@ -27,7 +27,7 @@ import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.TimeFormat
 
 
-object CommonKeys {
+object SettingKey {
     val clockColors = Key.ColorsKey("clock_colors")
     val clockLayout = Key.EnumKey<Layout>("clock_layout")
     val clockHorizontalAlignment = Key.EnumKey<HorizontalAlignment>("clock_horizontal_alignment")
@@ -46,7 +46,7 @@ internal fun createColorsAdapter(
     paints: Paints,
     onValueChange: (value: List<Color>) -> Unit,
 ) = RichSetting.Colors(
-    key = CommonKeys.clockColors,
+    key = SettingKey.clockColors,
     localized = LocalizedString(Res.string.setting_colors),
     helpText = null,
     value = paints.colors.toList(),
@@ -55,7 +55,7 @@ internal fun createColorsAdapter(
 
 internal fun chooseLayout(value: Layout, onUpdate: (Layout) -> Unit) =
     RichSetting.SingleSelect(
-        key = CommonKeys.clockLayout,
+        key = SettingKey.clockLayout,
         localized = LocalizedString(Res.string.setting_clock_layout),
         helpText = null,
         value = value,
@@ -68,7 +68,7 @@ internal fun chooseHorizontalAlignment(
     onUpdate: (HorizontalAlignment) -> Unit,
 ) =
     RichSetting.SingleSelect(
-        key = CommonKeys.clockHorizontalAlignment,
+        key = SettingKey.clockHorizontalAlignment,
         localized = LocalizedString(Res.string.setting_alignment_horizontal),
         value = value,
         values = HorizontalAlignment.entries.toSet(),
@@ -80,7 +80,7 @@ internal fun chooseVerticalAlignment(
     onUpdate: (VerticalAlignment) -> Unit,
 ) =
     RichSetting.SingleSelect(
-        key = CommonKeys.clockVerticalAlignment,
+        key = SettingKey.clockVerticalAlignment,
         localized = LocalizedString(Res.string.setting_alignment_vertical),
         value = value,
         values = VerticalAlignment.entries.toSet(),
@@ -92,7 +92,7 @@ internal fun chooseTimeFormat(
     onUpdate: (TimeFormat) -> Unit,
 ): List<Setting> = listOf(
     RichSetting.Bool(
-        key = CommonKeys.clockTimeFormatIs24Hour,
+        key = SettingKey.clockTimeFormatIs24Hour,
         localized = LocalizedString(Res.string.setting_time_is_24_hour),
         value = value.is24Hour,
         onValueChange = {
@@ -106,7 +106,7 @@ internal fun chooseTimeFormat(
         }
     ),
     RichSetting.Bool(
-        key = CommonKeys.clockTimeFormatIsZeroPadded,
+        key = SettingKey.clockTimeFormatIsZeroPadded,
         localized = LocalizedString(Res.string.setting_time_is_zero_padded),
         value = value.isZeroPadded,
         onValueChange = {
@@ -120,7 +120,7 @@ internal fun chooseTimeFormat(
         }
     ),
     RichSetting.Bool(
-        key = CommonKeys.clockTimeFormatShowSeconds,
+        key = SettingKey.clockTimeFormatShowSeconds,
         localized = LocalizedString(Res.string.setting_time_show_seconds),
         value = value.showSeconds,
         onValueChange = {
@@ -138,7 +138,7 @@ internal fun chooseTimeFormat(
 
 internal fun chooseSpacing(value: Int, onUpdate: (Int) -> Unit, default: Int, max: Int) =
     RichSetting.Int(
-        key = CommonKeys.clockSpacing,
+        key = SettingKey.clockSpacing,
         localized = LocalizedString(Res.string.setting_clock_spacing),
         helpText = LocalizedString(Res.string.setting_help_clock_spacing),
         value = value,
@@ -151,7 +151,7 @@ internal fun chooseSpacing(value: Int, onUpdate: (Int) -> Unit, default: Int, ma
 
 internal fun chooseSecondScale(value: Float, onUpdate: (Float) -> Unit) =
     RichSetting.Float(
-        key = CommonKeys.clockSecondsScale,
+        key = SettingKey.clockSecondsScale,
         localized = LocalizedString(Res.string.setting_second_scale),
         helpText = LocalizedString(Res.string.setting_help_second_scale),
         value = value,
@@ -163,14 +163,14 @@ internal fun chooseSecondScale(value: Float, onUpdate: (Float) -> Unit) =
     )
 
 internal fun chooseBackgroundColor(value: Color, onUpdate: (Color) -> Unit) = RichSetting.Color(
-    key = CommonKeys.backgroundColor,
+    key = SettingKey.backgroundColor,
     localized = LocalizedString(Res.string.setting_background_color),
     value = value,
     onValueChange = onUpdate,
 )
 
 internal fun chooseClockPosition(value: RectF, onUpdate: (RectF) -> Unit) = RichSetting.RectF(
-    key = CommonKeys.clockPosition,
+    key = SettingKey.clockPosition,
     localized = LocalizedString(Res.string.setting_clock_position),
     value = value,
     onValueChange = onUpdate,

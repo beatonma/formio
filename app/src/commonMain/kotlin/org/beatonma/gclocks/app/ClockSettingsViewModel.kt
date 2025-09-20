@@ -11,7 +11,9 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.beatonma.gclocks.app.settings.ContextClockOptions
 import org.beatonma.gclocks.app.settings.DisplayContext
+import org.beatonma.gclocks.app.settings.clocks.SettingKey
 import org.beatonma.gclocks.compose.components.settings.RichSettings
+import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.Options
 import kotlin.reflect.KClass
 
@@ -90,7 +92,33 @@ abstract class SettingsViewModel<O : Options<*>>(
      * Post-process the results of [buildClockSettings] and [buildDisplaySettings] to remove
      * or edit any settings that require some kind of special treatment for the current context.
      */
-    abstract fun filterSettings(settings: RichSettings): RichSettings
+    open fun filterSettings(
+        settings: RichSettings,
+        clockOptions: O,
+        displayOptions: DisplayContext.Options,
+    ): RichSettings {
+        return settings.filter { setting ->
+            when (setting.key) {
+                SettingKey.clockVerticalAlignment -> {
+                    // Vertical alignment only affects Layout.Horizontal
+                    when (clockOptions.layout.layout) {
+                        Layout.Horizontal -> setting
+                        else -> null
+                    }
+                }
+
+                SettingKey.clockSecondsScale -> {
+                    // No need to edit second scale if they are not visible
+                    when (clockOptions.layout.format.showSeconds) {
+                        true -> setting
+                        false -> null
+                    }
+                }
+
+                else -> setting
+            }
+        }
+    }
 
     fun buildOptionsAdapter(
         displayOptions: DisplayContext.Options,
@@ -100,7 +128,7 @@ abstract class SettingsViewModel<O : Options<*>>(
 
         settings = buildClockSettings(settings, clockOptions)
         settings = buildDisplaySettings(settings, displayOptions)
-        settings = filterSettings(settings)
+        settings = filterSettings(settings, clockOptions, displayOptions)
 
         return settings.applyGroups()
     }

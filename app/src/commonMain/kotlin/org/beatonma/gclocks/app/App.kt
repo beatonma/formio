@@ -46,7 +46,7 @@ import gclocks_multiplatform.app.generated.resources.ui_choose_clock_style
 import org.beatonma.gclocks.app.settings.AppSettings
 import org.beatonma.gclocks.app.settings.ContextClockOptions
 import org.beatonma.gclocks.app.settings.DisplayContext
-import org.beatonma.gclocks.app.settings.clocks.CommonKeys
+import org.beatonma.gclocks.app.settings.clocks.SettingKey
 import org.beatonma.gclocks.app.theme.AppTheme
 import org.beatonma.gclocks.compose.Loading
 import org.beatonma.gclocks.compose.VerticalBottomContentPadding
@@ -176,7 +176,7 @@ private fun ClockSettingsScaffold(
         },
     ) { contentPadding ->
         val backgroundColor =
-            richSettings?.colors?.firstOrNull { it is RichSetting<*> && it.key == CommonKeys.backgroundColor }
+            richSettings?.colors?.firstOrNull { it is RichSetting<*> && it.key == SettingKey.backgroundColor }
                 ?.let { it as? RichSetting.Color }?.value?.toCompose() ?: colorScheme.surface
 
         CompositionLocalProvider(

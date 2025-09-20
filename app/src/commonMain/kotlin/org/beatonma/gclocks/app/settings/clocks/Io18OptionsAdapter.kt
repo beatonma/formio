@@ -4,6 +4,7 @@ import org.beatonma.gclocks.app.SettingsViewModel
 import org.beatonma.gclocks.app.settings.ContextClockOptions
 import org.beatonma.gclocks.compose.components.settings.RichSettings
 import org.beatonma.gclocks.compose.components.settings.Setting
+import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.io18.Io18LayoutOptions
 import org.beatonma.gclocks.io18.Io18Options
 import org.beatonma.gclocks.io18.Io18Paints
@@ -82,5 +83,11 @@ private fun buildTimeSettings(
     onUpdate: (Io18LayoutOptions) -> Unit,
 ): List<Setting> = chooseTimeFormat(
     layoutOptions.format,
-    { onUpdate(layoutOptions.copy(format = it)) },
+    { format ->
+        // If seconds are not visible, revert Layout.Wrapped to Layout.Horizontal
+        val layout = if (!format.showSeconds && layoutOptions.layout == Layout.Wrapped) {
+            Layout.Horizontal
+        } else layoutOptions.layout
+        onUpdate(layoutOptions.copy(layout = layout, format = format))
+    },
 )

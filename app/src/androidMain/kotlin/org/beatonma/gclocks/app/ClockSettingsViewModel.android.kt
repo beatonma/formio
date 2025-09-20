@@ -2,10 +2,10 @@ package org.beatonma.gclocks.app
 
 import org.beatonma.gclocks.app.settings.ContextClockOptions
 import org.beatonma.gclocks.app.settings.DisplayContext
-import org.beatonma.gclocks.app.settings.clocks.CommonKeys
 import org.beatonma.gclocks.app.settings.clocks.FormSettingsViewModel
 import org.beatonma.gclocks.app.settings.clocks.Io16SettingsViewModel
 import org.beatonma.gclocks.app.settings.clocks.Io18SettingsViewModel
+import org.beatonma.gclocks.app.settings.clocks.SettingKey
 import org.beatonma.gclocks.app.settings.clocks.chooseBackgroundColor
 import org.beatonma.gclocks.app.settings.clocks.chooseClockPosition
 import org.beatonma.gclocks.compose.components.settings.RichSetting
@@ -44,8 +44,15 @@ actual fun <O : Options<*>> buildSettingsViewModel(
                     return displaySettings(settings, displayOptions)
                 }
 
-                override fun filterSettings(settings: RichSettings): RichSettings {
-                    return filterSettings(context, settings)
+                override fun filterSettings(
+                    settings: RichSettings,
+                    clockOptions: FormOptions,
+                    displayOptions: DisplayContext.Options,
+                ): RichSettings {
+                    return filterSettings(
+                        context,
+                        super.filterSettings(settings, clockOptions, displayOptions)
+                    )
                 }
             }
         }
@@ -63,8 +70,15 @@ actual fun <O : Options<*>> buildSettingsViewModel(
                     return displaySettings(settings, displayOptions)
                 }
 
-                override fun filterSettings(settings: RichSettings): RichSettings {
-                    return filterSettings(context, settings)
+                override fun filterSettings(
+                    settings: RichSettings,
+                    clockOptions: Io16Options,
+                    displayOptions: DisplayContext.Options,
+                ): RichSettings {
+                    return filterSettings(
+                        context,
+                        super.filterSettings(settings, clockOptions, displayOptions)
+                    )
                 }
             }
         }
@@ -82,8 +96,15 @@ actual fun <O : Options<*>> buildSettingsViewModel(
                     return displaySettings(settings, displayOptions)
                 }
 
-                override fun filterSettings(settings: RichSettings): RichSettings {
-                    return filterSettings(context, settings)
+                override fun filterSettings(
+                    settings: RichSettings,
+                    clockOptions: Io18Options,
+                    displayOptions: DisplayContext.Options,
+                ): RichSettings {
+                    return filterSettings(
+                        context,
+                        super.filterSettings(settings, clockOptions, displayOptions)
+                    )
                 }
             }
         }
@@ -106,7 +127,7 @@ private fun <O : Options<*>> SettingsViewModel<O>.displaySettings(
         is DisplayContext.Options.Screensaver -> {
             settings.copy(
                 colors = settings.colors.insertBefore(
-                    CommonKeys.clockColors,
+                    SettingKey.clockColors,
                     chooseBackgroundColor(
                         value = displayOptions.backgroundColor,
                         onUpdate = { update(displayOptions.copy(backgroundColor = it)) },
@@ -124,7 +145,7 @@ private fun <O : Options<*>> SettingsViewModel<O>.displaySettings(
         is DisplayContext.Options.Wallpaper -> {
             settings.copy(
                 colors = settings.colors.insertBefore(
-                    CommonKeys.clockColors,
+                    SettingKey.clockColors,
                     chooseBackgroundColor(
                         value = displayOptions.backgroundColor,
                         onUpdate = { update(displayOptions.copy(backgroundColor = it)) },
@@ -147,14 +168,14 @@ private fun <O : Options<*>> SettingsViewModel<O>.displaySettings(
  */
 private fun filterWidgetSettings(setting: RichSetting<*>): RichSetting<*>? {
     return when (setting.key) {
-        CommonKeys.clockLayout -> {
+        SettingKey.clockLayout -> {
             // Layout.Wrapped only useful for displaying seconds.
             filterSingleSelect(setting) { it != Layout.Wrapped }
         }
 
-        CommonKeys.clockVerticalAlignment, // Only has effect when seconds visible.
-        CommonKeys.clockTimeFormatShowSeconds,
-        CommonKeys.clockSecondsScale,
+//        CommonKeys.clockVerticalAlignment, // Only has effect when seconds visible.
+        SettingKey.clockTimeFormatShowSeconds,
+        SettingKey.clockSecondsScale,
             -> {
             // Remove setting
             null
