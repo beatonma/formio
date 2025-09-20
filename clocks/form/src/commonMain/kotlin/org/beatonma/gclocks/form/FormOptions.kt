@@ -26,9 +26,9 @@ data class FormGlyphOptions(
 
 @Serializable
 data class FormLayoutOptions(
-    override val horizontalAlignment: HorizontalAlignment = HorizontalAlignment.Start,
+    override val layout: Layout = Layout.Wrapped,
+    override val horizontalAlignment: HorizontalAlignment = HorizontalAlignment.End,
     override val verticalAlignment: VerticalAlignment = VerticalAlignment.Top,
-    override val layout: Layout = Layout.Horizontal,
     override val format: TimeFormat = TimeFormat.HH_MM_SS_24,
     override val spacingPx: Int = 8,
     override val secondsGlyphScale: Float = Options.DefaultSecondsGlyphScale,

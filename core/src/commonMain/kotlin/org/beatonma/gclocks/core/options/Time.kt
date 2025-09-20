@@ -35,6 +35,7 @@ enum class TimeFormat {
     val is24Hour: Boolean get() = this.name.endsWith("24")
     val isZeroPadded: Boolean get() = this.name.startsWith("HH")
     val resolution: TimeResolution get() = if (this.name.contains("SS")) TimeResolution.Seconds else TimeResolution.Minutes
+    val showSeconds: Boolean get() = this.resolution == TimeResolution.Seconds
     val roles: List<GlyphRole>
         get() {
             var separatorCount = 0
@@ -72,5 +73,21 @@ enum class TimeFormat {
             minute.toString().padStart(2, '0'),
             if (resolution == TimeResolution.Seconds) second.toString().padStart(2, '0') else null
         ).joinToString(":")
+    }
+
+    companion object {
+        fun build(
+            is24Hour: Boolean,
+            isZeroPadded: Boolean,
+            showSeconds: Boolean,
+        ): TimeFormat {
+            val enumString = listOfNotNull(
+                if (isZeroPadded) "HH" else "hh",
+                "MM",
+                if (showSeconds) "SS" else null,
+                if (is24Hour) "24" else "12"
+            ).joinToString("_")
+            return TimeFormat.valueOf(enumString)
+        }
     }
 }

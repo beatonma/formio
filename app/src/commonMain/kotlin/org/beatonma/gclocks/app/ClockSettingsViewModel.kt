@@ -96,7 +96,7 @@ abstract class SettingsViewModel<O : Options<*>>(
         displayOptions: DisplayContext.Options,
         clockOptions: O,
     ): RichSettings {
-        var settings = RichSettings()
+        var settings = RichSettings.Empty
 
         settings = buildClockSettings(settings, clockOptions)
         settings = buildDisplaySettings(settings, displayOptions)

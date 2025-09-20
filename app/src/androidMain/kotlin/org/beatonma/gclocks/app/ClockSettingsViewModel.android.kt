@@ -10,13 +10,9 @@ import org.beatonma.gclocks.app.settings.clocks.chooseBackgroundColor
 import org.beatonma.gclocks.app.settings.clocks.chooseClockPosition
 import org.beatonma.gclocks.compose.components.settings.RichSetting
 import org.beatonma.gclocks.compose.components.settings.RichSettings
-import org.beatonma.gclocks.compose.components.settings.Setting
-import org.beatonma.gclocks.compose.components.settings.forEachSetting
 import org.beatonma.gclocks.compose.components.settings.insertBefore
 import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.Options
-import org.beatonma.gclocks.core.options.TimeFormat
-import org.beatonma.gclocks.core.options.TimeResolution
 import org.beatonma.gclocks.form.FormOptions
 import org.beatonma.gclocks.io16.Io16Options
 import org.beatonma.gclocks.io18.Io18Options
@@ -24,11 +20,7 @@ import org.beatonma.gclocks.io18.Io18Options
 
 private fun filterSettings(context: DisplayContext, settings: RichSettings): RichSettings {
     return when (context) {
-        DisplayContext.Widget -> settings.copy(
-            colors = filterWidgetSettings(settings.colors),
-            layout = filterWidgetSettings(settings.layout),
-        )
-
+        DisplayContext.Widget -> settings.filter(::filterWidgetSettings)
         else -> settings
     }
 }
@@ -40,7 +32,8 @@ actual fun <O : Options<*>> buildSettingsViewModel(
 ): SettingsViewModel<O> {
     val viewmodel = when (initial.clock) {
         is FormOptions -> {
-            @Suppress("UNCHECKED_CAST") object : FormSettingsViewModel(
+            @Suppress("UNCHECKED_CAST")
+            object : FormSettingsViewModel(
                 initial as ContextClockOptions<FormOptions>,
                 onEditOptions as suspend (ContextClockOptions<FormOptions>) -> Unit
             ) {
@@ -58,7 +51,8 @@ actual fun <O : Options<*>> buildSettingsViewModel(
         }
 
         is Io16Options -> {
-            @Suppress("UNCHECKED_CAST") object : Io16SettingsViewModel(
+            @Suppress("UNCHECKED_CAST")
+            object : Io16SettingsViewModel(
                 initial as ContextClockOptions<Io16Options>,
                 onEditOptions as suspend (ContextClockOptions<Io16Options>) -> Unit
             ) {
@@ -76,7 +70,8 @@ actual fun <O : Options<*>> buildSettingsViewModel(
         }
 
         is Io18Options -> {
-            @Suppress("UNCHECKED_CAST") object : Io18SettingsViewModel(
+            @Suppress("UNCHECKED_CAST")
+            object : Io18SettingsViewModel(
                 initial as ContextClockOptions<Io18Options>,
                 onEditOptions as suspend (ContextClockOptions<Io18Options>) -> Unit
             ) {
@@ -96,7 +91,8 @@ actual fun <O : Options<*>> buildSettingsViewModel(
         else -> throw NotImplementedError("Unhandled Options class ${initial.clock::class}")
     }
 
-    @Suppress("UNCHECKED_CAST") return viewmodel as SettingsViewModel<O>
+    @Suppress("UNCHECKED_CAST")
+    return viewmodel as SettingsViewModel<O>
 }
 
 
@@ -146,32 +142,26 @@ private fun <O : Options<*>> SettingsViewModel<O>.displaySettings(
 }
 
 /**
- * Widget only updates each minute so never shows seconds. Here we remove
- * settings/setting values which reference seconds to avoid confusion.
+ * Remove settings/setting values which reference seconds as widget only
+ * updates once a minute and never shows seconds.
  */
-private fun filterWidgetSettings(settings: List<Setting>): List<Setting> {
-    val out = mutableListOf<Setting>()
-
-    settings.forEachSetting { setting ->
-        when (setting.key) {
-            CommonKeys.clockLayout -> {
-                out.add(filterSingleSelect(setting) { it != Layout.Wrapped })
-            }
-
-            CommonKeys.clockTimeFormat -> {
-                // Remove TimeFormat values which have second resolution.
-                out.add(filterSingleSelect<TimeFormat>(setting) { it.resolution == TimeResolution.Minutes })
-            }
-
-            CommonKeys.clockSecondsScale -> {
-                // Remove clockSecondsScale setting
-            }
-
-            else -> out.add(setting)
+private fun filterWidgetSettings(setting: RichSetting<*>): RichSetting<*>? {
+    return when (setting.key) {
+        CommonKeys.clockLayout -> {
+            // Layout.Wrapped only useful for displaying seconds.
+            filterSingleSelect(setting) { it != Layout.Wrapped }
         }
-    }
 
-    return out.toList()
+        CommonKeys.clockVerticalAlignment, // Only has effect when seconds visible.
+        CommonKeys.clockTimeFormatShowSeconds,
+        CommonKeys.clockSecondsScale,
+            -> {
+            // Remove setting
+            null
+        }
+
+        else -> setting
+    }
 }
 
 private fun <E : Enum<E>> filterSingleSelect(

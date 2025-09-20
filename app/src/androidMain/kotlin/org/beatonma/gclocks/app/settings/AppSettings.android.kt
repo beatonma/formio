@@ -1,6 +1,8 @@
 package org.beatonma.gclocks.app.settings
 
 import kotlinx.serialization.Serializable
+import org.beatonma.gclocks.core.geometry.HorizontalAlignment
+import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.TimeFormat
 import kotlin.math.floor
 
@@ -19,21 +21,27 @@ actual val DefaultAppSettings: AppSettings
                     form = value.form.copy(
                         clock = value.form.clock.copy(
                             layout = value.form.clock.layout.copy(
-                                format = DefaultWidgetTimeFormat
+                                layout = Layout.Horizontal,
+                                format = DefaultWidgetTimeFormat,
+                                horizontalAlignment = HorizontalAlignment.Center,
                             )
                         )
                     ),
                     io16 = value.io16.copy(
                         clock = value.io16.clock.copy(
                             layout = value.io16.clock.layout.copy(
-                                format = DefaultWidgetTimeFormat
+                                layout = Layout.Horizontal,
+                                format = DefaultWidgetTimeFormat,
+                                horizontalAlignment = HorizontalAlignment.Center,
                             )
                         )
                     ),
                     io18 = value.io18.copy(
                         clock = value.io18.clock.copy(
                             layout = value.io18.clock.layout.copy(
-                                format = DefaultWidgetTimeFormat
+                                layout = Layout.Horizontal,
+                                format = DefaultWidgetTimeFormat,
+                                horizontalAlignment = HorizontalAlignment.Center,
                             )
                         )
                     ),

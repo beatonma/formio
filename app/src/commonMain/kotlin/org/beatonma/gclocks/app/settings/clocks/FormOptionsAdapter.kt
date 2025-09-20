@@ -17,16 +17,16 @@ abstract class FormSettingsViewModel(
         settings: RichSettings,
         clockOptions: FormOptions,
     ): RichSettings {
+        val updateLayout: (FormLayoutOptions) -> Unit = {
+            update(this.contextOptions.value.clock.copy(layout = it))
+        }
         return settings.append(
             colors = buildPaintsSettings(clockOptions.paints) {
                 update(this.contextOptions.value.clock.copy(paints = it))
             },
-            layout = buildLayoutSettings(clockOptions.layout) {
-                update(this.contextOptions.value.clock.copy(layout = it))
-            },
-            sizes = buildSizeSettings(clockOptions.layout) {
-                update(this.contextOptions.value.clock.copy(layout = it))
-            }
+            layout = buildLayoutSettings(clockOptions.layout, updateLayout),
+            time = buildTimeSettings(clockOptions.layout, updateLayout),
+            sizes = buildSizeSettings(clockOptions.layout, updateLayout)
         )
     }
 }
@@ -56,10 +56,14 @@ private fun buildLayoutSettings(
         layoutOptions.verticalAlignment,
         { onUpdate(layoutOptions.copy(verticalAlignment = it)) }
     ),
-    chooseTimeFormat(
-        layoutOptions.format,
-        { onUpdate(layoutOptions.copy(format = it)) },
-    ),
+)
+
+private fun buildTimeSettings(
+    layoutOptions: FormLayoutOptions,
+    onUpdate: (FormLayoutOptions) -> Unit,
+): List<Setting> = chooseTimeFormat(
+    layoutOptions.format,
+    { onUpdate(layoutOptions.copy(format = it)) },
 )
 
 private fun buildSizeSettings(

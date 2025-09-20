@@ -17,16 +17,16 @@ abstract class Io18SettingsViewModel(
         settings: RichSettings,
         clockOptions: Io18Options,
     ): RichSettings {
+        val updateLayout: (Io18LayoutOptions) -> Unit = {
+            update(contextOptions.value.clock.copy(layout = it))
+        }
         return settings.append(
             colors = buildPaintsSettings(clockOptions.paints) {
                 update(contextOptions.value.clock.copy(paints = it))
             },
-            layout = buildLayoutSettings(clockOptions.layout) {
-                update(contextOptions.value.clock.copy(layout = it))
-            },
-            sizes = buildSizeSettings(clockOptions.layout) {
-                update(contextOptions.value.clock.copy(layout = it))
-            },
+            layout = buildLayoutSettings(clockOptions.layout, updateLayout),
+            time = buildTimeSettings(clockOptions.layout, updateLayout),
+            sizes = buildSizeSettings(clockOptions.layout, updateLayout),
         )
     }
 }
@@ -58,10 +58,6 @@ private fun buildLayoutSettings(
         layoutOptions.verticalAlignment,
         { onUpdate(layoutOptions.copy(verticalAlignment = it)) }
     ),
-    chooseTimeFormat(
-        layoutOptions.format,
-        { onUpdate(layoutOptions.copy(format = it)) },
-    ),
 )
 
 private fun buildSizeSettings(
@@ -78,4 +74,13 @@ private fun buildSizeSettings(
         layoutOptions.secondsGlyphScale,
         { onUpdate(layoutOptions.copy(secondsGlyphScale = it)) }
     )
+)
+
+
+private fun buildTimeSettings(
+    layoutOptions: Io18LayoutOptions,
+    onUpdate: (Io18LayoutOptions) -> Unit,
+): List<Setting> = chooseTimeFormat(
+    layoutOptions.format,
+    { onUpdate(layoutOptions.copy(format = it)) },
 )

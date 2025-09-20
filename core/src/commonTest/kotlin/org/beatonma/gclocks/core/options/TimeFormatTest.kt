@@ -2,6 +2,7 @@ package org.beatonma.gclocks.core.options
 
 import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.util.TimeOfDay
+import org.beatonma.gclocks.test.shouldbe
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -170,5 +171,56 @@ class TimeFormatTest {
             "11:02",
             TimeFormat.hh_MM_12.apply(TimeOfDay(23, 2, 57)),
         )
+    }
+
+    @Test
+    fun `TimeFormat build is correct`() {
+        TimeFormat.build(
+            is24Hour = true,
+            isZeroPadded = true,
+            showSeconds = true,
+        ) shouldbe TimeFormat.HH_MM_SS_24
+
+        TimeFormat.build(
+            is24Hour = false,
+            isZeroPadded = true,
+            showSeconds = true,
+        ) shouldbe TimeFormat.HH_MM_SS_12
+
+        TimeFormat.build(
+            is24Hour = true,
+            isZeroPadded = false,
+            showSeconds = true,
+        ) shouldbe TimeFormat.hh_MM_SS_24
+
+        TimeFormat.build(
+            is24Hour = true,
+            isZeroPadded = true,
+            showSeconds = false,
+        ) shouldbe TimeFormat.HH_MM_24
+
+        TimeFormat.build(
+            is24Hour = false,
+            isZeroPadded = false,
+            showSeconds = true,
+        ) shouldbe TimeFormat.hh_MM_SS_12
+
+        TimeFormat.build(
+            is24Hour = true,
+            isZeroPadded = false,
+            showSeconds = false,
+        ) shouldbe TimeFormat.hh_MM_24
+
+        TimeFormat.build(
+            is24Hour = false,
+            isZeroPadded = true,
+            showSeconds = false,
+        ) shouldbe TimeFormat.HH_MM_12
+
+        TimeFormat.build(
+            is24Hour = false,
+            isZeroPadded = false,
+            showSeconds = false,
+        ) shouldbe TimeFormat.hh_MM_12
     }
 }

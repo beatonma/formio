@@ -18,7 +18,9 @@
     <string name="setting_clock_layout_wrapped">Wrapped</string>
 
     <!-- Time format -->
-    <string name="setting_time_format">Time format</string>
+    <string name="setting_time_is_24_hour">24 hour</string>
+    <string name="setting_time_is_zero_padded">Zero-padding</string>
+    <string name="setting_time_show_seconds">Show seconds</string>
     <string name="setting_help_time_format_HH_MM_SS_24">24 hour, zero-padding</string>
     <string name="setting_help_time_format_hh_MM_SS_24">24 hour</string>
     <string name="setting_help_time_format_HH_MM_24">24 hour, zero-padding, no seconds</string>

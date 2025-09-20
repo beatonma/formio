@@ -11,26 +11,45 @@ sealed interface Setting
 
 
 data class RichSettings(
-    val colors: List<Setting> = listOf(),
-    val layout: List<Setting> = listOf(),
-    val sizes: List<Setting> = listOf(),
+    val colors: List<Setting>,
+    val layout: List<Setting>,
+    val time: List<Setting>,
+    val sizes: List<Setting>,
 ) {
+    companion object {
+        val Empty: RichSettings get() = RichSettings(listOf(), listOf(), listOf(), listOf())
+    }
+
+    val all: List<Setting> get() = colors + layout + time + sizes
+
     fun append(
-        colors: List<Setting> = listOf(),
-        layout: List<Setting> = listOf(),
-        sizes: List<Setting> = listOf(),
+        colors: List<Setting>,
+        layout: List<Setting>,
+        time: List<Setting>,
+        sizes: List<Setting>,
     ): RichSettings =
         copy(
             colors = this.colors + colors,
             layout = this.layout + layout,
+            time = this.time + time,
             sizes = this.sizes + sizes,
         )
 
     fun applyGroups(): RichSettings = copy(
         colors = listOf(RichSettingsGroup(colors)),
         layout = listOf(RichSettingsGroup(layout)),
+        time = listOf(RichSettingsGroup(time)),
         sizes = listOf(RichSettingsGroup(sizes))
     )
+
+    fun filter(block: (RichSetting<*>) -> RichSetting<*>?): RichSettings {
+        return copy(
+            colors = colors.filterSettings(block),
+            layout = layout.filterSettings(block),
+            time = time.filterSettings(block),
+            sizes = sizes.filterSettings(block),
+        )
+    }
 }
 
 
@@ -151,6 +170,27 @@ sealed interface Key {
     value class RectFKey(override val value: String) : Key
 }
 
+
+private fun List<Setting>.filterSettings(block: (RichSetting<*>) -> RichSetting<*>?): List<Setting> {
+    val out = mutableListOf<Setting>()
+
+    for (setting in this) {
+        when (setting) {
+            is RichSettingsGroup -> {
+                val result = setting.settings.filterSettings(block)
+                if (result.isNotEmpty()) {
+                    out.add(RichSettingsGroup(result))
+                }
+            }
+
+            is RichSetting<*> -> {
+                block(setting)?.let { out.add(it) }
+            }
+        }
+    }
+
+    return out
+}
 
 fun List<Setting>.forEachSetting(block: (RichSetting<*>) -> Unit) {
     for (setting in this) {

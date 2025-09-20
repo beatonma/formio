@@ -57,7 +57,6 @@ import org.beatonma.gclocks.compose.components.settings.RichSettings
 import org.beatonma.gclocks.compose.components.settings.components.SettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
 import org.beatonma.gclocks.compose.onlyIf
-import org.beatonma.gclocks.compose.plus
 import org.beatonma.gclocks.compose.toCompose
 import org.beatonma.gclocks.core.options.Options
 import org.jetbrains.compose.resources.stringResource
@@ -154,17 +153,17 @@ private fun ClockSettingsScaffold(
     onSave: () -> Unit,
     appAdapter: AppAdapter?,
 ) {
-    val state = appSettings.state
+    val appState = appSettings.state
     val clockViewModel = clockSettingsViewModel(
         appSettings.options,
         onEditOptions = { onEditSettings(appSettings.copyWithOptions(it.clock, it.display)) },
-        key = "${state.context}_${state.clock}",
+        key = "${appState.context}_${appState.clock}",
     )
     val options by clockViewModel.contextOptions.collectAsState()
     val richSettings by clockViewModel.richSettings.collectAsState()
     val gridState = rememberLazyStaggeredGridState()
 
-    LaunchedEffect(state) {
+    LaunchedEffect(appState) {
         gridState.scrollToItem(0)
     }
 
@@ -191,21 +190,28 @@ private fun ClockSettingsScaffold(
                     Clock(
                         options.clock,
                         Modifier
-                            .sizeIn(maxWidth = 600.dp, maxHeight = 400.dp)
+                            .sizeIn(maxWidth = 600.dp, maxHeight = 300.dp)
                             .onlyIf(appAdapter?.onClickPreview) { onClick ->
-                                clickable(onClick = { onClick(state.context) })
+                                clickable(onClick = { onClick(appState.context) })
                             }
                             .background(backgroundColor)
+                            .padding(contentPadding)
                             .padding(64.dp)
                             .animateContentSize()
                     )
 
                     SettingsGrid(
-                        appSettings,
-                        onEditSettings,
+                        appState.clock,
+                        {
+                            onEditSettings(
+                                appSettings.copy(
+                                    state = appSettings.state.copy(clock = it)
+                                )
+                            )
+                        },
                         richSettings ?: return@Column Loading(),
                         gridState = gridState,
-                        contentPadding = contentPadding + VerticalBottomContentPadding,
+                        contentPadding = /*contentPadding +*/ VerticalBottomContentPadding,
                     )
                 }
             }
@@ -216,19 +222,22 @@ private fun ClockSettingsScaffold(
 
 @Composable
 private fun SettingsGrid(
-    appSettings: AppSettings,
-    onEditSettings: (AppSettings) -> Unit,
+    clock: AppSettings.Clock,
+    onChangeClock: (AppSettings.Clock) -> Unit,
     richSettings: RichSettings,
     modifier: Modifier = Modifier,
     gridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     contentPadding: PaddingValues = PaddingValues(),
 ) {
+    val groupModifier = Modifier.padding(vertical = 8.dp)
+    val itemModifier = Modifier.horizontalMarginModifier().padding(vertical = 4.dp)
+
     LazyVerticalStaggeredGrid(
         StaggeredGridCells.Adaptive(minSize = 350.dp),
         modifier,
         gridState,
         contentPadding = contentPadding,
-        verticalItemSpacing = 24.dp,
+        verticalItemSpacing = 0.dp,
         horizontalArrangement = Arrangement.spacedBy(
             HorizontalMargin,
             Alignment.CenterHorizontally
@@ -236,21 +245,16 @@ private fun SettingsGrid(
     ) {
         item {
             ClockSelector(
-                appSettings.state.clock,
-                Modifier.horizontalMarginModifier(),
-            ) { selected ->
-                onEditSettings(
-                    appSettings.copy(
-                        state = appSettings.state.copy(clock = selected)
-                    )
-                )
-            }
+                clock,
+                onChangeClock,
+                groupModifier.then(itemModifier).horizontalMarginModifier(),
+            )
         }
 
         ClockSettingsItems(
-            richSettings.colors + richSettings.layout + richSettings.sizes,
-            groupModifier = Modifier.padding(vertical = 16.dp),
-            itemModifier = Modifier.horizontalMarginModifier().padding(vertical = 8.dp)
+            richSettings.all,
+            groupModifier = groupModifier,
+            itemModifier = itemModifier,
         )
     }
 }
@@ -259,8 +263,8 @@ private fun SettingsGrid(
 @Composable
 private fun ClockSelector(
     selected: AppSettings.Clock,
-    modifier: Modifier = Modifier,
     onSelect: (AppSettings.Clock) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     SettingLayout(modifier) {
         SettingName(stringResource(Res.string.ui_choose_clock_style))

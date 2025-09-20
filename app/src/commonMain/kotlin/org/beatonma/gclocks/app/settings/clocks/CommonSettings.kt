@@ -11,10 +11,13 @@ import gclocks_multiplatform.app.generated.resources.setting_colors
 import gclocks_multiplatform.app.generated.resources.setting_help_clock_spacing
 import gclocks_multiplatform.app.generated.resources.setting_help_second_scale
 import gclocks_multiplatform.app.generated.resources.setting_second_scale
-import gclocks_multiplatform.app.generated.resources.setting_time_format
+import gclocks_multiplatform.app.generated.resources.setting_time_is_24_hour
+import gclocks_multiplatform.app.generated.resources.setting_time_is_zero_padded
+import gclocks_multiplatform.app.generated.resources.setting_time_show_seconds
 import org.beatonma.gclocks.app.LocalizedString
 import org.beatonma.gclocks.compose.components.settings.Key
 import org.beatonma.gclocks.compose.components.settings.RichSetting
+import org.beatonma.gclocks.compose.components.settings.Setting
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.RectF
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
@@ -29,11 +32,13 @@ object CommonKeys {
     val clockLayout = Key.EnumKey<Layout>("clock_layout")
     val clockHorizontalAlignment = Key.EnumKey<HorizontalAlignment>("clock_horizontal_alignment")
     val clockVerticalAlignment = Key.EnumKey<VerticalAlignment>("clock_vertical_alignment")
-    val clockTimeFormat = Key.EnumKey<TimeFormat>("clock_time_format")
     val clockSpacing = Key.IntKey("clock_spacing")
     val clockSecondsScale = Key.FloatKey("clock_seconds_scale")
     val backgroundColor = Key.ColorKey("background_color")
     val clockPosition = Key.RectFKey("clock_position")
+    val clockTimeFormatIs24Hour = Key.BoolKey("clock_is_24_hour")
+    val clockTimeFormatIsZeroPadded = Key.BoolKey("clock_is_zero_padded")
+    val clockTimeFormatShowSeconds = Key.BoolKey("clock_show_seconds")
 }
 
 
@@ -82,21 +87,53 @@ internal fun chooseVerticalAlignment(
         onValueChange = onUpdate
     )
 
-
 internal fun chooseTimeFormat(
     value: TimeFormat,
     onUpdate: (TimeFormat) -> Unit,
-    filterValues: ((Set<TimeFormat>) -> Set<TimeFormat>)? = null,
-) =
-    RichSetting.SingleSelect(
-        key = CommonKeys.clockTimeFormat,
-        localized = LocalizedString(Res.string.setting_time_format),
-        value = value,
-        values = TimeFormat.entries.toSet().run {
-            filterValues?.let { filter -> filter(this) } ?: this
-        },
-        onValueChange = onUpdate
-    )
+): List<Setting> = listOf(
+    RichSetting.Bool(
+        key = CommonKeys.clockTimeFormatIs24Hour,
+        localized = LocalizedString(Res.string.setting_time_is_24_hour),
+        value = value.is24Hour,
+        onValueChange = {
+            onUpdate(
+                TimeFormat.build(
+                    is24Hour = it,
+                    isZeroPadded = value.isZeroPadded,
+                    showSeconds = value.showSeconds
+                )
+            )
+        }
+    ),
+    RichSetting.Bool(
+        key = CommonKeys.clockTimeFormatIsZeroPadded,
+        localized = LocalizedString(Res.string.setting_time_is_zero_padded),
+        value = value.isZeroPadded,
+        onValueChange = {
+            onUpdate(
+                TimeFormat.build(
+                    is24Hour = value.is24Hour,
+                    isZeroPadded = it,
+                    showSeconds = value.showSeconds
+                )
+            )
+        }
+    ),
+    RichSetting.Bool(
+        key = CommonKeys.clockTimeFormatShowSeconds,
+        localized = LocalizedString(Res.string.setting_time_show_seconds),
+        value = value.showSeconds,
+        onValueChange = {
+            onUpdate(
+                TimeFormat.build(
+                    is24Hour = value.is24Hour,
+                    isZeroPadded = value.isZeroPadded,
+                    showSeconds = it
+                )
+            )
+        }
+    ),
+)
 
 
 internal fun chooseSpacing(value: Int, onUpdate: (Int) -> Unit, default: Int, max: Int) =

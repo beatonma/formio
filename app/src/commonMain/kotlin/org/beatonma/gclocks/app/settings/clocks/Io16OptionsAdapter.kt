@@ -32,6 +32,7 @@ abstract class Io16SettingsViewModel(
         return settings.append(
             colors = buildColorSettings(clockOptions.paints, onUpdatePaints),
             layout = buildLayoutSettings(clockOptions.layout, onUpdateLayout),
+            time = buildTimeSettings(clockOptions.layout, onUpdateLayout),
             sizes = listOf(
                 chooseSpacing(
                     clockOptions.layout.spacingPx,
@@ -81,8 +82,12 @@ private fun buildLayoutSettings(
         layoutOptions.verticalAlignment,
         { onUpdate(layoutOptions.copy(verticalAlignment = it)) }
     ),
-    chooseTimeFormat(
-        layoutOptions.format,
-        { onUpdate(layoutOptions.copy(format = it)) },
-    ),
+)
+
+private fun buildTimeSettings(
+    layoutOptions: Io16LayoutOptions,
+    onUpdate: (Io16LayoutOptions) -> Unit,
+): List<Setting> = chooseTimeFormat(
+    layoutOptions.format,
+    { onUpdate(layoutOptions.copy(format = it)) },
 )
