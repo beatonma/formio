@@ -3,6 +3,7 @@ package org.beatonma.gclocks.wallpaper
 import android.app.wallpaper.WallpaperDescription
 import android.graphics.Canvas
 import android.service.wallpaper.WallpaperService
+import android.view.MotionEvent
 import android.view.SurfaceHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +22,7 @@ import org.beatonma.gclocks.app.loadDisplayMetrics
 import org.beatonma.gclocks.app.settings.ContextClockOptions
 import org.beatonma.gclocks.app.settings.DisplayContext
 import org.beatonma.gclocks.app.settings.DisplayMetrics
-import org.beatonma.gclocks.app.settings.settingsRepository
+import org.beatonma.gclocks.app.settingsRepository
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
@@ -68,6 +69,9 @@ class ClockWallpaperService : WallpaperService() {
         private var width = 0
         private var height = 0
         private var frameDelayMillis: Long = (1000f / 60f).toLong()
+
+        // TODO update glyph state for interactive animations.
+        // private val keyguardManager = getSystemService(KEYGUARD_SERVICE) as KeyguardManager
 
         init {
             initialize()
@@ -131,6 +135,30 @@ class ClockWallpaperService : WallpaperService() {
                 true -> initialize()
                 false -> engineScope?.cancel()
             }
+        }
+
+        override fun onOffsetsChanged(
+            xOffset: Float,
+            yOffset: Float,
+            xOffsetStep: Float,
+            yOffsetStep: Float,
+            xPixelOffset: Int,
+            yPixelOffset: Int,
+        ) {
+            super.onOffsetsChanged(
+                xOffset,
+                yOffset,
+                xOffsetStep,
+                yOffsetStep,
+                xPixelOffset,
+                yPixelOffset
+            )
+            // TODO hide/show depending on launcher page.
+        }
+
+        override fun onTouchEvent(event: MotionEvent?) {
+            super.onTouchEvent(event)
+            // TODO update glyph state for interactive animations.
         }
 
         private fun createAnimator(options: Options<*>): ClockAnimator<*, *> {

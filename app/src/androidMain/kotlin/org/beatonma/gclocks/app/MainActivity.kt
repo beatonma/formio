@@ -28,7 +28,6 @@ import org.beatonma.gclocks.android.appContext
 import org.beatonma.gclocks.android.componentNameOf
 import org.beatonma.gclocks.app.settings.DisplayContext
 import org.beatonma.gclocks.app.settings.DisplayMetrics
-import org.beatonma.gclocks.app.settings.settingsRepository
 import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.wallpaper.ClockWallpaperService
 import org.beatonma.gclocks.widget.ClockWidgetProvider

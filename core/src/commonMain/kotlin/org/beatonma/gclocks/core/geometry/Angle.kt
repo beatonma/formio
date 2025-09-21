@@ -1,5 +1,6 @@
 package org.beatonma.gclocks.core.geometry
 
+import kotlin.jvm.JvmInline
 import kotlin.math.PI
 
 private const val PiFloat = PI.toFloat()

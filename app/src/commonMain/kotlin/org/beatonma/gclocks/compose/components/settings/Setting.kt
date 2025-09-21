@@ -3,6 +3,7 @@ package org.beatonma.gclocks.compose.components.settings
 import org.beatonma.gclocks.app.LocalizedString
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.warn
+import kotlin.jvm.JvmInline
 import org.beatonma.gclocks.core.geometry.RectF as GeometryRectF
 import org.beatonma.gclocks.core.graphics.Color as GraphicsColor
 

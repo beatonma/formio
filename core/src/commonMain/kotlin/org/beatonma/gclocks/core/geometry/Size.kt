@@ -1,6 +1,7 @@
 package org.beatonma.gclocks.core.geometry
 
 import androidx.annotation.FloatRange
+import kotlin.jvm.JvmInline
 
 interface Size<T : Number> : Vector2<T> {
     val width: T

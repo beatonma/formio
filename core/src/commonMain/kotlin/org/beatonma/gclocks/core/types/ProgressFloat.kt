@@ -1,6 +1,7 @@
 package org.beatonma.gclocks.core.types
 
 import org.beatonma.gclocks.core.util.debug
+import kotlin.jvm.JvmInline
 
 /**
  * [Float] which (almost always) falls in the range 0..1.

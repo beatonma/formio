@@ -41,7 +41,8 @@ data class Io18Paints(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+        if (other == null) return false
+        if (this::class != other::class) return false
 
         other as Io18Paints
 

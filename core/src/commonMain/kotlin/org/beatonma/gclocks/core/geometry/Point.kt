@@ -1,6 +1,7 @@
 package org.beatonma.gclocks.core.geometry
 
 import org.beatonma.gclocks.core.util.distance
+import kotlin.jvm.JvmInline
 
 interface Point<T : Number> : Vector2<T> {
     fun distanceTo(other: Point<T>): Float {

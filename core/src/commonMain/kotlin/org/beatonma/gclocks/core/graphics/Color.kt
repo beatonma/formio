@@ -8,6 +8,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import org.beatonma.gclocks.core.geometry.positiveDegrees
+import kotlin.jvm.JvmInline
 import kotlin.math.min
 
 @Serializable(with = ColorAsStringSerializer::class)

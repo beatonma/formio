@@ -19,7 +19,7 @@ import org.beatonma.gclocks.app.serialize
 import org.beatonma.gclocks.app.settings.AppSettings
 import org.beatonma.gclocks.app.settings.DefaultAppSettings
 import org.beatonma.gclocks.app.settings.DisplayContext
-import org.beatonma.gclocks.app.settings.settingsRepository
+import org.beatonma.gclocks.app.settingsRepository
 import org.beatonma.gclocks.core.util.debug
 
 

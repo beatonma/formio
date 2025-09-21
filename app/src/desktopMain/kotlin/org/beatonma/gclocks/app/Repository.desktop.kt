@@ -1,6 +1,6 @@
-@file:JvmName("DataStoreJvm")
+@file:JvmName("RepositoryJvm")
 
-package org.beatonma.gclocks.app.settings
+package org.beatonma.gclocks.app
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences

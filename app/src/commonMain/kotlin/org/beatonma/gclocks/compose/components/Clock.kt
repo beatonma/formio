@@ -28,6 +28,7 @@ fun <Opts : Options<*>> Clock(
     ConstrainedCanvas(animator, modifier) {
         frameDeltaMillis
         animator.tick(getTickTime())
+
         canvasHost.withScope(this) { canvas ->
             animator.render(canvas)
         }

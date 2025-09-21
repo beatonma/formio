@@ -47,10 +47,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.ComposePath
-import org.beatonma.gclocks.compose.components.GlyphPreview
 import org.beatonma.gclocks.compose.Platform
+import org.beatonma.gclocks.compose.components.Clock
+import org.beatonma.gclocks.compose.components.GlyphPreview
 import org.beatonma.gclocks.compose.platform
 import org.beatonma.gclocks.compose.plus
 import org.beatonma.gclocks.core.ClockGlyph
@@ -183,7 +183,7 @@ fun DebugApp() {
                     Text(
                         when (animationPosition) {
                             null -> ""
-                            else -> "%.2f".format(animationPosition)
+                            else -> "$animationPosition".slice(0..3)
                         }
                     )
                 }

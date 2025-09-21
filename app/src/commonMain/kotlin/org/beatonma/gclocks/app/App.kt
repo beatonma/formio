@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.waterfall
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -121,6 +122,12 @@ fun NavigationSuiteApp(
     onSave: () -> Unit,
     appAdapter: AppAdapter?,
 ) {
+    if (Screens.entries.size <= 1) {
+        return AppTheme {
+            ClockSettingsScaffold(appSettings, onEditSettings, onSave, appAdapter)
+        }
+    }
+
     val currentScreen =
         Screens.entries.find { it.displayContext == appSettings.state.context }
             ?: Screens.entries.first()
@@ -211,7 +218,7 @@ private fun ClockSettingsScaffold(
                         },
                         richSettings ?: return@Column Loading(),
                         gridState = gridState,
-                        contentPadding = /*contentPadding +*/ VerticalBottomContentPadding,
+                        contentPadding = VerticalBottomContentPadding,
                     )
                 }
             }
@@ -234,7 +241,7 @@ private fun SettingsGrid(
 
     LazyVerticalStaggeredGrid(
         StaggeredGridCells.Adaptive(minSize = 350.dp),
-        modifier,
+        modifier.widthIn(max = 800.dp),
         gridState,
         contentPadding = contentPadding,
         verticalItemSpacing = 0.dp,

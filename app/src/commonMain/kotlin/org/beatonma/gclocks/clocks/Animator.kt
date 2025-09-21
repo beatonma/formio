@@ -54,7 +54,7 @@ fun createAnimatorFromOptions(
         )
 
         else -> throw IllegalStateException(
-            "Unhandled Option type: ${options.javaClass.simpleName}"
+            "Unhandled Option type: ${options::class.simpleName}"
         )
     }
 }

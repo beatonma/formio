@@ -151,7 +151,7 @@ internal enum class Io16GlyphPath {
                         "${glyphPath.name}: Invalid transition: Command length ${glyphPath.start.commands.size} != ${glyphPath.end.commands.size}"
                     }
                     glyphPath.start.commands.zip(glyphPath.end.commands).map { (a, b) ->
-                        check(a::class.java == b::class.java) {
+                        check(a::class == b::class) {
                             "${glyphPath.name}: Incompatible commands: ${a::class} != ${b::class}"
                         }
                     }

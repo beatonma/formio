@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinxSerialization)
@@ -36,14 +38,13 @@ val generateBuildConfig by tasks.registering(Sync::class) {
 
 
 kotlin {
-    jvm {
-
-    }
-    sourceSets.commonTest.dependencies {
-        implementation(libs.kotlin.test)
-        implementation(project(":test"))
-    }
     jvm {}
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        browser {}
+    }
+
     sourceSets {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -53,6 +54,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(libs.androidx.annotation)
+                implementation(libs.kotlinx.datetime)
                 implementation(libs.kotlinx.serialization.json)
             }
             kotlin.srcDir(generatedSrcDir)
@@ -61,5 +63,8 @@ kotlin {
 }
 
 tasks.named("compileKotlinJvm").configure {
+    dependsOn(generateBuildConfig)
+}
+tasks.named("compileKotlinWasmJs").configure {
     dependsOn(generateBuildConfig)
 }

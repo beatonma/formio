@@ -6,6 +6,4 @@ import org.beatonma.gclocks.core.options.Options
 actual fun <O : Options<*>> buildSettingsViewModel(
     initial: ContextClockOptions<O>,
     onEditOptions: suspend (ContextClockOptions<O>) -> Unit,
-): SettingsViewModel<O> {
-    return buildDefaultSettingsViewModel(initial, onEditOptions)
-}
+): SettingsViewModel<O> = buildDefaultSettingsViewModel(initial, onEditOptions)

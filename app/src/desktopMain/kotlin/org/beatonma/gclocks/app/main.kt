@@ -9,7 +9,6 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import androidx.lifecycle.viewmodel.compose.viewModel
-import org.beatonma.gclocks.app.settings.createDataStore
 
 fun main() = application {
     val windowState = rememberWindowState(
