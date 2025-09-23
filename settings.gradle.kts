@@ -34,8 +34,8 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-include(":core")
 include(":test")
+include(":core")
 include(":clocks:form")
 include(":clocks:io16")
 include(":clocks:io18")

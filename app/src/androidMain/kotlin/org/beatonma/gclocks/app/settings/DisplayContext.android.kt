@@ -23,19 +23,24 @@ actual enum class DisplayContext {
 
     @Serializable
     actual sealed interface Options {
+        actual sealed interface WithBackground : Options {
+            actual val backgroundColor: Color
+            actual val position: RectF
+        }
+
         @Serializable
         object Widget : Options
 
         @Serializable
         data class Wallpaper(
-            val backgroundColor: Color = Color(0xff222222),
-            val position: RectF = DefaultPosition,
-        ) : Options
+            override val backgroundColor: Color = Color(0xff222222),
+            override val position: RectF = DefaultPosition,
+        ) : WithBackground
 
         @Serializable
         data class Screensaver(
-            val backgroundColor: Color = Color(0xff222222),
-            val position: RectF = DefaultPosition,
-        ) : Options
+            override val backgroundColor: Color = Color(0xff222222),
+            override val position: RectF = DefaultPosition,
+        ) : WithBackground
     }
 }

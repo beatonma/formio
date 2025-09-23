@@ -10,11 +10,13 @@ actual fun FullScreenOverlay(
     onDismiss: () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    Dialog(
-        onDismiss,
-        DialogProperties(
-            usePlatformDefaultWidth = false,
-        ),
-        content
-    )
+    if (isOpen) {
+        Dialog(
+            onDismiss,
+            DialogProperties(
+                usePlatformDefaultWidth = false,
+            ),
+            content
+        )
+    }
 }

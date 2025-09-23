@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <resources>
+    <string name="app_name">gclocks</string>
+
     <string name="ui_show_more">Show more</string>
     <string name="ui_show_less">Show less</string>
-    <string name="ui_drag_handle_resize">Drag to resize</string>
-    <string name="ui_save_changes">Save changes</string>
+
     <string name="ui_align_vertical_center">Center vertically</string>
     <string name="ui_align_horizontal_center">Center horizontally</string>
     <string name="ui_align_reset">Reset size and position</string>
+    <string name="ui_drag_handle_resize">Drag to resize</string>
+    <string name="ui_save_changes">Save changes</string>
+    <string name="ui_fullscreen_open">Expand to fullscreen</string>
+    <string name="ui_fullscreen_close">Exit fullscreen</string>
 
     <string name="ui_choose_clock_style">Clock style</string>
 </resources>

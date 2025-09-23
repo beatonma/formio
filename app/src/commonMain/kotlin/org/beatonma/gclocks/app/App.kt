@@ -1,12 +1,17 @@
 package org.beatonma.gclocks.app
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,39 +26,64 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.window.core.layout.WindowWidthSizeClass
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.ui_choose_clock_style
+import gclocks_multiplatform.app.generated.resources.ui_fullscreen_close
+import gclocks_multiplatform.app.generated.resources.ui_fullscreen_open
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.beatonma.gclocks.app.settings.AppSettings
 import org.beatonma.gclocks.app.settings.ContextClockOptions
 import org.beatonma.gclocks.app.settings.DisplayContext
-import org.beatonma.gclocks.app.settings.clocks.SettingKey
-import org.beatonma.gclocks.app.theme.AppTheme
+import org.beatonma.gclocks.app.theme.rememberContentColor
+import org.beatonma.gclocks.compose.AppIcon
 import org.beatonma.gclocks.compose.Loading
 import org.beatonma.gclocks.compose.VerticalBottomContentPadding
+import org.beatonma.gclocks.compose.animation.EnterFade
+import org.beatonma.gclocks.compose.animation.EnterImmediate
+import org.beatonma.gclocks.compose.animation.EnterVertical
+import org.beatonma.gclocks.compose.animation.ExitFade
 import org.beatonma.gclocks.compose.components.ButtonGroup
 import org.beatonma.gclocks.compose.components.Clock
-import org.beatonma.gclocks.compose.components.settings.RichSetting
+import org.beatonma.gclocks.compose.components.ClockLayout
+import org.beatonma.gclocks.compose.components.IconToolbar
 import org.beatonma.gclocks.compose.components.settings.RichSettings
 import org.beatonma.gclocks.compose.components.settings.components.SettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
@@ -89,22 +119,84 @@ data class ClockPreview(
 
 val LocalClockPreview: ProvidableCompositionLocal<ClockPreview?> = compositionLocalOf { null }
 
-
 data class AppAdapter(
     val snackbarHostState: SnackbarHostState? = null,
     val onClickPreview: ((DisplayContext) -> Unit)? = null,
+    val toolbar: (@Composable RowScope.(DisplayContext) -> Unit)? = null,
 )
 
 
 @Composable
 fun App(
     viewModel: AppViewModel,
-    appAdapter: AppAdapter? = null,
+    snackbarHostState: SnackbarHostState? = null,
+    toolbar: @Composable (RowScope.(DisplayContext) -> Unit)? = null,
 ) {
-    val settings by viewModel.appSettings.collectAsState()
+    var isClockFullscreen by rememberSaveable { mutableStateOf(false) }
+    val _settings by viewModel.appSettings.collectAsState()
+    val settings = _settings ?: return Loading()
+    val options = settings.options
 
+    if (options.display !is DisplayContext.Options.WithBackground) {
+        return App(
+            settings,
+            viewModel,
+            AppAdapter(
+                snackbarHostState = snackbarHostState,
+                onClickPreview = null,
+                toolbar = toolbar
+            )
+        )
+    }
+
+    @OptIn(ExperimentalComposeUiApi::class)
+    BackHandler(enabled = isClockFullscreen) {
+        isClockFullscreen = false
+    }
+
+    AnimatedVisibility(
+        !isClockFullscreen,
+        enter = EnterImmediate,
+        exit = fadeOut(tween(delayMillis = 100))
+    ) {
+        App(
+            settings,
+            viewModel,
+            AppAdapter(
+                snackbarHostState = snackbarHostState,
+                onClickPreview = when (toolbar) {
+                    null -> null
+                    else -> {
+                        { isClockFullscreen = true }
+                    }
+                },
+                toolbar = toolbar ?: {
+                    IconButton({ isClockFullscreen = true }) {
+                        Icon(AppIcon.FullscreenOpen, stringResource(Res.string.ui_fullscreen_open))
+                    }
+                }
+            )
+        )
+    }
+
+    AnimatedVisibility(
+        isClockFullscreen,
+        enter = EnterVertical,
+        exit = ExitFade
+    ) {
+        FullScreenClock(options, { isClockFullscreen = false })
+    }
+}
+
+
+@Composable
+private fun App(
+    settings: AppSettings,
+    viewModel: AppViewModel,
+    appAdapter: AppAdapter?,
+) {
     NavigationSuiteApp(
-        settings ?: return Loading(),
+        settings,
         onEditSettings = {
             viewModel.updateSettingsWithoutSave(it)
         },
@@ -115,40 +207,42 @@ fun App(
     )
 }
 
+
 @Composable
-fun NavigationSuiteApp(
+private fun NavigationSuiteApp(
     appSettings: AppSettings,
     onEditSettings: (AppSettings) -> Unit,
     onSave: () -> Unit,
     appAdapter: AppAdapter?,
 ) {
     if (Screens.entries.size <= 1) {
-        return AppTheme {
-            ClockSettingsScaffold(appSettings, onEditSettings, onSave, appAdapter)
-        }
+        return ClockSettingsScaffold(appSettings, onEditSettings, onSave, appAdapter)
     }
 
-    val currentScreen =
-        Screens.entries.find { it.displayContext == appSettings.state.context }
-            ?: Screens.entries.first()
+    val currentScreen = Screens.entries.find { it.displayContext == appSettings.state.context }
+        ?: Screens.entries.first()
 
-    AppTheme {
-        NavigationSuiteScaffold(
-            navigationSuiteItems = {
-                Screens.entries.forEach {
-                    item(
-                        icon = { Icon(it.icon, it.contentDescription.resolve()) },
-                        label = { Text(it.label.resolve()) },
-                        selected = it == currentScreen,
-                        onClick = {
-                            onEditSettings(appSettings.copy(state = appSettings.state.copy(context = it.displayContext)))
-                        },
-                    )
-                }
+    NavigationSuiteScaffold(
+        navigationSuiteItems = {
+            Screens.entries.forEach {
+                item(
+                    icon = { Icon(it.icon, it.contentDescription.resolve()) },
+                    label = { Text(it.label.resolve()) },
+                    selected = it == currentScreen,
+                    onClick = {
+                        onEditSettings(
+                            appSettings.copy(
+                                state = appSettings.state.copy(
+                                    context = it.displayContext
+                                )
+                            )
+                        )
+                    },
+                )
             }
-        ) {
-            ClockSettingsScaffold(appSettings, onEditSettings, onSave, appAdapter)
         }
+    ) {
+        ClockSettingsScaffold(appSettings, onEditSettings, onSave, appAdapter)
     }
 }
 
@@ -166,9 +260,18 @@ private fun ClockSettingsScaffold(
         onEditOptions = { onEditSettings(appSettings.copyWithOptions(it.clock, it.display)) },
         key = "${appState.context}_${appState.clock}",
     )
+    val gridState = rememberLazyStaggeredGridState()
     val options by clockViewModel.contextOptions.collectAsState()
     val richSettings by clockViewModel.richSettings.collectAsState()
-    val gridState = rememberLazyStaggeredGridState()
+
+    val backgroundColor = when (options.display) {
+        is DisplayContext.Options.WithBackground -> (options.display as DisplayContext.Options.WithBackground).backgroundColor.toCompose()
+        else -> null
+    } ?: colorScheme.surface
+    val foregroundColor = rememberContentColor(backgroundColor)
+
+    val isFullWidth =
+        currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT
 
     LaunchedEffect(appState) {
         gridState.scrollToItem(0)
@@ -182,31 +285,38 @@ private fun ClockSettingsScaffold(
             }
         },
     ) { contentPadding ->
-        val backgroundColor =
-            richSettings?.colors?.firstOrNull { it is RichSetting<*> && it.key == SettingKey.backgroundColor }
-                ?.let { it as? RichSetting.Color }?.value?.toCompose() ?: colorScheme.surface
-
-        CompositionLocalProvider(
-            LocalClockPreview provides ClockPreview(
-                options.clock,
-                backgroundColor
-            )
-        ) {
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Clock(
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CompositionLocalProvider(LocalContentColor provides foregroundColor) {
+                    ClockPreview(
                         options.clock,
+                        appAdapter?.toolbar?.let { toolbar -> { toolbar(appState.context) } },
                         Modifier
-                            .sizeIn(maxWidth = 600.dp, maxHeight = 300.dp)
+                            .clip(
+                                when (isFullWidth) {
+                                    true -> RectangleShape
+                                    false -> shapes.medium
+                                }
+                            )
+                            .background(backgroundColor)
+                            .animateContentSize(),
+                        clockModifier = Modifier
                             .onlyIf(appAdapter?.onClickPreview) { onClick ->
                                 clickable(onClick = { onClick(appState.context) })
                             }
-                            .background(backgroundColor)
+                            .sizeIn(maxWidth = 600.dp, maxHeight = 300.dp)
                             .padding(contentPadding)
                             .padding(64.dp)
-                            .animateContentSize()
+                            .border(1.dp, foregroundColor.copy(alpha = 0.1f)),
                     )
+                }
 
+                CompositionLocalProvider(
+                    LocalClockPreview provides ClockPreview(
+                        options.clock,
+                        backgroundColor
+                    )
+                ) {
                     SettingsGrid(
                         appState.clock,
                         {
@@ -216,12 +326,28 @@ private fun ClockSettingsScaffold(
                                 )
                             )
                         },
-                        richSettings ?: return@Column Loading(),
+                        richSettings ?: return@CompositionLocalProvider Loading(),
                         gridState = gridState,
                         contentPadding = VerticalBottomContentPadding,
                     )
                 }
             }
+        }
+    }
+}
+
+
+@Composable
+private fun ClockPreview(
+    options: Options<*>,
+    toolbar: @Composable (RowScope.() -> Unit)?,
+    modifier: Modifier,
+    clockModifier: Modifier,
+) {
+    Box(modifier) {
+        Clock(options, clockModifier)
+        toolbar?.let { toolbar ->
+            IconToolbar(Modifier.align(Alignment.BottomEnd), content = toolbar)
         }
     }
 }
@@ -282,6 +408,59 @@ private fun ClockSelector(
             onSelect,
             AppSettings.Clock.entries,
         )
+    }
+}
+
+@Composable
+private fun FullScreenClock(
+    options: ContextClockOptions<*>,
+    onClose: () -> Unit,
+) {
+    var isOverlayVisible by remember { mutableStateOf(true) }
+    val scope = rememberCoroutineScope()
+    var visibilityTimeoutJob: Job? by remember { mutableStateOf(null) }
+    val systemBarsController = LocalSystemBars.current
+
+    DisposableEffect(Unit) {
+        systemBarsController?.onRequestHideSystemBars()
+        onDispose { systemBarsController?.onRequestShowSystemBars() }
+    }
+
+    Box(
+        Modifier.pointerInput(Unit) {
+            while (true) {
+                val event = awaitPointerEventScope { awaitPointerEvent() }
+                isOverlayVisible = true
+
+                visibilityTimeoutJob?.cancel()
+                visibilityTimeoutJob = scope.launch {
+                    delay(1000L)
+                    isOverlayVisible = false
+                }
+            }
+        }
+    ) {
+        ClockLayout(
+            options.display as DisplayContext.Options.WithBackground,
+        ) {
+            Clock(options.clock)
+        }
+
+        AnimatedVisibility(
+            isOverlayVisible,
+            Modifier.align(Alignment.BottomEnd).safeDrawingPadding(),
+            enter = EnterFade,
+            exit = ExitFade
+        ) {
+            IconToolbar(Modifier.padding(8.dp).clip(shapes.small).background(colorScheme.scrim)) {
+                IconButton(onClose) {
+                    Icon(
+                        AppIcon.FullscreenClose,
+                        stringResource(Res.string.ui_fullscreen_close)
+                    )
+                }
+            }
+        }
     }
 }
 

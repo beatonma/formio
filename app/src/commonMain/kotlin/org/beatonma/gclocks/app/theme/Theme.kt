@@ -41,9 +41,13 @@ fun AppTheme(
 @Composable
 fun getColorScheme(theme: Theme): ColorScheme {
     return when (theme) {
-        Theme.Light -> lightColorScheme()
+        Theme.Light -> lightColorScheme(
+            scrim = Color(0, 0, 0, 80),
+        )
+
         Theme.Dark -> darkColorScheme(
-            background = Color(red = 9, green = 7, blue = 13)
+            background = Color(red = 9, green = 7, blue = 13),
+            scrim = Color(0, 0, 0, 80)
         )
 
         Theme.System -> getColorScheme(
@@ -54,8 +58,8 @@ fun getColorScheme(theme: Theme): ColorScheme {
 }
 
 @Composable
-fun rememberContentColor(color: Color, alpha: Float = 0.72f): Color {
-    return remember(color) { mutableStateOf(color.getForegroundColor(alpha)) }.value
+fun rememberContentColor(backgroundColor: Color, alpha: Float = 0.72f): Color {
+    return remember(backgroundColor) { mutableStateOf(backgroundColor.getForegroundColor(alpha)) }.value
 }
 
 fun Color.getForegroundColor(alpha: Float = 0.72f): Color = when {

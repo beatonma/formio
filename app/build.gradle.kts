@@ -77,6 +77,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.ui.backhandler)
             implementation(project(":core"))
             implementation(project(":clocks:form"))
             implementation(project(":clocks:io16"))

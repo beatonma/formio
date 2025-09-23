@@ -13,6 +13,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 
 private const val Scale: Float = 0.95f
 private const val Duration: Int = 300
@@ -20,6 +22,10 @@ private const val DurationShort: Int = (Duration * 1f / 3f).toInt()
 private const val DurationHalf: Int = (Duration * 1f / 2f).toInt()
 private const val DurationMedium: Int = (Duration * 2f / 3f).toInt()
 private val EaseInOut = CubicBezierEasing(0.4f, 0f, 0.8f, 1f)
+
+val EnterImmediate: EnterTransition = slideInVertically(animationSpec = tween(0)) { 0 }
+val ExitImmediate: ExitTransition = slideOutVertically(animationSpec = tween(0)) { 0 }
+
 
 val EnterFade: EnterTransition = fadeIn(
     tween(

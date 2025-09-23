@@ -1,11 +1,14 @@
 package org.beatonma.gclocks.app.settings
 
 import kotlinx.serialization.Serializable
+import org.beatonma.gclocks.core.geometry.RectF
+import org.beatonma.gclocks.core.graphics.Color
+
 
 actual enum class DisplayContext {
     Default {
-        override fun defaultOptions(): Options.Empty {
-            return Options.Empty
+        override fun defaultOptions(): DisplayContextDefaults.WithBackground {
+            return DisplayContextDefaults.WithBackground()
         }
     },
     ;
@@ -14,7 +17,9 @@ actual enum class DisplayContext {
 
     @Serializable
     actual sealed interface Options {
-        @Serializable
-        object Empty : Options
+        actual sealed interface WithBackground : Options {
+            actual val backgroundColor: Color
+            actual val position: RectF
+        }
     }
 }

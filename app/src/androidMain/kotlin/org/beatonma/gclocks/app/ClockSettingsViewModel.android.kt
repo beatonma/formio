@@ -159,6 +159,10 @@ private fun <O : Options<*>> SettingsViewModel<O>.displaySettings(
                 ) + settings.layout,
             )
         }
+
+        else -> {
+            throw IllegalStateException("Unhandled displayOptions: ${displayOptions::class}")
+        }
     }
 }
 
@@ -173,7 +177,6 @@ private fun filterWidgetSettings(setting: RichSetting<*>): RichSetting<*>? {
             filterSingleSelect(setting) { it != Layout.Wrapped }
         }
 
-//        CommonKeys.clockVerticalAlignment, // Only has effect when seconds visible.
         SettingKey.clockTimeFormatShowSeconds,
         SettingKey.clockSecondsScale,
             -> {

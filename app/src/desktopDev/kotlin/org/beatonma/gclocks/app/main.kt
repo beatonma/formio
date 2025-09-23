@@ -7,6 +7,9 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import gclocks_multiplatform.app.generated.resources.Res
+import gclocks_multiplatform.app.generated.resources.app_name
+import org.jetbrains.compose.resources.stringResource
 
 fun main() = application {
     val windowState = rememberWindowState(
@@ -17,7 +20,7 @@ fun main() = application {
     Window(
         state = windowState,
         onCloseRequest = ::exitApplication,
-        title = "gclocks-multiplatform",
+        title = stringResource(Res.string.app_name),
     ) {
         DebugApp()
     }

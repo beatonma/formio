@@ -11,11 +11,15 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.beatonma.gclocks.app.settings.ContextClockOptions
 import org.beatonma.gclocks.app.settings.DisplayContext
+import org.beatonma.gclocks.app.settings.DisplayContextDefaults
 import org.beatonma.gclocks.app.settings.clocks.FormSettingsViewModel
 import org.beatonma.gclocks.app.settings.clocks.Io16SettingsViewModel
 import org.beatonma.gclocks.app.settings.clocks.Io18SettingsViewModel
 import org.beatonma.gclocks.app.settings.clocks.SettingKey
+import org.beatonma.gclocks.app.settings.clocks.chooseBackgroundColor
+import org.beatonma.gclocks.app.settings.clocks.chooseClockPosition
 import org.beatonma.gclocks.compose.components.settings.RichSettings
+import org.beatonma.gclocks.compose.components.settings.insertBefore
 import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.form.FormOptions
@@ -156,7 +160,29 @@ internal fun <O : Options<*>> buildDefaultSettingsViewModel(
                     settings: RichSettings,
                     displayOptions: DisplayContext.Options,
                 ): RichSettings {
-                    return settings
+                    return when (displayOptions) {
+                        is DisplayContextDefaults.WithBackground -> {
+                            settings.copy(
+                                colors = settings.colors.insertBefore(
+                                    SettingKey.clockColors,
+                                    chooseBackgroundColor(
+                                        value = displayOptions.backgroundColor,
+                                        onUpdate = { update(displayOptions.copy(backgroundColor = it)) },
+                                    ),
+                                ),
+                                layout = listOf(
+                                    chooseClockPosition(
+                                        value = displayOptions.position,
+                                        onUpdate = { update(displayOptions.copy(position = it)) },
+                                    ),
+                                ) + settings.layout,
+                            )
+                        }
+
+                        else -> {
+                            throw IllegalStateException("Unhandled DisplayContext.Options: ${displayOptions::class}")
+                        }
+                    }
                 }
             }
         }

@@ -10,10 +10,4 @@ actual enum class Screens : Screen {
         override val label = LocalizedString(literal = displayContext.name)
         override val contentDescription = LocalizedString(literal = displayContext.name)
     },
-    Alternative {
-        override val displayContext = DisplayContext.Alternative
-        override val icon = AppIcon.Checkmark
-        override val label = LocalizedString(literal = displayContext.name)
-        override val contentDescription = LocalizedString(literal = displayContext.name)
-    },
 }
