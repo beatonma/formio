@@ -1,5 +1,7 @@
 package org.beatonma.gclocks.compose.animation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.CubicBezierEasing
@@ -15,6 +17,8 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 
 private const val Scale: Float = 0.95f
 private const val Duration: Int = 300
@@ -95,3 +99,24 @@ val ExitScale: ExitTransition = fadeOut(
     tween(durationMillis = Duration, easing = LinearEasing),
     targetScale = Scale,
 )
+
+
+@Composable
+fun AnimatedFade(
+    visible: Boolean,
+    modifier: Modifier = Modifier,
+    label: String = "AnimatedFade",
+    content: @Composable AnimatedVisibilityScope.() -> Unit
+) {
+    AnimatedVisibility(visible, modifier, EnterFade, ExitFade, label, content)
+}
+
+@Composable
+fun AnimatedVertical(
+    visible: Boolean,
+    modifier: Modifier = Modifier,
+    label: String = "AnimatedVertical",
+    content: @Composable AnimatedVisibilityScope.() -> Unit
+) {
+    AnimatedVisibility(visible, modifier, EnterVertical, ExitVertical, label, content)
+}

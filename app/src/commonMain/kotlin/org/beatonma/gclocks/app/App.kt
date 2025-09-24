@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.window.core.layout.WindowWidthSizeClass
 import gclocks_multiplatform.app.generated.resources.Res
@@ -44,10 +45,7 @@ import org.beatonma.gclocks.app.settings.ContextClockOptions
 import org.beatonma.gclocks.app.settings.DisplayContext
 import org.beatonma.gclocks.app.theme.rememberContentColor
 import org.beatonma.gclocks.compose.*
-import org.beatonma.gclocks.compose.animation.EnterFade
-import org.beatonma.gclocks.compose.animation.EnterImmediate
-import org.beatonma.gclocks.compose.animation.EnterVertical
-import org.beatonma.gclocks.compose.animation.ExitFade
+import org.beatonma.gclocks.compose.animation.*
 import org.beatonma.gclocks.compose.components.ButtonGroup
 import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.components.ClockLayout
@@ -99,8 +97,7 @@ fun App(
     toolbar: @Composable (RowScope.(DisplayContext) -> Unit)? = null,
 ) {
     var isClockFullscreen by rememberSaveable { mutableStateOf(false) }
-    val _settings by viewModel.appSettings.collectAsState()
-    val settings = _settings ?: return Loading()
+    val settings by viewModel.appSettings.collectAsStateWithLifecycle()
     val options = settings.contextOptions
 
     if (options.displayOptions !is DisplayContext.Options.WithBackground) {
@@ -164,43 +161,37 @@ private fun App(
     viewModel: AppViewModel,
     appAdapter: AppAdapter?,
 ) {
-    NavigationSuiteApp(
-        settings,
-        setClock = viewModel::setClock,
-        updateClockOptions = viewModel::setClockOptions,
-        updateDisplayOptions = viewModel::setDisplayOptions,
-        setDisplayContext = viewModel::setDisplayContext,
-        onSave = viewModel::save,
-        appAdapter = appAdapter,
-    )
+    val hasUnsavedChanges by viewModel.hasUnsavedChanges.collectAsStateWithLifecycle()
+    val content: @Composable () -> Unit = {
+        ClockSettingsScaffold(
+            settings,
+            setClock = viewModel::setClock,
+            updateClockOptions = viewModel::setClockOptions,
+            updateDisplayOptions = viewModel::setDisplayOptions,
+            hasUnsavedChanges = hasUnsavedChanges,
+            onSave = viewModel::save,
+            appAdapter = appAdapter,
+        )
+    }
+
+    if (Screens.entries.size <= 1) {
+        content()
+    } else {
+        NavigationSuiteApp(
+            settings,
+            setDisplayContext = viewModel::setDisplayContext,
+            content = content,
+        )
+    }
 }
 
 
 @Composable
 private fun NavigationSuiteApp(
     appSettings: AppSettings,
-    setClock: (AppSettings.Clock) -> Unit,
     setDisplayContext: (DisplayContext) -> Unit,
-    updateClockOptions: (Options<*>) -> Unit,
-    updateDisplayOptions: (DisplayContext.Options) -> Unit,
-    onSave: () -> Unit,
-    appAdapter: AppAdapter?,
+    content: @Composable () -> Unit,
 ) {
-    val content: @Composable () -> Unit = {
-        ClockSettingsScaffold(
-            appSettings,
-            setClock,
-            updateClockOptions,
-            updateDisplayOptions,
-            onSave,
-            appAdapter
-        )
-    }
-
-    if (Screens.entries.size <= 1) {
-        return content()
-    }
-
     val currentScreen =
         Screens.entries.find { it.displayContext == appSettings.state.displayContext }
             ?: Screens.entries.first()
@@ -228,6 +219,7 @@ private fun ClockSettingsScaffold(
     setClock: (AppSettings.Clock) -> Unit,
     updateClockOptions: (Options<*>) -> Unit,
     updateDisplayOptions: (DisplayContext.Options) -> Unit,
+    hasUnsavedChanges: Boolean,
     onSave: () -> Unit,
     appAdapter: AppAdapter?,
 ) {
@@ -239,17 +231,17 @@ private fun ClockSettingsScaffold(
         key = "${appState.displayContext}_${appSettings.contextSettings.clock}",
     )
     val gridState = rememberLazyStaggeredGridState()
-    val options by clockViewModel.contextOptions.collectAsState()
-    val richSettings by clockViewModel.richSettings.collectAsState()
+    val options by clockViewModel.contextOptions.collectAsStateWithLifecycle()
+    val richSettings by clockViewModel.richSettings.collectAsStateWithLifecycle()
 
     val backgroundColor = resolveClockBackgroundColor(options.displayOptions)
     val foregroundColor = rememberContentColor(backgroundColor)
 
-    val isFullWidth =
-        currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT
-    val clockPreviewShape = when (isFullWidth) {
-        true -> RectangleShape
-        false -> shapes.medium
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+
+    val clockPreviewShape = when (windowSizeClass.windowWidthSizeClass) {
+        WindowWidthSizeClass.COMPACT -> RectangleShape
+        else -> shapes.medium
     }
 
     LaunchedEffect(appState) {
@@ -259,8 +251,10 @@ private fun ClockSettingsScaffold(
     Scaffold(
         snackbarHost = { appAdapter?.snackbarHostState?.let { SnackbarHost(it) } },
         floatingActionButton = {
-            ExtendedFloatingActionButton(onSave, Modifier.safeDrawingPadding()) {
-                Text("Save changes")
+            AnimatedFade(hasUnsavedChanges) {
+                ExtendedFloatingActionButton(onSave, Modifier.safeDrawingPadding()) {
+                    Text("Save changes")
+                }
             }
         },
     ) { contentPadding ->

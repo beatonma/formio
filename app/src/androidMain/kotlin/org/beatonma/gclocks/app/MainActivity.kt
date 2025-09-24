@@ -9,23 +9,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.core.app.AlarmManagerCompat.canScheduleExactAlarms
 import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
@@ -67,7 +57,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val viewModel: AppViewModel = viewModel(factory = factory)
-            val state by viewModel.currentState.collectAsState(null)
+            val state by viewModel.currentState.collectAsStateWithLifecycle(null)
             val snackbarHostState = remember { SnackbarHostState() }
             val systemBarsController = rememberSystemBarsController()
 
@@ -129,8 +119,7 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun rememberSystemBarsController(): SystemBarsController {
-        val systemUiController =
-            remember { WindowCompat.getInsetsController(window, window.decorView) }
+        val systemUiController = remember { WindowCompat.getInsetsController(window, window.decorView) }
         val systemBarsController = remember {
             SystemBarsController(
                 onRequestHideSystemBars = { systemUiController.hide(WindowInsetsCompat.Type.systemBars()) },
@@ -138,16 +127,6 @@ class MainActivity : ComponentActivity() {
             )
         }
         return systemBarsController
-    }
-
-    @Composable
-    private fun rememberAppAdapter(snackbarHostState: SnackbarHostState): AppAdapter {
-        return remember {
-            AppAdapter(
-                snackbarHostState = snackbarHostState,
-                toolbar = { ClockToolbar(it) }
-            )
-        }
     }
 
     @Composable
