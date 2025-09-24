@@ -26,6 +26,16 @@ fun PaddingValues.vertical(): PaddingValues = PaddingValues(
 )
 
 @Composable
+fun PaddingValues.top(): PaddingValues = PaddingValues(
+    top = calculateTopPadding(),
+)
+
+@Composable
+fun PaddingValues.bottom(): PaddingValues = PaddingValues(
+    bottom = calculateBottomPadding(),
+)
+
+@Composable
 fun PaddingValues.horizontal(): PaddingValues = run {
     val direction = LocalLayoutDirection.current
     PaddingValues(

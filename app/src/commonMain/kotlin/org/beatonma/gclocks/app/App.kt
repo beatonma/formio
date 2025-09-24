@@ -7,18 +7,49 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.waterfall
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
-import androidx.compose.material3.*
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -32,7 +63,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.window.core.layout.WindowWidthSizeClass
+import androidx.window.core.layout.WindowSizeClass
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.ui_choose_clock_style
 import gclocks_multiplatform.app.generated.resources.ui_fullscreen_close
@@ -44,8 +75,14 @@ import org.beatonma.gclocks.app.settings.AppSettings
 import org.beatonma.gclocks.app.settings.ContextClockOptions
 import org.beatonma.gclocks.app.settings.DisplayContext
 import org.beatonma.gclocks.app.theme.rememberContentColor
-import org.beatonma.gclocks.compose.*
-import org.beatonma.gclocks.compose.animation.*
+import org.beatonma.gclocks.compose.AppIcon
+import org.beatonma.gclocks.compose.Loading
+import org.beatonma.gclocks.compose.VerticalBottomContentPadding
+import org.beatonma.gclocks.compose.animation.AnimatedFade
+import org.beatonma.gclocks.compose.animation.EnterFade
+import org.beatonma.gclocks.compose.animation.EnterImmediate
+import org.beatonma.gclocks.compose.animation.EnterVertical
+import org.beatonma.gclocks.compose.animation.ExitFade
 import org.beatonma.gclocks.compose.components.ButtonGroup
 import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.components.ClockLayout
@@ -53,6 +90,11 @@ import org.beatonma.gclocks.compose.components.IconToolbar
 import org.beatonma.gclocks.compose.components.settings.RichSettings
 import org.beatonma.gclocks.compose.components.settings.components.SettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
+import org.beatonma.gclocks.compose.horizontal
+import org.beatonma.gclocks.compose.onlyIf
+import org.beatonma.gclocks.compose.plus
+import org.beatonma.gclocks.compose.toCompose
+import org.beatonma.gclocks.compose.top
 import org.beatonma.gclocks.core.options.Options
 import org.jetbrains.compose.resources.stringResource
 
@@ -101,6 +143,7 @@ fun App(
     val options = settings.contextOptions
 
     if (options.displayOptions !is DisplayContext.Options.WithBackground) {
+        // No background options -> disable fullscreen preview.
         return App(
             settings,
             viewModel,
@@ -239,15 +282,37 @@ private fun ClockSettingsScaffold(
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
 
-    val clockPreviewShape = when (windowSizeClass.windowWidthSizeClass) {
-        WindowWidthSizeClass.COMPACT -> RectangleShape
-        else -> shapes.medium
+    val clockPreviewShape =
+        when (windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)) {
+            true -> shapes.medium
+            else -> RectangleShape
+        }
+    val previewAlwaysVisible = windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
+    val clockPreview: @Composable (contentPadding: PaddingValues) -> Unit = { contentPadding ->
+        CompositionLocalProvider(LocalContentColor provides foregroundColor) {
+            ClockPreview(
+                options.clockOptions,
+                appAdapter?.toolbar?.let { toolbar -> { toolbar(appState.displayContext) } },
+                Modifier
+                    .clip(clockPreviewShape)
+                    .background(backgroundColor)
+                    .padding(contentPadding.top())
+                    .consumeWindowInsets(contentPadding.top())
+                    .onlyIf(appAdapter?.onClickPreview) { onClick ->
+                        clickable(onClick = { onClick(appState.displayContext) })
+                    }
+                    .animateContentSize(),
+                clockModifier = Modifier
+                    .sizeIn(maxWidth = 600.dp, maxHeight = 300.dp)
+                    .padding(64.dp)
+                    .border(1.dp, foregroundColor.copy(alpha = 0.1f)),
+            )
+        }
     }
 
     LaunchedEffect(appState) {
         gridState.scrollToItem(0)
     }
-
     Scaffold(
         snackbarHost = { appAdapter?.snackbarHostState?.let { SnackbarHost(it) } },
         floatingActionButton = {
@@ -258,25 +323,13 @@ private fun ClockSettingsScaffold(
             }
         },
     ) { contentPadding ->
-        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+        Box(
+            Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.TopCenter
+        ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                CompositionLocalProvider(LocalContentColor provides foregroundColor) {
-                    ClockPreview(
-                        options.clockOptions,
-                        appAdapter?.toolbar?.let { toolbar -> { toolbar(appState.displayContext) } },
-                        Modifier
-                            .clip(clockPreviewShape)
-                            .background(backgroundColor)
-                            .animateContentSize(),
-                        clockModifier = Modifier
-                            .onlyIf(appAdapter?.onClickPreview) { onClick ->
-                                clickable(onClick = { onClick(appState.displayContext) })
-                            }
-                            .sizeIn(maxWidth = 600.dp, maxHeight = 300.dp)
-                            .padding(contentPadding)
-                            .padding(64.dp)
-                            .border(1.dp, foregroundColor.copy(alpha = 0.1f)),
-                    )
+                if (previewAlwaysVisible) {
+                    clockPreview(contentPadding)
                 }
 
                 CompositionLocalProvider(
@@ -290,7 +343,10 @@ private fun ClockSettingsScaffold(
                         setClock,
                         richSettings ?: return@CompositionLocalProvider Loading(),
                         gridState = gridState,
-                        contentPadding = VerticalBottomContentPadding,
+                        contentPadding = VerticalBottomContentPadding + contentPadding.horizontal(),
+                        clockPreview = if (previewAlwaysVisible) null else {
+                            { clockPreview(contentPadding) }
+                        }
                     )
                 }
             }
@@ -323,6 +379,7 @@ private fun SettingsGrid(
     modifier: Modifier = Modifier,
     gridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     contentPadding: PaddingValues = PaddingValues(),
+    clockPreview: (@Composable () -> Unit)?
 ) {
     val groupModifier = Modifier.padding(vertical = 8.dp)
     val itemModifier = Modifier.horizontalMarginModifier().padding(vertical = 4.dp)
@@ -338,6 +395,12 @@ private fun SettingsGrid(
             Alignment.CenterHorizontally
         )
     ) {
+        if (clockPreview != null) {
+            item(key = "preview", span = StaggeredGridItemSpan.FullLine) {
+                Box(contentAlignment = Alignment.TopCenter) { clockPreview() }
+            }
+        }
+
         item {
             ClockSelector(
                 clock,
