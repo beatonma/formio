@@ -139,10 +139,11 @@ fun App(
     toolbar: @Composable (RowScope.(DisplayContext) -> Unit)? = null,
 ) {
     var isClockFullscreen by rememberSaveable { mutableStateOf(false) }
-    val settings by viewModel.appSettings.collectAsStateWithLifecycle()
-    val options = settings.contextOptions
+    val _settings by viewModel.appSettings.collectAsStateWithLifecycle()
+    val settings = _settings ?: return Loading()
+    val contextOptions = settings.contextOptions
 
-    if (options.displayOptions !is DisplayContext.Options.WithBackground) {
+    if (contextOptions.displayOptions !is DisplayContext.Options.WithBackground) {
         // No background options -> disable fullscreen preview.
         return App(
             settings,
@@ -190,7 +191,7 @@ fun App(
         enter = EnterVertical,
         exit = ExitFade
     ) {
-        FullScreenClock(options, onClose = {
+        FullScreenClock(contextOptions, onClose = {
             @Suppress("AssignedValueIsNeverRead")
             isClockFullscreen = false
         })
