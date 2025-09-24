@@ -9,8 +9,8 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 
 
-actual @Composable
-fun FullScreenOverlay(
+@Composable
+actual fun FullScreenOverlay(
     isOpen: Boolean,
     onDismiss: () -> Unit,
     content: @Composable () -> Unit,

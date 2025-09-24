@@ -12,7 +12,7 @@ import org.beatonma.gclocks.test.shouldbe
 import kotlin.test.Test
 import org.beatonma.gclocks.core.options.Layout as LayoutOption
 
-private val Unbound = MeasureConstraints.Infinity
+private const val Unbound = MeasureConstraints.Infinity
 
 data class LayoutConfig(
     val layout: LayoutOption,
@@ -54,8 +54,13 @@ private val WrappedLayoutConfig = LayoutConfig(
     expectedCenterVerticalY = 75f,
 )
 
+@Suppress("unused")
 class HorizontalLayoutMeasureTest : LayoutMeasureTest(HorizontalLayoutConfig)
+
+@Suppress("unused")
 class VerticalLayoutMeasureTest : LayoutMeasureTest(VerticalLayoutConfig)
+
+@Suppress("unused")
 class WrappedLayoutMeasureTest : LayoutMeasureTest(WrappedLayoutConfig)
 
 

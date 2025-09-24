@@ -43,10 +43,9 @@ abstract class Io16SettingsViewModel(
                     default = 8,
                     max = 64,
                 ),
-                chooseSecondScale(
-                    clockOptions.layout.secondsGlyphScale,
-                    { onUpdateLayout(clockOptions.layout.copy(secondsGlyphScale = it)) }
-                ),
+                chooseSecondScale(clockOptions.layout.secondsGlyphScale) {
+                    onUpdateLayout(clockOptions.layout.copy(secondsGlyphScale = it))
+                },
                 RichSetting.Float(
                     key = StrokeWidthKey,
                     localized = LocalizedString(Res.string.setting_stroke_width),
@@ -74,29 +73,25 @@ private fun buildLayoutSettings(
     layoutOptions: Io16LayoutOptions,
     onUpdate: (Io16LayoutOptions) -> Unit,
 ): List<Setting> = listOf(
-    chooseLayout(layoutOptions.layout, {
+    chooseLayout(layoutOptions.layout) {
         onUpdate(layoutOptions.copy(layout = it))
-    }),
-    chooseHorizontalAlignment(
-        layoutOptions.horizontalAlignment,
-        { onUpdate(layoutOptions.copy(horizontalAlignment = it)) }
-    ),
-    chooseVerticalAlignment(
-        layoutOptions.verticalAlignment,
-        { onUpdate(layoutOptions.copy(verticalAlignment = it)) }
-    ),
+    },
+    chooseHorizontalAlignment(layoutOptions.horizontalAlignment) {
+        onUpdate(layoutOptions.copy(horizontalAlignment = it))
+    },
+    chooseVerticalAlignment(layoutOptions.verticalAlignment) {
+        onUpdate(layoutOptions.copy(verticalAlignment = it))
+    },
 )
 
 private fun buildTimeSettings(
     layoutOptions: Io16LayoutOptions,
     onUpdate: (Io16LayoutOptions) -> Unit,
-): List<Setting> = chooseTimeFormat(
-    layoutOptions.format,
-    { format ->
-        // If seconds are not visible, revert Layout.Wrapped to Layout.Horizontal
-        val layout = if (!format.showSeconds && layoutOptions.layout == Layout.Wrapped) {
-            Layout.Horizontal
-        } else layoutOptions.layout
-        onUpdate(layoutOptions.copy(layout = layout, format = format))
-    },
-)
+): List<Setting> = chooseTimeFormat(layoutOptions.format) { format ->
+    // If seconds are not visible, revert Layout.Wrapped to Layout.Horizontal
+    val layout = if (!format.showSeconds && layoutOptions.layout == Layout.Wrapped) {
+        Layout.Horizontal
+    } else layoutOptions.layout
+
+    onUpdate(layoutOptions.copy(layout = layout, format = format))
+}

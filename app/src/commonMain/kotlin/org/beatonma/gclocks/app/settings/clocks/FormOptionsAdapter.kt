@@ -48,32 +48,28 @@ private fun buildLayoutSettings(
     layoutOptions: FormLayoutOptions,
     onUpdate: (FormLayoutOptions) -> Unit,
 ): List<Setting> = listOf(
-    chooseLayout(layoutOptions.layout, {
+    chooseLayout(layoutOptions.layout) {
         onUpdate(layoutOptions.copy(layout = it))
-    }),
-    chooseHorizontalAlignment(
-        layoutOptions.horizontalAlignment,
-        { onUpdate(layoutOptions.copy(horizontalAlignment = it)) }
-    ),
-    chooseVerticalAlignment(
-        layoutOptions.verticalAlignment,
-        { onUpdate(layoutOptions.copy(verticalAlignment = it)) }
-    ),
+    },
+    chooseHorizontalAlignment(layoutOptions.horizontalAlignment) {
+        onUpdate(layoutOptions.copy(horizontalAlignment = it))
+    },
+    chooseVerticalAlignment(layoutOptions.verticalAlignment) {
+        onUpdate(layoutOptions.copy(verticalAlignment = it))
+    },
 )
 
 private fun buildTimeSettings(
     layoutOptions: FormLayoutOptions,
     onUpdate: (FormLayoutOptions) -> Unit,
-): List<Setting> = chooseTimeFormat(
-    layoutOptions.format,
-    { format ->
-        // If seconds are not visible, revert Layout.Wrapped to Layout.Horizontal
-        val layout = if (!format.showSeconds && layoutOptions.layout == Layout.Wrapped) {
-            Layout.Horizontal
-        } else layoutOptions.layout
-        onUpdate(layoutOptions.copy(layout = layout, format = format))
-    },
-)
+): List<Setting> = chooseTimeFormat(layoutOptions.format) { format ->
+    // If seconds are not visible, revert Layout.Wrapped to Layout.Horizontal
+    val layout = if (!format.showSeconds && layoutOptions.layout == Layout.Wrapped) {
+        Layout.Horizontal
+    } else layoutOptions.layout
+
+    onUpdate(layoutOptions.copy(layout = layout, format = format))
+}
 
 private fun buildSizeSettings(
     layoutOptions: FormLayoutOptions,
@@ -85,8 +81,7 @@ private fun buildSizeSettings(
         default = 8,
         max = 64,
     ),
-    chooseSecondScale(
-        layoutOptions.secondsGlyphScale,
-        { onUpdate(layoutOptions.copy(secondsGlyphScale = it)) }
-    )
+    chooseSecondScale(layoutOptions.secondsGlyphScale) {
+        onUpdate(layoutOptions.copy(secondsGlyphScale = it))
+    }
 )

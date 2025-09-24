@@ -7,48 +7,18 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.waterfall
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.ProvidableCompositionLocal
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -73,9 +43,7 @@ import org.beatonma.gclocks.app.settings.AppSettings
 import org.beatonma.gclocks.app.settings.ContextClockOptions
 import org.beatonma.gclocks.app.settings.DisplayContext
 import org.beatonma.gclocks.app.theme.rememberContentColor
-import org.beatonma.gclocks.compose.AppIcon
-import org.beatonma.gclocks.compose.Loading
-import org.beatonma.gclocks.compose.VerticalBottomContentPadding
+import org.beatonma.gclocks.compose.*
 import org.beatonma.gclocks.compose.animation.EnterFade
 import org.beatonma.gclocks.compose.animation.EnterImmediate
 import org.beatonma.gclocks.compose.animation.EnterVertical
@@ -87,8 +55,6 @@ import org.beatonma.gclocks.compose.components.IconToolbar
 import org.beatonma.gclocks.compose.components.settings.RichSettings
 import org.beatonma.gclocks.compose.components.settings.components.SettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
-import org.beatonma.gclocks.compose.onlyIf
-import org.beatonma.gclocks.compose.toCompose
 import org.beatonma.gclocks.core.options.Options
 import org.jetbrains.compose.resources.stringResource
 
@@ -184,7 +150,10 @@ fun App(
         enter = EnterVertical,
         exit = ExitFade
     ) {
-        FullScreenClock(options, { isClockFullscreen = false })
+        FullScreenClock(options, onClose = {
+            @Suppress("AssignedValueIsNeverRead")
+            isClockFullscreen = false
+        })
     }
 }
 

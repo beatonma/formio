@@ -20,14 +20,14 @@ value class AppContext private constructor(val value: Context) {
 
 val Context.appContext: AppContext get() = AppContext.of(this)
 
-val Context.alarmManager inline get() = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-val AppContext.alarmManager inline get() = value.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+val Context.alarmManager: AlarmManager inline get() = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+val AppContext.alarmManager: AlarmManager inline get() = value.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-val Context.widgetManager inline get() = AppWidgetManager.getInstance(this)
-val AppContext.widgetManager inline get() = AppWidgetManager.getInstance(value)
+val Context.widgetManager: AppWidgetManager inline get() = AppWidgetManager.getInstance(this)
+val AppContext.widgetManager: AppWidgetManager inline get() = AppWidgetManager.getInstance(value)
 
-fun Context.componentNameOf(cls: KClass<*>) = ComponentName(this, cls.java)
-fun AppContext.componentNameOf(cls: KClass<*>) = ComponentName(this.value, cls.java)
+fun Context.componentNameOf(cls: KClass<*>): ComponentName = ComponentName(this, cls.java)
+fun AppContext.componentNameOf(cls: KClass<*>): ComponentName = ComponentName(this.value, cls.java)
 
 fun AppContext.getBroadcastPendingIntent(intent: Intent): PendingIntent {
     return PendingIntent.getBroadcast(

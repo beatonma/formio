@@ -63,15 +63,28 @@ enum class TimeFormat {
     fun apply(time: TimeOfDay): String {
         val (hour, minute, second) = time
 
+        val formattedHour =
+            when (is24Hour) {
+                true -> hour
+                false -> {
+                    val mod12 = hour % 12
+                    if (mod12 == 0) 12 else mod12
+                }
+            }.toString()
+                .let { hourString ->
+                    if (isZeroPadded) hourString.padStart(2, '0')
+                    else hourString.padStart(2, ' ')
+                }
+        val formattedMinute = minute.toString().padStart(2, '0')
+        val formattedSecond = when (resolution) {
+            TimeResolution.Seconds -> second.toString().padStart(2, '0')
+            else -> null
+        }
+
         return listOfNotNull(
-            hour.let {
-                if (is24Hour) it else (hour % 12).let { if (it == 0) 12 else it }
-            }.toString().let {
-                if (isZeroPadded) it.padStart(2, '0')
-                else it.padStart(2, ' ')
-            },
-            minute.toString().padStart(2, '0'),
-            if (resolution == TimeResolution.Seconds) second.toString().padStart(2, '0') else null
+            formattedHour,
+            formattedMinute,
+            formattedSecond
         ).joinToString(":")
     }
 
