@@ -2,6 +2,7 @@ package org.beatonma.gclocks.app.settings.clocks
 
 import org.beatonma.gclocks.app.SettingsViewModel
 import org.beatonma.gclocks.app.settings.ContextClockOptions
+import org.beatonma.gclocks.app.settings.DisplayContext
 import org.beatonma.gclocks.compose.components.settings.RichSettings
 import org.beatonma.gclocks.compose.components.settings.Setting
 import org.beatonma.gclocks.core.options.Layout
@@ -12,18 +13,19 @@ import org.beatonma.gclocks.io18.Io18Paints
 
 abstract class Io18SettingsViewModel(
     initial: ContextClockOptions<Io18Options>,
-    onEditOptions: suspend (ContextClockOptions<Io18Options>) -> Unit,
-) : SettingsViewModel<Io18Options>(initial, onEditOptions) {
+    onEditClockOptions: (Io18Options) -> Unit,
+    onEditDisplayOptions: (DisplayContext.Options) -> Unit,
+) : SettingsViewModel<Io18Options>(initial, onEditClockOptions, onEditDisplayOptions) {
     override fun buildClockSettings(
         settings: RichSettings,
         clockOptions: Io18Options,
     ): RichSettings {
         val updateLayout: (Io18LayoutOptions) -> Unit = {
-            update(contextOptions.value.clock.copy(layout = it))
+            update(contextOptions.value.clockOptions.copy(layout = it))
         }
         return settings.append(
             colors = buildPaintsSettings(clockOptions.paints) {
-                update(contextOptions.value.clock.copy(paints = it))
+                update(contextOptions.value.clockOptions.copy(paints = it))
             },
             layout = buildLayoutSettings(clockOptions.layout, updateLayout),
             time = buildTimeSettings(clockOptions.layout, updateLayout),

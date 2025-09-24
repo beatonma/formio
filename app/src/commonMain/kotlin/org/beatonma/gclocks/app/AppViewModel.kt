@@ -11,9 +11,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.beatonma.gclocks.app.settings.AppSettings
 import org.beatonma.gclocks.app.settings.AppState
+import org.beatonma.gclocks.app.settings.DisplayContext
+import org.beatonma.gclocks.core.options.Options
 import kotlin.reflect.KClass
 
 private typealias OnSaveCallback = () -> Unit
@@ -47,15 +50,37 @@ class AppViewModel(
         }
     }
 
-    fun updateSettingsWithoutSave(settings: AppSettings) {
-        this._appSettings.value = settings
+    fun setDisplayContext(context: DisplayContext) {
+        _appSettings.update { previous ->
+            previous?.copy(state = previous.state.copy(displayContext = context))
+        }
+    }
+
+    fun setClock(clock: AppSettings.Clock) {
+        _appSettings.update { previous ->
+            previous?.copyWithClock(clock)
+        }
+    }
+
+    fun <O : Options<*>> setClockOptions(clockOptions: O) {
+        _appSettings.update { previous ->
+            previous?.copyWithOptions(clockOptions, previous.contextOptions.displayOptions)
+        }
+    }
+
+    fun setDisplayOptions(displayOptions: DisplayContext.Options) {
+        _appSettings.update { previous ->
+            previous?.copyWithOptions(previous.contextOptions.clockOptions, displayOptions)
+        }
     }
 
     fun save() {
-        appSettings.value?.let { settings ->
-            viewModelScope.launch {
-                repository.save(settings)
-                onSave?.invoke()
+        viewModelScope.launch {
+            appSettings.collect { settings ->
+                settings?.let {
+                    repository.save(settings)
+                    onSave?.invoke()
+                }
             }
         }
     }

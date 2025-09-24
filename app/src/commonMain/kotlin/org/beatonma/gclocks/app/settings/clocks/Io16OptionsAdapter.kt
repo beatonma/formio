@@ -5,6 +5,7 @@ import gclocks_multiplatform.app.generated.resources.setting_stroke_width
 import org.beatonma.gclocks.app.LocalizedString
 import org.beatonma.gclocks.app.SettingsViewModel
 import org.beatonma.gclocks.app.settings.ContextClockOptions
+import org.beatonma.gclocks.app.settings.DisplayContext
 import org.beatonma.gclocks.compose.components.settings.Key
 import org.beatonma.gclocks.compose.components.settings.RichSetting
 import org.beatonma.gclocks.compose.components.settings.RichSettings
@@ -17,17 +18,18 @@ import org.beatonma.gclocks.io16.Io16Paints
 
 abstract class Io16SettingsViewModel(
     initial: ContextClockOptions<Io16Options>,
-    onEditOptions: suspend (ContextClockOptions<Io16Options>) -> Unit,
-) : SettingsViewModel<Io16Options>(initial, onEditOptions) {
+    onEditClockOptions: (Io16Options) -> Unit,
+    onEditDisplayOptions: (DisplayContext.Options) -> Unit,
+) : SettingsViewModel<Io16Options>(initial, onEditClockOptions, onEditDisplayOptions) {
     override fun buildClockSettings(
         settings: RichSettings,
         clockOptions: Io16Options,
     ): RichSettings {
         val onUpdatePaints: (Io16Paints) -> Unit =
-            { update(this.contextOptions.value.clock.copy(paints = it)) }
+            { update(this.contextOptions.value.clockOptions.copy(paints = it)) }
 
         val onUpdateLayout: (Io16LayoutOptions) -> Unit = {
-            update(this.contextOptions.value.clock.copy(layout = it))
+            update(this.contextOptions.value.clockOptions.copy(layout = it))
         }
 
         return settings.append(

@@ -89,7 +89,7 @@ class ClockWidgetProvider : AppWidgetProvider(), ClockWidget {
                 WidgetSize.load(repository, widgetId) ?: WidgetSize.Default
             }
             val bitmap = ClockWidget.createBitmap(
-                appSettings.getOptions(DisplayContext.Widget).clock,
+                appSettings.getContextOptions(DisplayContext.Widget).clockOptions,
                 size.maxWidth,
                 size.maxHeight
             )

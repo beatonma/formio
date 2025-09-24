@@ -67,12 +67,12 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val viewModel: AppViewModel = viewModel(factory = factory)
-            val currentState by viewModel.currentState.collectAsState(null)
+            val state by viewModel.currentState.collectAsState(null)
             val snackbarHostState = remember { SnackbarHostState() }
             val systemBarsController = rememberSystemBarsController()
 
-            LaunchedEffect(currentState, shouldShowWidgetPermissionRequest) {
-                if (currentState?.context == DisplayContext.Widget && shouldShowWidgetPermissionRequest) {
+            LaunchedEffect(state, shouldShowWidgetPermissionRequest) {
+                if (state?.displayContext == DisplayContext.Widget && shouldShowWidgetPermissionRequest) {
                     showWidgetPermissionRequest(snackbarHostState)
                 }
             }

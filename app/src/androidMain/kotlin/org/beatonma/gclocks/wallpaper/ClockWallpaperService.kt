@@ -56,7 +56,7 @@ class ClockWallpaperService : WallpaperService() {
         @OptIn(ExperimentalCoroutinesApi::class)
         private val settings: Flow<ContextClockOptions<*>> = settingsRepository
             .loadAppSettings()
-            .mapLatest { it.getOptions(DisplayContext.LiveWallpaper) }
+            .mapLatest { it.getContextOptions(DisplayContext.LiveWallpaper) }
 
         private val displayMetrics: Flow<DisplayMetrics> = settingsRepository.loadDisplayMetrics()
 
@@ -87,12 +87,12 @@ class ClockWallpaperService : WallpaperService() {
             }
             scope.launch {
                 settings.collectLatest {
-                    val wallpaperOptions = it.display as DisplayContext.Options.Wallpaper
+                    val wallpaperOptions = it.displayOptions as DisplayContext.Options.Wallpaper
 
                     backgroundColor = wallpaperOptions.backgroundColor.toRgbInt()
                     relativeBounds.set(wallpaperOptions.position)
 
-                    animator = createAnimator(it.clock)
+                    animator = createAnimator(it.clockOptions)
                     invalidate()
                 }
             }

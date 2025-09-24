@@ -16,38 +16,38 @@ data class ContextSettings(
     /* Options for each type of clock. */
     val form: ContextClockOptions<FormOptions> = ContextClockOptions(
         context,
+        FormOptions(),
         context.defaultOptions(),
-        FormOptions()
     ),
     val io16: ContextClockOptions<Io16Options> = ContextClockOptions(
         context,
+        Io16Options(),
         context.defaultOptions(),
-        Io16Options()
     ),
     val io18: ContextClockOptions<Io18Options> = ContextClockOptions(
         context,
+        Io18Options(),
         context.defaultOptions(),
-        Io18Options()
     ),
 ) {
-    fun get(clock: AppSettings.Clock = this.clock): ContextClockOptions<*> = when (clock) {
-        AppSettings.Clock.Form -> this.form
-        AppSettings.Clock.Io16 -> this.io16
-        AppSettings.Clock.Io18 -> this.io18
-    }
+    fun get(clock: AppSettings.Clock = this.clock): ContextClockOptions<*> =
+        when (clock) {
+            AppSettings.Clock.Form -> this.form
+            AppSettings.Clock.Io16 -> this.io16
+            AppSettings.Clock.Io18 -> this.io18
+        }
 }
 
 @Serializable
 data class ContextClockOptions<O : Options<*>>(
-    val context: DisplayContext,
-    val display: DisplayContext.Options,
-    val clock: O,
+    val displayContext: DisplayContext,
+    val clockOptions: O,
+    val displayOptions: DisplayContext.Options,
 )
 
 @Serializable
 data class AppState(
-    val context: DisplayContext,
-    val clock: AppSettings.Clock,
+    val displayContext: DisplayContext,
 )
 
 
@@ -56,40 +56,61 @@ data class AppSettings(
     val state: AppState,
     val settings: Map<DisplayContext, ContextSettings>,
 ) {
-    val options: ContextClockOptions<*> get() = getContextSettings(state.context).get(state.clock)
+    val contextSettings: ContextSettings get() = getContextSettings(state.displayContext)
+    val contextOptions: ContextClockOptions<*> get() = getContextOptions(state.displayContext)
 
-    fun getOptions(context: DisplayContext): ContextClockOptions<*> {
+    fun getContextOptions(context: DisplayContext): ContextClockOptions<*> {
         return getContextSettings(context).get()
+    }
+
+    fun copyWithClock(clock: Clock): AppSettings {
+        val previous = settings[state.displayContext] ?: ContextSettings(state.displayContext)
+        val updatedSettings = settings.toMutableMap().apply {
+            set(state.displayContext, previous.copy(clock = clock))
+        }.toMap()
+
+        return copy(settings = updatedSettings)
     }
 
     fun copyWithOptions(
         clockOptions: Options<*>,
         displayOptions: DisplayContext.Options,
     ): AppSettings {
-        val updated = settings.toMutableMap().apply {
-            val previous = this[state.context] ?: ContextSettings(state.context)
+        val previous = settings[state.displayContext] ?: ContextSettings(state.displayContext)
+        val updatedSettings = settings.toMutableMap().apply {
+            set(
+                state.displayContext,
+                when (clockOptions) {
+                    is FormOptions -> previous.copy(
+                        clock = Clock.Form,
+                        form = previous.form.copy(
+                            clockOptions = clockOptions,
+                            displayOptions = displayOptions
+                        )
+                    )
 
-            this[state.context] = when (clockOptions) {
-                is FormOptions -> previous.copy(
-                    clock = Clock.Form,
-                    form = previous.form.copy(clock = clockOptions, display = displayOptions)
-                )
+                    is Io16Options -> previous.copy(
+                        clock = Clock.Io16,
+                        io16 = previous.io16.copy(
+                            clockOptions = clockOptions,
+                            displayOptions = displayOptions
+                        )
+                    )
 
-                is Io16Options -> previous.copy(
-                    clock = Clock.Io16,
-                    io16 = previous.io16.copy(clock = clockOptions, display = displayOptions)
-                )
+                    is Io18Options -> previous.copy(
+                        clock = Clock.Io18,
+                        io18 = previous.io18.copy(
+                            clockOptions = clockOptions,
+                            displayOptions = displayOptions
+                        )
+                    )
 
-                is Io18Options -> previous.copy(
-                    clock = Clock.Io18,
-                    io18 = previous.io18.copy(clock = clockOptions, display = displayOptions)
-                )
+                    else -> throw IllegalStateException("Unhandled options class ${clockOptions::class}")
+                }
+            )
+        }.toMap()
 
-                else -> throw IllegalStateException("Unhandled options class ${clockOptions::class}")
-            }
-        }
-
-        return copy(settings = updated.toMap())
+        return copy(settings = updatedSettings)
     }
 
     private fun getContextSettings(context: DisplayContext): ContextSettings =

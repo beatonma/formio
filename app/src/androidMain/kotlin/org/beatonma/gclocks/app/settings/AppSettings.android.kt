@@ -11,16 +11,13 @@ private val DefaultWidgetTimeFormat = TimeFormat.HH_MM_24
 
 actual val DefaultAppSettings: AppSettings
     get() = AppSettings(
-        AppState(
-            DisplayContext.Widget,
-            AppSettings.Clock.Form,
-        ),
+        AppState(DisplayContext.Widget),
         AppSettings.DefaultSettings.mapValues { (key, value) ->
             when (key) {
                 DisplayContext.Widget -> value.copy(
                     form = value.form.copy(
-                        clock = value.form.clock.copy(
-                            layout = value.form.clock.layout.copy(
+                        clockOptions = value.form.clockOptions.copy(
+                            layout = value.form.clockOptions.layout.copy(
                                 layout = Layout.Horizontal,
                                 format = DefaultWidgetTimeFormat,
                                 horizontalAlignment = HorizontalAlignment.Center,
@@ -28,8 +25,8 @@ actual val DefaultAppSettings: AppSettings
                         )
                     ),
                     io16 = value.io16.copy(
-                        clock = value.io16.clock.copy(
-                            layout = value.io16.clock.layout.copy(
+                        clockOptions = value.io16.clockOptions.copy(
+                            layout = value.io16.clockOptions.layout.copy(
                                 layout = Layout.Horizontal,
                                 format = DefaultWidgetTimeFormat,
                                 horizontalAlignment = HorizontalAlignment.Center,
@@ -37,8 +34,8 @@ actual val DefaultAppSettings: AppSettings
                         )
                     ),
                     io18 = value.io18.copy(
-                        clock = value.io18.clock.copy(
-                            layout = value.io18.clock.layout.copy(
+                        clockOptions = value.io18.clockOptions.copy(
+                            layout = value.io18.clockOptions.layout.copy(
                                 layout = Layout.Horizontal,
                                 format = DefaultWidgetTimeFormat,
                                 horizontalAlignment = HorizontalAlignment.Center,

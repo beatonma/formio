@@ -37,9 +37,10 @@ class DreamView @JvmOverloads constructor(
         coroutineScope.launch {
             @OptIn(ExperimentalCoroutinesApi::class)
             context.settingsRepository.loadAppSettings()
-                .mapLatest { it.getOptions(DisplayContext.Screensaver) }
+                .mapLatest { it.getContextOptions(DisplayContext.Screensaver) }
                 .collectLatest { settings ->
-                    val screensaverOptions = settings.display as DisplayContext.Options.Screensaver
+                    val screensaverOptions =
+                        settings.displayOptions as DisplayContext.Options.Screensaver
 
                     setBackgroundColor(
                         screensaverOptions.backgroundColor.toRgbInt()
@@ -68,7 +69,7 @@ class DreamView @JvmOverloads constructor(
                     }
 
                     val clock = ClockView(context)
-                    clock.setOptions(settings.clock)
+                    clock.setOptions(settings.clockOptions)
 
                     addView(clock, layoutParams)
                 }

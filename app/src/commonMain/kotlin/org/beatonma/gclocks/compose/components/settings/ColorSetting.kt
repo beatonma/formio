@@ -98,7 +98,7 @@ fun MultiColorSetting(
     onValueChange: (index: Int, color: Color) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var editingIndex: Int? by remember { mutableStateOf(null) }
+    var editingIndex: Int? by remember(colors) { mutableStateOf(null) }
     val editorOpenPadding by animateDpAsState(if (editingIndex != null) 48.dp else 0.dp)
 
     CollapsibleSettingLayout(editingIndex != null, modifier) {

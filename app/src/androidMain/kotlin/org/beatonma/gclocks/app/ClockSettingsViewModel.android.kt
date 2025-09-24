@@ -28,14 +28,16 @@ private fun filterSettings(context: DisplayContext, settings: RichSettings): Ric
 
 actual fun <O : Options<*>> buildSettingsViewModel(
     initial: ContextClockOptions<O>,
-    onEditOptions: suspend (ContextClockOptions<O>) -> Unit,
+    onEditClockOptions: (O) -> Unit,
+    onEditDisplayOptions: (DisplayContext.Options) -> Unit,
 ): SettingsViewModel<O> {
-    val viewmodel = when (initial.clock) {
+    @Suppress("UNCHECKED_CAST")
+    val viewmodel = when (initial.clockOptions) {
         is FormOptions -> {
-            @Suppress("UNCHECKED_CAST")
             object : FormSettingsViewModel(
                 initial as ContextClockOptions<FormOptions>,
-                onEditOptions as suspend (ContextClockOptions<FormOptions>) -> Unit
+                onEditClockOptions as (FormOptions) -> Unit,
+                onEditDisplayOptions,
             ) {
                 override fun buildDisplaySettings(
                     settings: RichSettings,
@@ -61,7 +63,8 @@ actual fun <O : Options<*>> buildSettingsViewModel(
             @Suppress("UNCHECKED_CAST")
             object : Io16SettingsViewModel(
                 initial as ContextClockOptions<Io16Options>,
-                onEditOptions as suspend (ContextClockOptions<Io16Options>) -> Unit
+                onEditClockOptions as (Io16Options) -> Unit,
+                onEditDisplayOptions,
             ) {
                 override fun buildDisplaySettings(
                     settings: RichSettings,
@@ -87,7 +90,8 @@ actual fun <O : Options<*>> buildSettingsViewModel(
             @Suppress("UNCHECKED_CAST")
             object : Io18SettingsViewModel(
                 initial as ContextClockOptions<Io18Options>,
-                onEditOptions as suspend (ContextClockOptions<Io18Options>) -> Unit
+                onEditClockOptions as (Io18Options) -> Unit,
+                onEditDisplayOptions,
             ) {
                 override fun buildDisplaySettings(
                     settings: RichSettings,
@@ -109,7 +113,7 @@ actual fun <O : Options<*>> buildSettingsViewModel(
             }
         }
 
-        else -> throw NotImplementedError("Unhandled Options class ${initial.clock::class}")
+        else -> throw NotImplementedError("Unhandled Options class ${initial.clockOptions::class}")
     }
 
     @Suppress("UNCHECKED_CAST")

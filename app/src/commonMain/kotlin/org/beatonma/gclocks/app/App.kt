@@ -135,9 +135,9 @@ fun App(
     var isClockFullscreen by rememberSaveable { mutableStateOf(false) }
     val _settings by viewModel.appSettings.collectAsState()
     val settings = _settings ?: return Loading()
-    val options = settings.options
+    val options = settings.contextOptions
 
-    if (options.display !is DisplayContext.Options.WithBackground) {
+    if (options.displayOptions !is DisplayContext.Options.WithBackground) {
         return App(
             settings,
             viewModel,
@@ -197,12 +197,11 @@ private fun App(
 ) {
     NavigationSuiteApp(
         settings,
-        onEditSettings = {
-            viewModel.updateSettingsWithoutSave(it)
-        },
-        onSave = {
-            viewModel.save()
-        },
+        setClock = viewModel::setClock,
+        updateClockOptions = viewModel::setClockOptions,
+        updateDisplayOptions = viewModel::setDisplayOptions,
+        setDisplayContext = viewModel::setDisplayContext,
+        onSave = viewModel::save,
         appAdapter = appAdapter,
     )
 }
@@ -211,16 +210,31 @@ private fun App(
 @Composable
 private fun NavigationSuiteApp(
     appSettings: AppSettings,
-    onEditSettings: (AppSettings) -> Unit,
+    setClock: (AppSettings.Clock) -> Unit,
+    setDisplayContext: (DisplayContext) -> Unit,
+    updateClockOptions: (Options<*>) -> Unit,
+    updateDisplayOptions: (DisplayContext.Options) -> Unit,
     onSave: () -> Unit,
     appAdapter: AppAdapter?,
 ) {
-    if (Screens.entries.size <= 1) {
-        return ClockSettingsScaffold(appSettings, onEditSettings, onSave, appAdapter)
+    val content: @Composable () -> Unit = {
+        ClockSettingsScaffold(
+            appSettings,
+            setClock,
+            updateClockOptions,
+            updateDisplayOptions,
+            onSave,
+            appAdapter
+        )
     }
 
-    val currentScreen = Screens.entries.find { it.displayContext == appSettings.state.context }
-        ?: Screens.entries.first()
+    if (Screens.entries.size <= 1) {
+        return content()
+    }
+
+    val currentScreen =
+        Screens.entries.find { it.displayContext == appSettings.state.displayContext }
+            ?: Screens.entries.first()
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
@@ -229,20 +243,12 @@ private fun NavigationSuiteApp(
                     icon = { Icon(it.icon, it.contentDescription.resolve()) },
                     label = { Text(it.label.resolve()) },
                     selected = it == currentScreen,
-                    onClick = {
-                        onEditSettings(
-                            appSettings.copy(
-                                state = appSettings.state.copy(
-                                    context = it.displayContext
-                                )
-                            )
-                        )
-                    },
+                    onClick = { setDisplayContext(it.displayContext) }
                 )
             }
         }
     ) {
-        ClockSettingsScaffold(appSettings, onEditSettings, onSave, appAdapter)
+        content()
     }
 }
 
@@ -250,28 +256,32 @@ private fun NavigationSuiteApp(
 @Composable
 private fun ClockSettingsScaffold(
     appSettings: AppSettings,
-    onEditSettings: (AppSettings) -> Unit,
+    setClock: (AppSettings.Clock) -> Unit,
+    updateClockOptions: (Options<*>) -> Unit,
+    updateDisplayOptions: (DisplayContext.Options) -> Unit,
     onSave: () -> Unit,
     appAdapter: AppAdapter?,
 ) {
     val appState = appSettings.state
     val clockViewModel = clockSettingsViewModel(
-        appSettings.options,
-        onEditOptions = { onEditSettings(appSettings.copyWithOptions(it.clock, it.display)) },
-        key = "${appState.context}_${appState.clock}",
+        appSettings.contextOptions,
+        updateClockOptions,
+        updateDisplayOptions,
+        key = "${appState.displayContext}_${appSettings.contextSettings.clock}",
     )
     val gridState = rememberLazyStaggeredGridState()
     val options by clockViewModel.contextOptions.collectAsState()
     val richSettings by clockViewModel.richSettings.collectAsState()
 
-    val backgroundColor = when (options.display) {
-        is DisplayContext.Options.WithBackground -> (options.display as DisplayContext.Options.WithBackground).backgroundColor.toCompose()
-        else -> null
-    } ?: colorScheme.surface
+    val backgroundColor = resolveClockBackgroundColor(options.displayOptions)
     val foregroundColor = rememberContentColor(backgroundColor)
 
     val isFullWidth =
         currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT
+    val clockPreviewShape = when (isFullWidth) {
+        true -> RectangleShape
+        false -> shapes.medium
+    }
 
     LaunchedEffect(appState) {
         gridState.scrollToItem(0)
@@ -289,20 +299,15 @@ private fun ClockSettingsScaffold(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 CompositionLocalProvider(LocalContentColor provides foregroundColor) {
                     ClockPreview(
-                        options.clock,
-                        appAdapter?.toolbar?.let { toolbar -> { toolbar(appState.context) } },
+                        options.clockOptions,
+                        appAdapter?.toolbar?.let { toolbar -> { toolbar(appState.displayContext) } },
                         Modifier
-                            .clip(
-                                when (isFullWidth) {
-                                    true -> RectangleShape
-                                    false -> shapes.medium
-                                }
-                            )
+                            .clip(clockPreviewShape)
                             .background(backgroundColor)
                             .animateContentSize(),
                         clockModifier = Modifier
                             .onlyIf(appAdapter?.onClickPreview) { onClick ->
-                                clickable(onClick = { onClick(appState.context) })
+                                clickable(onClick = { onClick(appState.displayContext) })
                             }
                             .sizeIn(maxWidth = 600.dp, maxHeight = 300.dp)
                             .padding(contentPadding)
@@ -313,19 +318,13 @@ private fun ClockSettingsScaffold(
 
                 CompositionLocalProvider(
                     LocalClockPreview provides ClockPreview(
-                        options.clock,
+                        options.clockOptions,
                         backgroundColor
                     )
                 ) {
                     SettingsGrid(
-                        appState.clock,
-                        {
-                            onEditSettings(
-                                appSettings.copy(
-                                    state = appSettings.state.copy(clock = it)
-                                )
-                            )
-                        },
+                        appSettings.contextSettings.clock,
+                        setClock,
                         richSettings ?: return@CompositionLocalProvider Loading(),
                         gridState = gridState,
                         contentPadding = VerticalBottomContentPadding,
@@ -429,7 +428,7 @@ private fun FullScreenClock(
     Box(
         Modifier.pointerInput(Unit) {
             while (true) {
-                val event = awaitPointerEventScope { awaitPointerEvent() }
+                awaitPointerEventScope { awaitPointerEvent() }
                 isOverlayVisible = true
 
                 visibilityTimeoutJob?.cancel()
@@ -441,9 +440,9 @@ private fun FullScreenClock(
         }
     ) {
         ClockLayout(
-            options.display as DisplayContext.Options.WithBackground,
+            options.displayOptions as DisplayContext.Options.WithBackground,
         ) {
-            Clock(options.clock)
+            Clock(options.clockOptions)
         }
 
         AnimatedVisibility(
@@ -468,16 +467,27 @@ private fun FullScreenClock(
 @Composable
 private fun <O : Options<*>> clockSettingsViewModel(
     options: ContextClockOptions<O>,
-    onEditOptions: suspend (ContextClockOptions<O>) -> Unit,
+    updateClockOptions: (O) -> Unit,
+    updateDisplayOptions: (DisplayContext.Options) -> Unit,
     key: String,
 ): SettingsViewModel<O> {
     return viewModel(
         key = key,
-        factory = remember(options, onEditOptions) {
+        factory = remember(options, updateClockOptions, updateDisplayOptions) {
             SettingsViewModelFactory(
                 options,
-                onEditOptions = onEditOptions,
+                updateClockOptions,
+                updateDisplayOptions
             )
         }
     )
+}
+
+
+@Composable
+private fun resolveClockBackgroundColor(displayOptions: DisplayContext.Options): Color {
+    return when (displayOptions) {
+        is DisplayContext.Options.WithBackground -> displayOptions.backgroundColor.toCompose()
+        else -> null
+    } ?: colorScheme.surface
 }
