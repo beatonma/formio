@@ -1,16 +1,15 @@
 package org.beatonma.gclocks.io16
 
-import org.beatonma.gclocks.core.layout.ClockLayout
 import org.beatonma.gclocks.core.ClockRenderer
 import org.beatonma.gclocks.core.Glyph
 import org.beatonma.gclocks.core.GlyphRenderer
 import org.beatonma.gclocks.core.GlyphState
-import org.beatonma.gclocks.core.graphics.Color
-import org.beatonma.gclocks.core.graphics.DrawStyle
 import org.beatonma.gclocks.core.graphics.Canvas
+import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.graphics.PathMeasureScope
 import org.beatonma.gclocks.core.graphics.Stroke
+import org.beatonma.gclocks.core.layout.ClockLayout
 import org.beatonma.gclocks.core.types.ProgressFloat
 import org.beatonma.gclocks.core.types.pf
 import org.beatonma.gclocks.core.util.debug
@@ -30,7 +29,7 @@ class Io16ClockRenderer<P : Path>(
 
 
 class Io16GlyphRenderer<P : Path>(
-    private val segmentPath: P,
+    segmentPath: P,
     options: Io16Options,
     private val debugUpdateOnDraw: Boolean = false,
 ) : GlyphRenderer<Io16Paints, Io16Glyph> {
@@ -54,14 +53,17 @@ class Io16GlyphRenderer<P : Path>(
     private var segmentAnimationMillis: Int = 0
     private var segmentOffsetProgress: ProgressFloat = ProgressFloat.Zero
 
-    private val style: Stroke = Stroke(
-        options.paints.strokeWidth,
-        cap = options.paints.strokeCap,
-        join = options.paints.strokeJoin,
+    private val pathRenderer = Io16PathRenderer(
+        segmentPath,
+        Stroke(
+            options.paints.strokeWidth,
+            cap = options.paints.strokeCap,
+            join = options.paints.strokeJoin,
+        )
     )
 
     override fun draw(glyph: Io16Glyph, canvas: Canvas, paints: Io16Paints) {
-        debug {
+        debug(false) {
             if (debugUpdateOnDraw) {
                 now = getCurrentTimeMillis()
             }
@@ -93,50 +95,18 @@ class Io16GlyphRenderer<P : Path>(
 
         // If fully inactive, only one color is needed so just render the full path and return.
         if (disappearedSegmentSize.isZero && inactiveSegmentSize.isOne) {
-            canvas.drawPath(paints.inactive, style)
+            canvas.drawPath(paints.inactive, pathRenderer.style)
             return
         }
 
         val segmentOffsetProgress: Float = segmentOffsetProgress + glyph.animationOffset
-        // Otherwise, split the path and render each segment individually
-        canvas.measurePath { pm ->
-            debug(false) {
-                val offset: Float = segmentOffsetProgress * pm.length
-                pm.getPosition(offset)?.let {
-                    canvas.drawPoint(it.x, it.y, 8f, Color.Red)
-                }
-            }
 
-            var remainingFraction: ProgressFloat = disappearedSegmentSize.reversed
-
-            if (inactiveSegmentSize.isNotZero) {
-                // Draw 'inactive' section first, taking as much of the length as needed.
-                drawSegment(
-                    pm,
-                    canvas,
-                    segmentOffsetProgress,
-                    inactiveSegmentSize * remainingFraction,
-                    paints.inactive,
-                    style
-                )
-                remainingFraction =
-                    (remainingFraction - (remainingFraction * inactiveSegmentSize)).pf
-            }
-
-            val segmentSize: ProgressFloat = remainingFraction / paints.active.size
-
-            // Split the remaining length between the 'active' colors.
-            paints.active.forEachIndexed { index, color ->
-                drawSegment(
-                    pm,
-                    canvas,
-                    segmentOffsetProgress + inactiveSegmentSize.value + (index * segmentSize.value),
-                    segmentSize,
-                    color,
-                    style
-                )
-            }
-        }
+        pathRenderer.drawSegments(
+            canvas, paints,
+            offset = segmentOffsetProgress,
+            invisible = disappearedSegmentSize,
+            inactive = inactiveSegmentSize,
+        )
     }
 
     /** Portion of the total path length consumed by 'inactive' color. */
@@ -183,6 +153,73 @@ class Io16GlyphRenderer<P : Path>(
         GlyphState.DisappearingFromInactive,
             -> transitionProgress
     }
+}
+
+
+class Io16PathRenderer(
+    private val segmentPath: Path,
+    val style: Stroke,
+) {
+    enum class State {
+        /** Invisible/inactive segments will be rendered at the start of the path*/
+        Appearing,
+
+        /** Invisible/inactive segments will be rendered at the end of the path*/
+        Disappearing,
+        ;
+    }
+
+    fun drawSegments(
+        canvas: Canvas,
+        paints: Io16Paints,
+        offset: Float,
+        invisible: ProgressFloat,
+        inactive: ProgressFloat,
+        state: State = State.Appearing,
+    ) {
+        // Lengths of each part relative to total path length
+        val visibleLength = (1f - invisible.value).pf
+        val inactiveLength = (visibleLength.value * inactive.value).pf
+        val activeLength = (ProgressFloat.One - invisible.value - inactiveLength.value).pf
+
+        val inactiveOffset: Float
+        val activeOffset: Float
+        when (state) {
+            State.Appearing -> {
+                inactiveOffset = offset + invisible.value
+                activeOffset = offset + invisible.value + inactive.value
+            }
+
+            State.Disappearing -> {
+                inactiveOffset = offset + activeLength.value
+                activeOffset = offset
+            }
+        }
+
+        canvas.measurePath { pm ->
+            debug(false) {
+                val offset: Float = offset * pm.length
+                pm.getPosition(offset)?.let {
+                    canvas.drawPoint(it.x, it.y, 8f, Color.Red)
+                }
+            }
+            if (inactive.isNotZero) {
+                drawSegment(pm, canvas, inactiveOffset, inactiveLength, paints.inactive)
+            }
+
+            // Split the remaining length between the 'active' colors.
+            val segmentSize: ProgressFloat = activeLength / paints.active.size
+            paints.active.forEachIndexed { index, color ->
+                drawSegment(
+                    pm,
+                    canvas,
+                    activeOffset + (index * segmentSize.value),
+                    segmentSize,
+                    color,
+                )
+            }
+        }
+    }
 
     private fun drawSegment(
         pathMeasure: PathMeasureScope,
@@ -190,7 +227,6 @@ class Io16GlyphRenderer<P : Path>(
         start: Float,
         segmentLength: ProgressFloat,
         color: Color,
-        style: DrawStyle,
     ) {
         if (segmentLength.isZero) return
         if (segmentLength.isOne) {
@@ -200,14 +236,11 @@ class Io16GlyphRenderer<P : Path>(
         val length = pathMeasure.length
         val start = start % 1f
         val end = (segmentLength + start) % 1f
-
         val startDistance = start * length
         val endDistance = end * length
-
         if (start < end) {
             segmentPath.beginPath()
             pathMeasure.getSegment(startDistance, endDistance, segmentPath)
-            canvas.drawPath(segmentPath, color, style)
         } else {
             segmentPath.beginPath()
             pathMeasure.getSegment(startDistance, length, segmentPath)
