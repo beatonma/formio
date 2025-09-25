@@ -1,14 +1,12 @@
 package org.beatonma.gclocks.core.graphics
 
 import org.beatonma.gclocks.core.geometry.Angle
-import org.beatonma.gclocks.core.geometry.FloatPoint
 import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.geometry.Position
 import org.beatonma.gclocks.core.geometry.degrees
+import org.beatonma.gclocks.core.geometry.getPointOnEllipse
 import org.beatonma.gclocks.core.util.fastForEach
 import org.beatonma.gclocks.core.util.interpolate
-import kotlin.math.cos
-import kotlin.math.sin
 
 typealias RenderCallback = () -> Unit
 
@@ -183,17 +181,7 @@ data class BoundedArc(
     }
 
     fun endPosition(): Position {
-        val centerX = left + (right - left) / 2f
-        val centerY = top + (bottom - top) / 2f
-
-        val radiusX = (right - left) / 2f
-        val radiusY = (bottom - top) / 2f
-
-        val angle = startAngle + sweepAngle
-        val x = centerX + radiusX * cos(angle.asRadians)
-        val y = centerY + radiusY * sin(angle.asRadians)
-
-        return FloatPoint(x, y)
+        return getPointOnEllipse(left, top, right, bottom, startAngle + sweepAngle)
     }
 }
 
@@ -269,6 +257,13 @@ class PathDefinition(
         // Track current endpoint of the path so we can easily add 'filler' via [zeroCubic] and [zeroLine].
         private var x: Float? = null
         private var y: Float? = null
+
+        private val previousX: Float
+            get() = x
+                ?: throw IllegalStateException("PathDefinition.Builder tried to use a relative path command without a recorded previous position.")
+        private val previousY: Float
+            get() = y
+                ?: throw IllegalStateException("PathDefinition.Builder tried to use a relative path command without a recorded previous position.")
 
         override fun moveTo(x: Float, y: Float) {
             _commands.add(MoveTo(x, y))
@@ -347,16 +342,30 @@ class PathDefinition(
             _commands.add(ClosePath)
         }
 
-        /** Create a cubic curve with zero size - used as filler to help with interpolation between
-         * [PathDefinition] instances that do not naturally share the same sequence of commands. */
+        /**
+         * Create a cubic curve with zero size - used as filler to help with interpolation between
+         * [PathDefinition] instances that do not naturally share the same sequence of commands.
+         */
         fun zeroCubic() {
-            val x = x ?: return
-            val y = y ?: return
+            val x = previousX
+            val y = previousY
             cubicTo(x, y, x, y, x, y)
         }
 
+        /**
+         * Create a line with zero size - used as filler to help with interpolation between
+         * [PathDefinition] instances that do not naturally share the same sequence of commands.
+         */
         fun zeroLine() {
-            lineTo(x ?: return, y ?: return)
+            lineTo(previousX, previousY)
+        }
+
+        /**
+         * Create a cubic curve which looks like a line - used to help with interpolation
+         * between [PathDefinition] instances that do not naturally share the same sequence of commands.
+         * */
+        fun cubicLineTo(x: Float, y: Float) {
+            cubicTo(previousX, previousY, x, y, x, y)
         }
 
         fun build(): PathDefinition {

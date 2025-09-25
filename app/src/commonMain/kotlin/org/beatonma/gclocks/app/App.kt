@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -76,7 +77,7 @@ import org.beatonma.gclocks.app.settings.ContextClockOptions
 import org.beatonma.gclocks.app.settings.DisplayContext
 import org.beatonma.gclocks.app.theme.rememberContentColor
 import org.beatonma.gclocks.compose.AppIcon
-import org.beatonma.gclocks.compose.Loading
+import org.beatonma.gclocks.compose.LoadingSpinner
 import org.beatonma.gclocks.compose.VerticalBottomContentPadding
 import org.beatonma.gclocks.compose.animation.AnimatedFade
 import org.beatonma.gclocks.compose.animation.EnterFade
@@ -140,7 +141,7 @@ fun App(
 ) {
     var isClockFullscreen by rememberSaveable { mutableStateOf(false) }
     val _settings by viewModel.appSettings.collectAsStateWithLifecycle()
-    val settings = _settings ?: return Loading()
+    val settings = _settings ?: return LoadingSpinner(Modifier.fillMaxSize())
     val contextOptions = settings.contextOptions
 
     if (contextOptions.displayOptions !is DisplayContext.Options.WithBackground) {
@@ -268,11 +269,12 @@ private fun ClockSettingsScaffold(
     appAdapter: AppAdapter?,
 ) {
     val appState = appSettings.state
+    val clock = appSettings.contextSettings.clock
     val clockViewModel = clockSettingsViewModel(
         appSettings.contextOptions,
         updateClockOptions,
         updateDisplayOptions,
-        key = "${appState.displayContext}_${appSettings.contextSettings.clock}",
+        key = "${appState.displayContext}_${clock}",
     )
     val gridState = rememberLazyStaggeredGridState()
     val options by clockViewModel.contextOptions.collectAsStateWithLifecycle()
@@ -314,6 +316,7 @@ private fun ClockSettingsScaffold(
     LaunchedEffect(appState) {
         gridState.scrollToItem(0)
     }
+
     Scaffold(
         snackbarHost = { appAdapter?.snackbarHostState?.let { SnackbarHost(it) } },
         floatingActionButton = {
@@ -340,9 +343,9 @@ private fun ClockSettingsScaffold(
                     )
                 ) {
                     SettingsGrid(
-                        appSettings.contextSettings.clock,
+                        clock,
                         setClock,
-                        richSettings ?: return@CompositionLocalProvider Loading(),
+                        richSettings ?: return@CompositionLocalProvider LoadingSpinner(clock = clock),
                         gridState = gridState,
                         contentPadding = VerticalBottomContentPadding + contentPadding.horizontal(),
                         clockPreview = if (previewAlwaysVisible) null else {

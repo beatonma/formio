@@ -26,6 +26,12 @@ fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Float =
 fun progress(value: Float, min: Float, max: Float): Float =
     constrain((value - min) / (max - min), 0f, 1f)
 
+fun progress(value: Long, min: Long, max: Long): Float =
+    constrain(((value - min).toFloat() / (max - min).toFloat()), 0f, 1f)
+
+fun progress(value: Int, min: Int, max: Int): Float =
+    constrain(((value - min).toFloat() / (max - min).toFloat()), 0f, 1f)
+
 /**
  * Convert progress (0..1) to a value in the range defined my min..max.
  */

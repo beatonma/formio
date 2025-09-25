@@ -41,8 +41,10 @@ class Io18Glyph(
     shuffleColors: Boolean = true,
 ) : BaseClockGlyph<Io18Paints>(role, scale, lock) {
     companion object : GlyphCompanion {
-        override val maxSize: NativeSize =
-            NativeSize(GlyphCharacter.DefaultWidth, GlyphCharacter.DefaultHeight)
+        override val maxSize: NativeSize = NativeSize(
+            GlyphCharacter.DefaultWidth,
+            GlyphCharacter.DefaultHeight
+        )
     }
 
     override val companion: GlyphCompanion = Companion
@@ -58,10 +60,6 @@ class Io18Glyph(
         }
     }
 
-    //    private val paintIndices: IntArray = when (shuffleColors) {
-//        true -> Io18Paints.getRandomPaintIndices()
-//        false -> intArrayOf(0, 1, 2, 3)
-//    }
     private val colors: Array<Color> = Array(4) { Color.Red }
 
     private val zero = Zero(animations.animatedPath)
