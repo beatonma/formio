@@ -1,4 +1,4 @@
-package org.beatonma.gclocks.app
+package org.beatonma.gclocks.app.ui.screens
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -19,14 +19,24 @@ import kotlinx.coroutines.launch
 import org.beatonma.gclocks.app.data.AppSettingsRepository
 import org.beatonma.gclocks.app.data.settings.AppSettings
 import org.beatonma.gclocks.app.data.settings.AppState
+import org.beatonma.gclocks.app.data.settings.ClockSettingsAdapter
 import org.beatonma.gclocks.app.data.settings.ClockType
+import org.beatonma.gclocks.app.data.settings.ContextClockOptions
 import org.beatonma.gclocks.app.data.settings.DisplayContext
+import org.beatonma.gclocks.app.data.settings.DisplayContextDefaults
+import org.beatonma.gclocks.app.data.settings.buildClockSettingsAdapter
+import org.beatonma.gclocks.app.data.settings.clocks.SettingKey
+import org.beatonma.gclocks.app.data.settings.clocks.chooseBackgroundColor
+import org.beatonma.gclocks.app.data.settings.clocks.chooseClockPosition
+import org.beatonma.gclocks.app.data.settings.clocks.chooseClockType
+import org.beatonma.gclocks.compose.components.settings.data.RichSettings
+import org.beatonma.gclocks.compose.components.settings.data.insertBefore
 import org.beatonma.gclocks.core.options.Options
 import kotlin.reflect.KClass
 
 private typealias OnSaveCallback = () -> Unit
 
-class AppViewModelFactory(
+class SettingsEditorViewModelFactory(
     private val repository: AppSettingsRepository,
     private var onSave: OnSaveCallback? = null,
 ) : ViewModelProvider.Factory {
@@ -35,11 +45,11 @@ class AppViewModelFactory(
         extras: CreationExtras,
     ): T {
         @Suppress("UNCHECKED_CAST")
-        return AppViewModel(repository, onSave) as T
+        return SettingsEditorViewModel(repository, onSave) as T
     }
 }
 
-class AppViewModel(
+class SettingsEditorViewModel(
     private val repository: AppSettingsRepository,
     private var onSave: OnSaveCallback? = null,
 ) : ViewModel() {
@@ -53,6 +63,14 @@ class AppViewModel(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val currentState: Flow<AppState?> = appSettings.mapLatest { it?.state }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val richSettings: StateFlow<RichSettings?> = appSettings.mapLatest { settings ->
+        when (settings) {
+            null -> null
+            else -> buildRichSettings(settings.contextSettings.clock, settings.contextOptions)
+        }
+    }.stateIn(viewModelScope, started = SharingStarted.Eagerly, initialValue = null)
 
 
     init {
@@ -95,6 +113,63 @@ class AppViewModel(
                 _lastSavedAppSettings.update { currentSettings.copy() }
                 onSave?.invoke()
             }
+        }
+    }
+
+    private fun <O : Options<*>> buildRichSettings(
+        clock: ClockType,
+        options: ContextClockOptions<O>
+    ): RichSettings {
+        @Suppress("UNCHECKED_CAST")
+        val adapter = buildClockSettingsAdapter(clock) as ClockSettingsAdapter<O>
+
+        var settings = RichSettings.empty(
+            listOf(
+                chooseClockType(clock, ::setClock)
+            )
+        )
+        settings = adapter.addClockSettings(settings, options.clockOptions, ::setClockOptions)
+        settings = addDisplaySettings(settings, options.displayOptions, ::setDisplayOptions)
+        settings = adapter.filterRichSettings(settings, options.clockOptions, options.displayContext)
+
+        return settings
+    }
+}
+
+
+expect fun addDisplaySettings(
+    settings: RichSettings,
+    options: DisplayContext.Options,
+    update: (DisplayContext.Options) -> Unit,
+): RichSettings
+
+
+internal fun defaultAddDisplaySettings(
+    settings: RichSettings,
+    options: DisplayContext.Options,
+    update: (DisplayContext.Options) -> Unit,
+): RichSettings {
+    return when (options) {
+        is DisplayContextDefaults.WithBackground -> {
+            settings.copy(
+                colors = settings.colors.insertBefore(
+                    SettingKey.clockColors,
+                    chooseBackgroundColor(
+                        value = options.backgroundColor,
+                        onUpdate = { update(options.copy(backgroundColor = it)) },
+                    ),
+                ),
+                layout = listOf(
+                    chooseClockPosition(
+                        value = options.position,
+                        onUpdate = { update(options.copy(position = it)) },
+                    ),
+                ) + settings.layout,
+            )
+        }
+
+        else -> {
+            throw IllegalStateException("Unhandled DisplayContext.Options: ${options::class}")
         }
     }
 }

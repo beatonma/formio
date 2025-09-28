@@ -8,17 +8,19 @@ import kotlinx.browser.document
 import org.beatonma.gclocks.app.data.WebSettingsRepository
 import org.beatonma.gclocks.app.ui.App
 import org.beatonma.gclocks.app.ui.screens.SettingsEditorScreen
+import org.beatonma.gclocks.app.ui.screens.SettingsEditorViewModel
+import org.beatonma.gclocks.app.ui.screens.SettingsEditorViewModelFactory
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     ComposeViewport(document.body!!) {
         val factory = remember {
-            AppViewModelFactory(
+            SettingsEditorViewModelFactory(
                 repository = WebSettingsRepository()
             )
         }
 
-        val viewModel: AppViewModel = viewModel(factory = factory)
+        val viewModel: SettingsEditorViewModel = viewModel(factory = factory)
 
         App(viewModel) { navigation ->
             SettingsEditorScreen(viewModel, navigation)

@@ -12,16 +12,18 @@ sealed interface Setting
 
 
 data class RichSettings(
+    val core: List<Setting>,
     val colors: List<Setting>,
     val layout: List<Setting>,
     val time: List<Setting>,
     val sizes: List<Setting>,
 ) {
+
     companion object {
-        val Empty: RichSettings get() = RichSettings(listOf(), listOf(), listOf(), listOf())
+        fun empty(core: List<Setting>): RichSettings = RichSettings(core, listOf(), listOf(), listOf(), listOf())
     }
 
-    val all: List<Setting> get() = colors + layout + time + sizes
+    val all: List<Setting> get() = core + colors + layout + time + sizes
 
     fun append(
         colors: List<Setting>,
@@ -37,6 +39,7 @@ data class RichSettings(
         )
 
     fun applyGroups(): RichSettings = copy(
+        core = listOf(RichSettingsGroup(core)),
         colors = listOf(RichSettingsGroup(colors)),
         layout = listOf(RichSettingsGroup(layout)),
         time = listOf(RichSettingsGroup(time)),
@@ -47,7 +50,7 @@ data class RichSettings(
         return when (groupCount) {
             1 -> listOf(all)
             2 -> listOf(
-                colors + layout,
+                core + colors + layout,
                 time + sizes,
             )
 

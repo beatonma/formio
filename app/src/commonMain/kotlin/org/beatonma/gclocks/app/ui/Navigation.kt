@@ -20,7 +20,7 @@ import kotlinx.serialization.StringFormat
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.beatonma.gclocks.app.AppViewModel
+import org.beatonma.gclocks.app.ui.screens.SettingsEditorViewModel
 import org.beatonma.gclocks.app.ui.screens.AboutScreen
 import org.beatonma.gclocks.app.ui.screens.FullSizeClock
 import org.beatonma.gclocks.compose.LoadingSpinner
@@ -47,7 +47,7 @@ data class AppNavigation(
 
 @Composable
 fun AppNavigation(
-    viewModel: AppViewModel,
+    viewModel: SettingsEditorViewModel,
     settingsEditor: @Composable (AppNavigation) -> Unit,
     modifier: Modifier = Modifier,
     contentAlignment: Alignment = Alignment.TopStart,

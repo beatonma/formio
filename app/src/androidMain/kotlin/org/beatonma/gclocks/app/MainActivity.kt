@@ -40,6 +40,8 @@ import org.beatonma.gclocks.app.data.settingsRepository
 import org.beatonma.gclocks.app.ui.App
 import org.beatonma.gclocks.app.ui.SystemBarsController
 import org.beatonma.gclocks.app.ui.screens.SettingsEditorScreen
+import org.beatonma.gclocks.app.ui.screens.SettingsEditorViewModel
+import org.beatonma.gclocks.app.ui.screens.SettingsEditorViewModelFactory
 import org.beatonma.gclocks.compose.AndroidIcon
 import org.beatonma.gclocks.wallpaper.ClockWallpaperService
 import org.beatonma.gclocks.widget.ClockWidgetProvider
@@ -64,12 +66,12 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun setAppContent() {
-        val factory = AppViewModelFactory(settingsRepository, onSave = {
+        val factory = SettingsEditorViewModelFactory(settingsRepository, onSave = {
             ClockWidgetProvider.refreshWidgets(appContext)
         })
 
         setContent {
-            val viewModel: AppViewModel = viewModel(factory = factory)
+            val viewModel: SettingsEditorViewModel = viewModel(factory = factory)
             val state by viewModel.currentState.collectAsStateWithLifecycle(null)
             val snackbarHostState = remember { SnackbarHostState() }
             val systemBarsController = rememberSystemBarsController()

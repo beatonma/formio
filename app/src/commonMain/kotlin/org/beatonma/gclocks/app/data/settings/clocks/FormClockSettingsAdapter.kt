@@ -1,8 +1,6 @@
 package org.beatonma.gclocks.app.data.settings.clocks
 
-import org.beatonma.gclocks.app.SettingsViewModel
-import org.beatonma.gclocks.app.data.settings.ContextClockOptions
-import org.beatonma.gclocks.app.data.settings.DisplayContext
+import org.beatonma.gclocks.app.data.settings.ClockSettingsAdapter
 import org.beatonma.gclocks.compose.components.settings.data.RichSettings
 import org.beatonma.gclocks.compose.components.settings.data.Setting
 import org.beatonma.gclocks.core.options.Layout
@@ -10,26 +8,22 @@ import org.beatonma.gclocks.form.FormLayoutOptions
 import org.beatonma.gclocks.form.FormOptions
 import org.beatonma.gclocks.form.FormPaints
 
-
-abstract class FormSettingsViewModel(
-    initial: ContextClockOptions<FormOptions>,
-    onEditClockOptions: (FormOptions) -> Unit,
-    onEditDisplayOptions: (DisplayContext.Options) -> Unit,
-) : SettingsViewModel<FormOptions>(initial, onEditClockOptions, onEditDisplayOptions) {
-    override fun buildClockSettings(
-        settings: RichSettings,
-        clockOptions: FormOptions,
+interface FormClockSettingsAdapter : ClockSettingsAdapter<FormOptions> {
+    override fun addClockSettings(
+        richSettings: RichSettings,
+        options: FormOptions,
+        updateOptions: (FormOptions) -> Unit
     ): RichSettings {
         val updateLayout: (FormLayoutOptions) -> Unit = {
-            update(this.contextOptions.value.clockOptions.copy(layout = it))
+            updateOptions(options.copy(layout = it))
         }
-        return settings.append(
-            colors = buildPaintsSettings(clockOptions.paints) {
-                update(this.contextOptions.value.clockOptions.copy(paints = it))
+        return richSettings.append(
+            colors = buildPaintsSettings(options.paints) {
+                updateOptions(options.copy(paints = it))
             },
-            layout = buildLayoutSettings(clockOptions.layout, updateLayout),
-            time = buildTimeSettings(clockOptions.layout, updateLayout),
-            sizes = buildSizeSettings(clockOptions.layout, updateLayout)
+            layout = buildLayoutSettings(options.layout, updateLayout),
+            time = buildTimeSettings(options.layout, updateLayout),
+            sizes = buildSizeSettings(options.layout, updateLayout)
         )
     }
 }
