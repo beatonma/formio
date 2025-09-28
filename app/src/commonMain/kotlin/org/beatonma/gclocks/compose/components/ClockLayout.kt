@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
-import org.beatonma.gclocks.app.settings.DisplayContext
+import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.compose.toCompose
 
 /**

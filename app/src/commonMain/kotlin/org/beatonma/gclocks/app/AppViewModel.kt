@@ -16,9 +16,11 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.beatonma.gclocks.app.settings.AppSettings
-import org.beatonma.gclocks.app.settings.AppState
-import org.beatonma.gclocks.app.settings.DisplayContext
+import org.beatonma.gclocks.app.data.AppSettingsRepository
+import org.beatonma.gclocks.app.data.settings.AppSettings
+import org.beatonma.gclocks.app.data.settings.AppState
+import org.beatonma.gclocks.app.data.settings.ClockType
+import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.core.options.Options
 import kotlin.reflect.KClass
 
@@ -68,7 +70,7 @@ class AppViewModel(
         }
     }
 
-    fun setClock(clock: AppSettings.Clock) {
+    fun setClock(clock: ClockType) {
         _appSettings.update { previous ->
             previous?.copyWithClock(clock)
         }

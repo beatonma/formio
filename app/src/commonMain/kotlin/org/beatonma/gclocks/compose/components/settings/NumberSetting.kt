@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import org.beatonma.gclocks.compose.components.settings.components.LabelledSlider
 import org.beatonma.gclocks.compose.components.settings.components.SettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
+import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import kotlin.math.roundToInt
 
 @Composable

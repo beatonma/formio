@@ -19,10 +19,10 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import gclocks_multiplatform.app.generated.resources.Res
-import gclocks_multiplatform.app.generated.resources.ui_show_less
-import gclocks_multiplatform.app.generated.resources.ui_show_more
-import org.beatonma.gclocks.app.Localization.helpStringResourceMap
-import org.beatonma.gclocks.app.Localization.stringResourceMap
+import gclocks_multiplatform.app.generated.resources.cd_show_less
+import gclocks_multiplatform.app.generated.resources.cd_show_more
+import org.beatonma.gclocks.app.ui.Localization.helpStringResourceMap
+import org.beatonma.gclocks.app.ui.Localization.stringResourceMap
 import org.beatonma.gclocks.compose.AppIcon
 import org.beatonma.gclocks.compose.animation.EnterFade
 import org.beatonma.gclocks.compose.animation.EnterVertical
@@ -30,8 +30,10 @@ import org.beatonma.gclocks.compose.animation.ExitFade
 import org.beatonma.gclocks.compose.animation.ExitVertical
 import org.beatonma.gclocks.compose.components.settings.components.CheckableSettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.CollapsibleSettingLayout
+import org.beatonma.gclocks.compose.components.settings.components.OnFocusSetting
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
 import org.beatonma.gclocks.compose.components.settings.components.SettingValue
+import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.stringResource
 
@@ -41,12 +43,14 @@ import org.jetbrains.compose.resources.stringResource
 fun <E : Enum<E>> SingleSelectSetting(
     setting: RichSetting.SingleSelect<E>,
     modifier: Modifier = Modifier,
+    onFocus: OnFocusSetting? = null,
 ) {
     SingleSelectSetting(
         name = setting.localized.resolve(),
         value = setting.value,
         values = setting.values,
         modifier = modifier,
+        onFocus = onFocus,
         helpText = setting.helpText?.resolve(),
         onValueChange = setting.onValueChange,
     )
@@ -60,6 +64,7 @@ fun <E : Enum<E>> SingleSelectSetting(
     value: E,
     values: Set<E>,
     modifier: Modifier = Modifier,
+    onFocus: OnFocusSetting? = null,
     helpText: String? = null,
     onValueChange: (newValue: E) -> Unit,
 ) {
@@ -70,15 +75,16 @@ fun <E : Enum<E>> SingleSelectSetting(
         name,
         modifier,
         helpText = helpText,
+        onFocus = onFocus,
         valueDescription = resourceMap.getValue(value).resolve()
     ) {
         for (v in values) {
             val onClick = { onValueChange(v) }
 
             CheckableSettingLayout(
-                helpText = helpResourceMap?.getValue(v)?.resolve(),
-                onClick = onClick,
                 role = Role.RadioButton,
+                onClick = onClick,
+                helpText = helpResourceMap?.getValue(v)?.resolve(),
                 text = { SettingValue(resourceMap.getValue(v).resolve()) }
             ) {
                 RadioButton(
@@ -95,6 +101,7 @@ fun <E : Enum<E>> SingleSelectSetting(
 fun <E : Enum<E>> MultiSelectSetting(
     setting: RichSetting.MultiSelect<E>,
     modifier: Modifier = Modifier,
+    onFocus: OnFocusSetting? = null,
     defaultValue: E = setting.values.first(),
     allowEmptySet: Boolean = false,
 ) {
@@ -105,6 +112,7 @@ fun <E : Enum<E>> MultiSelectSetting(
         onValueChange = setting.onValueChange,
         modifier = modifier,
         helpText = setting.helpText?.resolve(),
+        onFocus = onFocus,
         defaultValue = defaultValue,
         allowEmptySet = allowEmptySet
     )
@@ -119,16 +127,19 @@ fun <E : Enum<E>> MultiSelectSetting(
     onValueChange: (newValue: Set<E>) -> Unit,
     modifier: Modifier = Modifier,
     helpText: String? = null,
+    onFocus: OnFocusSetting? = null,
     defaultValue: E = values.first(),
     allowEmptySet: Boolean = false,
 ) {
     val resourceMap by remember(defaultValue) { mutableStateOf(defaultValue::class.stringResourceMap) }
     val helpResourceMap by remember(defaultValue) { mutableStateOf(defaultValue::class.helpStringResourceMap) }
 
+    @Suppress("SimplifiableCallChain")
     GroupSetting(
         name,
         modifier,
         helpText = helpText,
+        onFocus = onFocus,
         valueDescription = values.map { resourceMap.getValue(it).resolve() }.joinToString(", ")
     ) {
         for (v in values) {
@@ -166,6 +177,7 @@ private fun GroupSetting(
     modifier: Modifier,
     helpText: String?,
     valueDescription: String,
+    onFocus: OnFocusSetting?,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -173,7 +185,7 @@ private fun GroupSetting(
 
     val iconRotation by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
 
-    CollapsibleSettingLayout(expanded, modifier, helpText) {
+    CollapsibleSettingLayout(expanded, modifier, helpText, onFocus = onFocus) {
         CheckableSettingLayout(
             helpText = helpText,
             onClick = onClick,
@@ -194,8 +206,8 @@ private fun GroupSetting(
                     AppIcon.ArrowDropdown,
                     stringResource(
                         when (expanded) {
-                            true -> Res.string.ui_show_less
-                            false -> Res.string.ui_show_more
+                            true -> Res.string.cd_show_less
+                            false -> Res.string.cd_show_more
                         }
                     ),
                     modifier = Modifier.rotate(iconRotation)

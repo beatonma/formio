@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.beatonma.gclocks.android.ClockView
-import org.beatonma.gclocks.app.settings.DisplayContext
-import org.beatonma.gclocks.app.settingsRepository
+import org.beatonma.gclocks.app.data.settings.DisplayContext
+import org.beatonma.gclocks.app.data.settingsRepository
 import org.beatonma.gclocks.core.geometry.MutableRectF
 
 class DreamView @JvmOverloads constructor(

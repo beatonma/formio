@@ -48,19 +48,20 @@ import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.size
 import androidx.compose.ui.unit.width
 import gclocks_multiplatform.app.generated.resources.Res
-import gclocks_multiplatform.app.generated.resources.ui_align_horizontal_center
-import gclocks_multiplatform.app.generated.resources.ui_align_reset
-import gclocks_multiplatform.app.generated.resources.ui_align_vertical_center
-import gclocks_multiplatform.app.generated.resources.ui_save_changes
-import org.beatonma.gclocks.app.LocalClockPreview
+import gclocks_multiplatform.app.generated.resources.cd_align_horizontal_center
+import gclocks_multiplatform.app.generated.resources.cd_align_reset
+import gclocks_multiplatform.app.generated.resources.cd_align_vertical_center
+import gclocks_multiplatform.app.generated.resources.cd_save_changes
 import org.beatonma.gclocks.app.theme.DesignSpec
 import org.beatonma.gclocks.app.theme.DesignSpec.floatingActionButton
 import org.beatonma.gclocks.app.theme.rememberContentColor
+import org.beatonma.gclocks.app.ui.screens.LocalClockPreview
 import org.beatonma.gclocks.compose.AppIcon
 import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.components.FullScreenOverlay
 import org.beatonma.gclocks.compose.components.settings.components.CheckableSettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
+import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.geometry.RectF
 import org.jetbrains.compose.resources.stringResource
@@ -73,7 +74,7 @@ private val DragHandleOffset = DragHandleSize / 2f
 
 @Composable
 fun ClockPositionSetting(
-    setting: RichSetting.RectF,
+    setting: RichSetting.ClockPosition,
     modifier: Modifier,
 ) {
     ClockPositionSetting(
@@ -95,9 +96,9 @@ fun ClockPositionSetting(
     var isEditMode by rememberSaveable { mutableStateOf(false) }
 
     CheckableSettingLayout(
-        modifier,
         onClick = { isEditMode = true },
         role = Role.Button,
+        modifier = modifier,
         text = { SettingName(name) }) {
         IconButton({ isEditMode = true }) {
             Icon(AppIcon.PositionAndSize, null)
@@ -292,7 +293,7 @@ private fun ToolButtons(
             OutlinedIconButton({ onChange(shrink(containerSize)) }) {
                 Icon(
                     AppIcon.Reset,
-                    stringResource(Res.string.ui_align_reset)
+                    stringResource(Res.string.cd_align_reset)
                 )
             }
         }
@@ -300,14 +301,14 @@ private fun ToolButtons(
         FilledTonalIconButton({ onChange(centerHorizontal(bounds, containerSize)) }) {
             Icon(
                 AppIcon.AlignCenterHorizontal,
-                stringResource(Res.string.ui_align_horizontal_center)
+                stringResource(Res.string.cd_align_horizontal_center)
             )
         }
         FilledTonalIconButton({ onChange(centerVertical(bounds, containerSize)) }) {
-            Icon(AppIcon.AlignCenterVertical, stringResource(Res.string.ui_align_vertical_center))
+            Icon(AppIcon.AlignCenterVertical, stringResource(Res.string.cd_align_vertical_center))
         }
         FloatingActionButton(onSave) {
-            Icon(AppIcon.Checkmark, stringResource(Res.string.ui_save_changes))
+            Icon(AppIcon.Checkmark, stringResource(Res.string.cd_save_changes))
         }
     }
 }

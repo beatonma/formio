@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <resources>
+    <string name="setting_choose_clock_style">Clock style</string>
+
     <!-- Alignment -->
     <string name="setting_alignment_horizontal">Horizontal alignment</string>
     <string name="setting_alignment_horizontal_start">Align left</string>

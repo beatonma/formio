@@ -5,7 +5,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -48,10 +47,9 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.beatonma.gclocks.compose.ComposePath
-import org.beatonma.gclocks.compose.Platform
+import org.beatonma.gclocks.compose.VerticalBottomContentPadding
 import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.components.GlyphPreview
-import org.beatonma.gclocks.compose.platform
 import org.beatonma.gclocks.compose.plus
 import org.beatonma.gclocks.core.ClockGlyph
 import org.beatonma.gclocks.core.GlyphRole
@@ -108,13 +106,7 @@ fun DebugApp() {
                 GridCells.Adaptive(220.dp),
                 modifier = Modifier.fillMaxSize()
                     .background(Color.DarkGray),
-                contentPadding = when (platform) {
-                    Platform.Android -> WindowInsets.systemBars.asPaddingValues() + PaddingValues(
-                        bottom = 256.dp
-                    )
-
-                    else -> PaddingValues(bottom = 256.dp)
-                }
+                contentPadding = WindowInsets.systemBars.asPaddingValues() + VerticalBottomContentPadding
             ) {
                 clockPreview(
                     FormOptions(

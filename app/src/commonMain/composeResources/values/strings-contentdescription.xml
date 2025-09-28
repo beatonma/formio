@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <string name="cd_show_more">Show more</string>
+    <string name="cd_show_less">Show less</string>
+
+    <string name="cd_navigate_back">Back to previous screen</string>
+
+    <string name="cd_fullscreen_open">Expand to fullscreen</string>
+    <string name="cd_fullscreen_close">Exit fullscreen</string>
+
+    <!-- clock size/position editor -->
+    <string name="cd_align_vertical_center">Center vertically</string>
+    <string name="cd_align_horizontal_center">Center horizontally</string>
+    <string name="cd_align_reset">Reset size and position</string>
+    <string name="cd_drag_handle_resize">Drag to resize</string>
+    <string name="cd_save_changes">Save changes</string>
+</resources>

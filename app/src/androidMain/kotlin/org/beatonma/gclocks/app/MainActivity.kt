@@ -9,8 +9,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.core.app.AlarmManagerCompat.canScheduleExactAlarms
 import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
@@ -24,9 +33,13 @@ import org.beatonma.gclocks.android.alarmManager
 import org.beatonma.gclocks.android.appContext
 import org.beatonma.gclocks.android.componentNameOf
 import org.beatonma.gclocks.android.widgetManager
-import org.beatonma.gclocks.app.settings.DisplayContext
-import org.beatonma.gclocks.app.settings.DisplayMetrics
-import org.beatonma.gclocks.app.theme.AppTheme
+import org.beatonma.gclocks.app.data.save
+import org.beatonma.gclocks.app.data.settings.DisplayContext
+import org.beatonma.gclocks.app.data.settings.DisplayMetrics
+import org.beatonma.gclocks.app.data.settingsRepository
+import org.beatonma.gclocks.app.ui.App
+import org.beatonma.gclocks.app.ui.SystemBarsController
+import org.beatonma.gclocks.app.ui.screens.SettingsEditorScreen
 import org.beatonma.gclocks.compose.AndroidIcon
 import org.beatonma.gclocks.wallpaper.ClockWallpaperService
 import org.beatonma.gclocks.widget.ClockWidgetProvider
@@ -67,14 +80,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            AppTheme {
-                CompositionLocalProvider(LocalSystemBars provides systemBarsController) {
-                    App(
-                        viewModel,
-                        snackbarHostState = snackbarHostState,
-                        toolbar = { ClockToolbar(it) }
-                    )
-                }
+            App(viewModel, systemBarsController) { navigation ->
+                SettingsEditorScreen(
+                    viewModel,
+                    navigation,
+                    snackbarHostState = snackbarHostState,
+                    toolbar = { ClockToolbar(it) }
+                )
             }
         }
     }

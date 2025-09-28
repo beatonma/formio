@@ -1,16 +1,16 @@
 package org.beatonma.gclocks.app
 
-import org.beatonma.gclocks.app.settings.ContextClockOptions
-import org.beatonma.gclocks.app.settings.DisplayContext
-import org.beatonma.gclocks.app.settings.clocks.FormSettingsViewModel
-import org.beatonma.gclocks.app.settings.clocks.Io16SettingsViewModel
-import org.beatonma.gclocks.app.settings.clocks.Io18SettingsViewModel
-import org.beatonma.gclocks.app.settings.clocks.SettingKey
-import org.beatonma.gclocks.app.settings.clocks.chooseBackgroundColor
-import org.beatonma.gclocks.app.settings.clocks.chooseClockPosition
-import org.beatonma.gclocks.compose.components.settings.RichSetting
-import org.beatonma.gclocks.compose.components.settings.RichSettings
-import org.beatonma.gclocks.compose.components.settings.insertBefore
+import org.beatonma.gclocks.app.data.settings.ContextClockOptions
+import org.beatonma.gclocks.app.data.settings.DisplayContext
+import org.beatonma.gclocks.app.data.settings.clocks.FormSettingsViewModel
+import org.beatonma.gclocks.app.data.settings.clocks.Io16SettingsViewModel
+import org.beatonma.gclocks.app.data.settings.clocks.Io18SettingsViewModel
+import org.beatonma.gclocks.app.data.settings.clocks.SettingKey
+import org.beatonma.gclocks.app.data.settings.clocks.chooseBackgroundColor
+import org.beatonma.gclocks.app.data.settings.clocks.chooseClockPosition
+import org.beatonma.gclocks.compose.components.settings.data.RichSetting
+import org.beatonma.gclocks.compose.components.settings.data.RichSettings
+import org.beatonma.gclocks.compose.components.settings.data.insertBefore
 import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.form.FormOptions

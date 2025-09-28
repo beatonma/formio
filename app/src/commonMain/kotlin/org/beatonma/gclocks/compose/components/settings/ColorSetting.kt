@@ -35,7 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.window.core.layout.WindowHeightSizeClass
+import androidx.window.core.layout.WindowSizeClass
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.setting_color_contentdescription_edited
 import gclocks_multiplatform.app.generated.resources.setting_color_contentdescription_selected
@@ -45,7 +45,7 @@ import gclocks_multiplatform.app.generated.resources.setting_color_label_hsl_sat
 import gclocks_multiplatform.app.generated.resources.setting_color_label_rgb_blue_initial
 import gclocks_multiplatform.app.generated.resources.setting_color_label_rgb_green_initial
 import gclocks_multiplatform.app.generated.resources.setting_color_label_rgb_red_initial
-import org.beatonma.gclocks.app.Localization.stringResourceMap
+import org.beatonma.gclocks.app.ui.Localization.stringResourceMap
 import org.beatonma.gclocks.app.theme.rememberContentColor
 import org.beatonma.gclocks.compose.AppIcon
 import org.beatonma.gclocks.compose.animation.EnterScale
@@ -56,9 +56,11 @@ import org.beatonma.gclocks.compose.components.ButtonGroup
 import org.beatonma.gclocks.compose.components.ButtonGroupSize
 import org.beatonma.gclocks.compose.components.settings.components.CollapsibleSettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.LabelledSlider
+import org.beatonma.gclocks.compose.components.settings.components.OnFocusSetting
 import org.beatonma.gclocks.compose.components.settings.components.ScrollingRow
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
 import org.beatonma.gclocks.compose.components.settings.components.rememberMaterialColorSwatch
+import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import org.beatonma.gclocks.compose.toCompose
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.toColor
@@ -78,16 +80,18 @@ private val EditablePatchSize = 64.dp
 fun MultiColorSetting(
     setting: RichSetting.Colors,
     modifier: Modifier = Modifier,
+    onFocus: OnFocusSetting?,
 ) {
     MultiColorSetting(
         setting.localized.resolve(),
         setting.value,
-        { index, color ->
+        modifier,
+        onFocus = onFocus,
+        onValueChange = { index, color ->
             val value = setting.value.toMutableList()
             value[index] = color
             setting.onValueChange(value)
         },
-        modifier,
     )
 }
 
@@ -95,13 +99,14 @@ fun MultiColorSetting(
 fun MultiColorSetting(
     name: String,
     colors: List<Color>,
-    onValueChange: (index: Int, color: Color) -> Unit,
     modifier: Modifier = Modifier,
+    onFocus: OnFocusSetting?,
+    onValueChange: (index: Int, color: Color) -> Unit,
 ) {
     var editingIndex: Int? by remember(colors) { mutableStateOf(null) }
     val editorOpenPadding by animateDpAsState(if (editingIndex != null) 48.dp else 0.dp)
 
-    CollapsibleSettingLayout(editingIndex != null, modifier) {
+    CollapsibleSettingLayout(editingIndex != null, modifier, onFocus = onFocus) {
         SettingName(name)
 
         ScrollingRow(
@@ -148,11 +153,13 @@ fun MultiColorSetting(
 fun ColorSetting(
     setting: RichSetting.Color,
     modifier: Modifier = Modifier,
+    onFocus: OnFocusSetting?,
 ) {
     ColorSetting(
         setting.localized.resolve(),
         setting.value,
         modifier,
+        onFocus = onFocus,
         onValueChange = setting.onValueChange
     )
 }
@@ -163,11 +170,12 @@ fun ColorSetting(
     name: String,
     value: Color,
     modifier: Modifier = Modifier,
+    onFocus: OnFocusSetting?,
     onValueChange: (newValue: Color) -> Unit,
 ) {
     var isEditing by remember { mutableStateOf(false) }
 
-    CollapsibleSettingLayout(isEditing, modifier) {
+    CollapsibleSettingLayout(isEditing, modifier, onFocus = onFocus) {
         SettingName(name)
 
         EditablePreviewPatch(
@@ -341,12 +349,11 @@ private fun SampleColors(
     val spacing = 12.dp
     val horizontalArrangement =
         Arrangement.spacedBy(spacing, alignment = Alignment.CenterHorizontally)
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass
+    val isVerticallySmall =
+        currentWindowAdaptiveInfo().windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
 
-    when (windowSizeClass) {
-        WindowHeightSizeClass.COMPACT,
-        WindowHeightSizeClass.MEDIUM,
-            -> {
+    when (isVerticallySmall) {
+        true -> {
             ScrollingRow(modifier, horizontalArrangement = horizontalArrangement) {
                 items(swatch) { color ->
                     SampleColorPatch(color, onValueChange, color == value)
@@ -354,7 +361,7 @@ private fun SampleColors(
             }
         }
 
-        else -> {
+        false -> {
             FlowRow(
                 modifier,
                 horizontalArrangement = horizontalArrangement,

@@ -11,7 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import org.beatonma.gclocks.app.settings.AppSettings
+import org.beatonma.gclocks.app.data.settings.ClockType
 import org.beatonma.gclocks.compose.components.currentFrameDelta
 import org.beatonma.gclocks.core.LoadingSpinner
 import org.beatonma.gclocks.form.FormLoadingSpinner
@@ -25,7 +25,7 @@ import org.beatonma.gclocks.io18.Io18Paints
 @Composable
 fun LoadingSpinner(
     modifier: Modifier = Modifier.fillMaxWidth(),
-    clock: AppSettings.Clock = remember { AppSettings.Clock.entries.random() },
+    clock: ClockType = remember { ClockType.entries.random() },
     maxSize: Dp = 64.dp,
 ) {
     val animation = rememberLoadingSpinner(clock)
@@ -51,12 +51,12 @@ fun LoadingSpinner(
 
 
 @Composable
-private fun rememberLoadingSpinner(clock: AppSettings.Clock): LoadingSpinner<*> {
+private fun rememberLoadingSpinner(clock: ClockType): LoadingSpinner<*> {
     return remember(clock) {
         when (clock) {
-            AppSettings.Clock.Io16 -> Io16LoadingSpinner(ComposePath(), Io16Paints())
-            AppSettings.Clock.Io18 -> Io18LoadingSpinner(Io18Paints())
-            AppSettings.Clock.Form -> FormLoadingSpinner(FormPaints())
+            ClockType.Io16 -> Io16LoadingSpinner(ComposePath(), Io16Paints())
+            ClockType.Io18 -> Io18LoadingSpinner(Io18Paints())
+            ClockType.Form -> FormLoadingSpinner(FormPaints())
         }
     }
 }

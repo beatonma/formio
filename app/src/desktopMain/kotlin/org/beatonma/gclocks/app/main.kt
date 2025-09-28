@@ -11,7 +11,10 @@ import androidx.compose.ui.window.rememberWindowState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.app_name
-import org.beatonma.gclocks.app.theme.AppTheme
+import org.beatonma.gclocks.app.data.DataStoreAppSettingsRepository
+import org.beatonma.gclocks.app.data.createDataStore
+import org.beatonma.gclocks.app.ui.App
+import org.beatonma.gclocks.app.ui.screens.SettingsEditorScreen
 import org.jetbrains.compose.resources.stringResource
 
 fun main() = application {
@@ -33,8 +36,8 @@ fun main() = application {
     ) {
         val viewModel: AppViewModel = viewModel(factory = factory)
 
-        AppTheme {
-            App(viewModel)
+        App(viewModel) { navigation ->
+            SettingsEditorScreen(viewModel, navigation)
         }
     }
 }

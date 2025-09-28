@@ -11,17 +11,17 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
-import org.beatonma.gclocks.app.settings.ContextClockOptions
-import org.beatonma.gclocks.app.settings.DisplayContext
-import org.beatonma.gclocks.app.settings.DisplayContextDefaults
-import org.beatonma.gclocks.app.settings.clocks.FormSettingsViewModel
-import org.beatonma.gclocks.app.settings.clocks.Io16SettingsViewModel
-import org.beatonma.gclocks.app.settings.clocks.Io18SettingsViewModel
-import org.beatonma.gclocks.app.settings.clocks.SettingKey
-import org.beatonma.gclocks.app.settings.clocks.chooseBackgroundColor
-import org.beatonma.gclocks.app.settings.clocks.chooseClockPosition
-import org.beatonma.gclocks.compose.components.settings.RichSettings
-import org.beatonma.gclocks.compose.components.settings.insertBefore
+import org.beatonma.gclocks.app.data.settings.ContextClockOptions
+import org.beatonma.gclocks.app.data.settings.DisplayContext
+import org.beatonma.gclocks.app.data.settings.DisplayContextDefaults
+import org.beatonma.gclocks.app.data.settings.clocks.FormSettingsViewModel
+import org.beatonma.gclocks.app.data.settings.clocks.Io16SettingsViewModel
+import org.beatonma.gclocks.app.data.settings.clocks.Io18SettingsViewModel
+import org.beatonma.gclocks.app.data.settings.clocks.SettingKey
+import org.beatonma.gclocks.app.data.settings.clocks.chooseBackgroundColor
+import org.beatonma.gclocks.app.data.settings.clocks.chooseClockPosition
+import org.beatonma.gclocks.compose.components.settings.data.RichSettings
+import org.beatonma.gclocks.compose.components.settings.data.insertBefore
 import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.form.FormOptions
@@ -163,7 +163,7 @@ internal fun <O : Options<*>> buildDefaultSettingsViewModel(
                     settings: RichSettings,
                     displayOptions: DisplayContext.Options,
                 ): RichSettings {
-                    return buildDefaultDisplaySettings(this, settings, displayOptions)
+                    return buildDefaultDisplaySettings(settings, displayOptions)
                 }
             }
         }
@@ -178,7 +178,7 @@ internal fun <O : Options<*>> buildDefaultSettingsViewModel(
                     settings: RichSettings,
                     displayOptions: DisplayContext.Options,
                 ): RichSettings {
-                    return buildDefaultDisplaySettings(this, settings, displayOptions)
+                    return buildDefaultDisplaySettings(settings, displayOptions)
                 }
             }
         }
@@ -193,7 +193,7 @@ internal fun <O : Options<*>> buildDefaultSettingsViewModel(
                     settings: RichSettings,
                     displayOptions: DisplayContext.Options,
                 ): RichSettings {
-                    return buildDefaultDisplaySettings(this, settings, displayOptions)
+                    return buildDefaultDisplaySettings(settings, displayOptions)
                 }
             }
         }
@@ -203,8 +203,7 @@ internal fun <O : Options<*>> buildDefaultSettingsViewModel(
 }
 
 
-private fun <O : Options<*>> buildDefaultDisplaySettings(
-    vm: SettingsViewModel<O>,
+private fun <O : Options<*>> SettingsViewModel<O>.buildDefaultDisplaySettings(
     settings: RichSettings,
     displayOptions: DisplayContext.Options,
 ): RichSettings {
@@ -215,13 +214,13 @@ private fun <O : Options<*>> buildDefaultDisplaySettings(
                     SettingKey.clockColors,
                     chooseBackgroundColor(
                         value = displayOptions.backgroundColor,
-                        onUpdate = { vm.update(displayOptions.copy(backgroundColor = it)) },
+                        onUpdate = { update(displayOptions.copy(backgroundColor = it)) },
                     ),
                 ),
                 layout = listOf(
                     chooseClockPosition(
                         value = displayOptions.position,
-                        onUpdate = { vm.update(displayOptions.copy(position = it)) },
+                        onUpdate = { update(displayOptions.copy(position = it)) },
                     ),
                 ) + settings.layout,
             )

@@ -13,13 +13,13 @@ import kotlinx.serialization.Serializable
 import org.beatonma.R
 import org.beatonma.gclocks.android.AppContext
 import org.beatonma.gclocks.android.appContext
-import org.beatonma.gclocks.app.AppSettingsRepository
-import org.beatonma.gclocks.app.deserialize
-import org.beatonma.gclocks.app.serialize
-import org.beatonma.gclocks.app.settings.AppSettings
-import org.beatonma.gclocks.app.settings.DefaultAppSettings
-import org.beatonma.gclocks.app.settings.DisplayContext
-import org.beatonma.gclocks.app.settingsRepository
+import org.beatonma.gclocks.app.data.AppSettingsRepository
+import org.beatonma.gclocks.app.data.deserialize
+import org.beatonma.gclocks.app.data.serialize
+import org.beatonma.gclocks.app.data.settings.AppSettings
+import org.beatonma.gclocks.app.data.settings.DefaultAppSettings
+import org.beatonma.gclocks.app.data.settings.DisplayContext
+import org.beatonma.gclocks.app.data.settingsRepository
 import org.beatonma.gclocks.core.util.debug
 
 

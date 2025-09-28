@@ -18,11 +18,11 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.beatonma.gclocks.android.AndroidCanvasHost
 import org.beatonma.gclocks.android.AndroidPath
-import org.beatonma.gclocks.app.loadDisplayMetrics
-import org.beatonma.gclocks.app.settings.ContextClockOptions
-import org.beatonma.gclocks.app.settings.DisplayContext
-import org.beatonma.gclocks.app.settings.DisplayMetrics
-import org.beatonma.gclocks.app.settingsRepository
+import org.beatonma.gclocks.app.data.loadDisplayMetrics
+import org.beatonma.gclocks.app.data.settings.ContextClockOptions
+import org.beatonma.gclocks.app.data.settings.DisplayContext
+import org.beatonma.gclocks.app.data.settings.DisplayMetrics
+import org.beatonma.gclocks.app.data.settingsRepository
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
