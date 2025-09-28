@@ -45,8 +45,8 @@ import gclocks_multiplatform.app.generated.resources.setting_color_label_hsl_sat
 import gclocks_multiplatform.app.generated.resources.setting_color_label_rgb_blue_initial
 import gclocks_multiplatform.app.generated.resources.setting_color_label_rgb_green_initial
 import gclocks_multiplatform.app.generated.resources.setting_color_label_rgb_red_initial
-import org.beatonma.gclocks.app.ui.Localization.stringResourceMap
 import org.beatonma.gclocks.app.theme.rememberContentColor
+import org.beatonma.gclocks.app.ui.Localization.stringResourceMap
 import org.beatonma.gclocks.compose.AppIcon
 import org.beatonma.gclocks.compose.animation.EnterScale
 import org.beatonma.gclocks.compose.animation.EnterVertical
@@ -103,7 +103,7 @@ fun MultiColorSetting(
     onFocus: OnFocusSetting?,
     onValueChange: (index: Int, color: Color) -> Unit,
 ) {
-    var editingIndex: Int? by remember(colors) { mutableStateOf(null) }
+    var editingIndex: Int? by remember(colors.size) { mutableStateOf(null) }
     val editorOpenPadding by animateDpAsState(if (editingIndex != null) 48.dp else 0.dp)
 
     CollapsibleSettingLayout(editingIndex != null, modifier, onFocus = onFocus) {
