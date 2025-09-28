@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
@@ -151,9 +152,9 @@ private fun SettingsEditorScreen(
     val hasUnsavedChanges by viewModel.hasUnsavedChanges.collectAsStateWithLifecycle()
     val content: @Composable () -> Unit = {
         ClockSettingsScaffold(
-            settings.state.displayContext,
-            settings.contextOptions,
-            richSettings,
+            key = "${settings.state.displayContext}_${settings.contextSettings.clock}",
+            options = settings.contextOptions,
+            richSettings = richSettings,
             hasUnsavedChanges = hasUnsavedChanges,
             onSave = viewModel::save,
             settingsEditorAdapter = settingsEditorAdapter,
@@ -201,7 +202,8 @@ private fun SettingsEditorScreenWithNavigation(
 
 @Composable
 private fun ClockSettingsScaffold(
-    displayContext: DisplayContext,
+    key: Any,
+//    displayContext: DisplayContext,
     options: ContextClockOptions<*>,
     richSettings: RichSettings,
     hasUnsavedChanges: Boolean,
@@ -228,6 +230,7 @@ private fun ClockSettingsScaffold(
             )
         ) {
             SettingsUi(
+                key,
                 richSettings,
                 Modifier.fillMaxWidth(),
                 contentPadding = VerticalBottomContentPadding + contentPadding.horizontal(),
@@ -235,11 +238,11 @@ private fun ClockSettingsScaffold(
                     CompositionLocalProvider(LocalContentColor provides foregroundColor) {
                         ClockPreview(
                             options.clockOptions,
-                            settingsEditorAdapter?.toolbar?.let { toolbar -> { toolbar(displayContext) } },
+                            settingsEditorAdapter?.toolbar?.let { toolbar -> { toolbar(options.displayContext) } },
                             modifier
                                 .background(backgroundColor)
                                 .onlyIf(settingsEditorAdapter?.onClickPreview) { onClick ->
-                                    clickable(onClick = { onClick(displayContext) })
+                                    clickable(onClick = { onClick(options.displayContext) })
                                 }
                                 .animateContentSize(),
                             clockModifier = Modifier
@@ -272,6 +275,7 @@ private fun ClockPreview(
 
 @Composable
 private fun WideAndTall(
+    key: Any,
     richSettings: RichSettings,
     itemModifier: Modifier,
     groupModifier: Modifier,
@@ -287,6 +291,7 @@ private fun WideAndTall(
         Row(horizontalArrangement = Arrangement.spacedBy(ColumnSpacing, Alignment.CenterHorizontally)) {
             val columnModifier = Modifier.weight(1f)
             ClockSettingsColumn(
+                key,
                 left,
                 contentPadding,
                 coroutineScope,
@@ -296,6 +301,7 @@ private fun WideAndTall(
             )
 
             ClockSettingsColumn(
+                key,
                 right,
                 contentPadding,
                 coroutineScope,
@@ -309,6 +315,7 @@ private fun WideAndTall(
 
 @Composable
 private fun NarrowAndTall(
+    key: Any,
     richSettings: RichSettings,
     itemModifier: Modifier,
     groupModifier: Modifier,
@@ -319,6 +326,7 @@ private fun NarrowAndTall(
     val (settings) = richSettings.groups(1)
 
     ClockSettingsColumn(
+        key,
         settings,
         contentPadding,
         coroutineScope,
@@ -334,6 +342,7 @@ private fun NarrowAndTall(
 
 @Composable
 private fun WideAndShort(
+    key: Any,
     richSettings: RichSettings,
     itemModifier: Modifier,
     groupModifier: Modifier,
@@ -352,6 +361,7 @@ private fun WideAndShort(
 
         Box(columnModifier) {
             ClockSettingsColumn(
+                key,
                 settings,
                 contentPadding,
                 coroutineScope,
@@ -365,6 +375,7 @@ private fun WideAndShort(
 
 @Composable
 private fun NarrowAndShort(
+    key: Any,
     richSettings: RichSettings,
     itemModifier: Modifier,
     groupModifier: Modifier,
@@ -375,6 +386,7 @@ private fun NarrowAndShort(
     val (settings) = richSettings.groups(1)
 
     ClockSettingsColumn(
+        key,
         settings,
         contentPadding,
         coroutineScope,
@@ -392,6 +404,7 @@ private fun NarrowAndShort(
 
 @Composable
 private fun SettingsUi(
+    key: Any,
     richSettings: RichSettings,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues,
@@ -414,6 +427,7 @@ private fun SettingsUi(
 
         when {
             isWide && isTall -> WideAndTall(
+                key,
                 richSettings,
                 itemModifier,
                 groupModifier,
@@ -423,6 +437,7 @@ private fun SettingsUi(
             )
 
             isWide -> WideAndShort(
+                key,
                 richSettings,
                 itemModifier,
                 groupModifier,
@@ -432,6 +447,7 @@ private fun SettingsUi(
             )
 
             isTall -> NarrowAndTall(
+                key,
                 richSettings,
                 itemModifier,
                 groupModifier,
@@ -441,6 +457,7 @@ private fun SettingsUi(
             )
 
             else -> NarrowAndShort(
+                key,
                 richSettings,
                 itemModifier,
                 groupModifier,
@@ -454,6 +471,7 @@ private fun SettingsUi(
 
 @Composable
 private fun ClockSettingsColumn(
+    key: Any,
     settings: List<Setting>,
     contentPadding: PaddingValues,
     scope: CoroutineScope,
@@ -464,6 +482,10 @@ private fun ClockSettingsColumn(
     state: LazyListState = rememberLazyListState(),
     header: LazyListScope.() -> Int = { 0 },
 ) {
+    LaunchedEffect(key) {
+        state.scrollToItem(0)
+    }
+
     LazyColumn(
         modifier.widthIn(max = maxWidth),
         state = state,
