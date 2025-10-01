@@ -288,7 +288,7 @@ private fun WideAndTall(
         clockPreview(Modifier)
 
         Row(horizontalArrangement = Arrangement.spacedBy(ColumnSpacing, Alignment.CenterHorizontally)) {
-            val columnModifier = Modifier.weight(1f)
+            val columnModifier = Modifier.widthIn(max = ColumnMaxWidth).weight(1f, fill = false)
             ClockSettingsColumn(
                 key,
                 left,
@@ -355,7 +355,7 @@ private fun WideAndShort(
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(ColumnSpacing, Alignment.CenterHorizontally)
     ) {
-        val columnModifier = Modifier.weight(1f)
+        val columnModifier = Modifier.weight(1f, fill = false)
         clockPreview(columnModifier.fillMaxHeight())
 
         Box(columnModifier) {
