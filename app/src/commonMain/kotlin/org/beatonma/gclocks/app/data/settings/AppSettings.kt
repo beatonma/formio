@@ -76,39 +76,49 @@ data class AppSettings(
         clockOptions: Options<*>,
         displayOptions: DisplayContext.Options,
     ): AppSettings {
+        return copyWithOptions(
+            clockOptions.resolveClockType(),
+            clockOptions,
+            displayOptions
+        )
+    }
+
+    fun copyWithOptions(
+        clock: ClockType,
+        clockOptions: Options<*>?,
+        displayOptions: DisplayContext.Options?,
+    ): AppSettings {
         val previous = settings[state.displayContext] ?: ContextSettings(state.displayContext)
         val updatedSettings = settings.toMutableMap().apply {
             set(
                 state.displayContext,
-                when (clockOptions) {
-                    is FormOptions -> previous.copy(
+                when (clock) {
+                    ClockType.Form -> previous.copy(
                         clock = ClockType.Form,
                         form = previous.form.copy(
-                            clockOptions = clockOptions,
-                            displayOptions = displayOptions
+                            clockOptions = clockOptions as FormOptions? ?: previous.form.clockOptions,
+                            displayOptions = displayOptions ?: previous.form.displayOptions
                         )
                     )
 
-                    is Io16Options -> previous.copy(
+                    ClockType.Io16 -> previous.copy(
                         clock = ClockType.Io16,
                         io16 = previous.io16.copy(
-                            clockOptions = clockOptions,
-                            displayOptions = displayOptions
+                            clockOptions = clockOptions as Io16Options? ?: previous.io16.clockOptions,
+                            displayOptions = displayOptions ?: previous.io16.displayOptions
                         )
                     )
 
-                    is Io18Options -> previous.copy(
+                    ClockType.Io18 -> previous.copy(
                         clock = ClockType.Io18,
                         io18 = previous.io18.copy(
-                            clockOptions = clockOptions,
-                            displayOptions = displayOptions
+                            clockOptions = clockOptions as Io18Options? ?: previous.io18.clockOptions,
+                            displayOptions = displayOptions ?: previous.io18.displayOptions
                         )
                     )
-
-                    else -> throw IllegalStateException("Unhandled options class ${clockOptions::class}")
                 }
             )
-        }.toMap()
+        }
 
         return copy(settings = updatedSettings)
     }

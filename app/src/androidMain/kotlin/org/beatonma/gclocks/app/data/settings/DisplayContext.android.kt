@@ -3,11 +3,8 @@ package org.beatonma.gclocks.app.data.settings
 import kotlinx.serialization.Serializable
 import org.beatonma.gclocks.app.ui.LocalizedString
 import org.beatonma.gclocks.compose.AndroidIcon
-import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.geometry.RectF
 import org.beatonma.gclocks.core.graphics.Color
-
-private val DefaultPosition: RectF = MutableRectF(0f, 0f, 1f, 1f).inset(0.1f).toRect()
 
 actual enum class DisplayContext {
     Widget {
@@ -35,14 +32,14 @@ actual enum class DisplayContext {
 
         @Serializable
         data class Wallpaper(
-            override val backgroundColor: Color = Color(0xff222222),
-            override val position: RectF = DefaultPosition,
+            override val backgroundColor: Color = DisplayContextDefaults.DefaultBackgroundColor,
+            override val position: RectF = DisplayContextDefaults.DefaultPosition,
         ) : WithBackground
 
         @Serializable
         data class Screensaver(
-            override val backgroundColor: Color = Color(0xff222222),
-            override val position: RectF = DefaultPosition,
+            override val backgroundColor: Color = DisplayContextDefaults.DefaultBackgroundColor,
+            override val position: RectF = DisplayContextDefaults.DefaultPosition,
         ) : WithBackground
     }
 }

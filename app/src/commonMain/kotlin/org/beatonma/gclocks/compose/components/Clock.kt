@@ -15,6 +15,10 @@ import kotlin.time.Duration
 
 
 @Composable
+expect fun currentFrameDelta(): Duration
+
+
+@Composable
 fun <Opts : Options<*>> Clock(
     options: Opts,
     modifier: Modifier = Modifier,
@@ -34,11 +38,6 @@ fun <Opts : Options<*>> Clock(
         }
     }
 }
-
-
-@Composable
-expect fun currentFrameDelta(): Duration
-
 
 @Composable
 private fun <Opts : Options<*>> rememberClockAnimator(

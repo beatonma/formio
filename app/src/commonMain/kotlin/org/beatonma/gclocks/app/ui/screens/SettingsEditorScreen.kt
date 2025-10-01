@@ -203,7 +203,6 @@ private fun SettingsEditorScreenWithNavigation(
 @Composable
 private fun ClockSettingsScaffold(
     key: Any,
-//    displayContext: DisplayContext,
     options: ContextClockOptions<*>,
     richSettings: RichSettings,
     hasUnsavedChanges: Boolean,

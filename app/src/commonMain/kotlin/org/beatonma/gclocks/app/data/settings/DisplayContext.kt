@@ -28,10 +28,13 @@ expect enum class DisplayContext {
 }
 
 object DisplayContextDefaults {
+    val DefaultBackgroundColor: Color = Color(0xff222222)
+    val DefaultPosition: RectF = MutableRectF(0f, 0f, 1f, 1f).inset(0.1f).toRect()
+
     @Serializable
     data class WithBackground(
-        override val backgroundColor: Color = Color(0xff222222),
-        override val position: RectF = MutableRectF(0f, 0f, 1f, 1f).inset(0.1f).toRect(),
+        override val backgroundColor: Color = DefaultBackgroundColor,
+        override val position: RectF = DefaultPosition,
     ) : Options.WithBackground
 }
 

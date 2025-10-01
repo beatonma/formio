@@ -2,7 +2,12 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalDistributionDsl
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+val wasmOutputDirectoryPath: String = "${layout.buildDirectory.get()}/outputs/wasmJs"
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -38,7 +43,16 @@ kotlin {
             val rootDirPath = project.rootDir.path
             val projectDirPath = project.projectDir.path
             commonWebpackConfig {
-                outputFileName = "gclocks.js"
+                outputFileName = when (mode) {
+                    KotlinWebpackConfig.Mode.PRODUCTION -> {
+                        val timestamp: String =
+                            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
+                        "gclocks-${timestamp}.js"
+                    }
+
+                    KotlinWebpackConfig.Mode.DEVELOPMENT -> "gclocks.js"
+                }
+
                 devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
                     static = (static ?: mutableListOf()).apply {
                         // Serve sources to debug inside browser
@@ -47,21 +61,21 @@ kotlin {
                     }
                 }
             }
+
+            @OptIn(ExperimentalDistributionDsl::class)
+            distribution {
+                outputDirectory = File(wasmOutputDirectoryPath)
+            }
         }
+
         binaries.executable()
     }
 
     sourceSets {
         val commonMain by getting
-        val jvmMain by creating {
-            dependsOn(commonMain)
-        }
-        val desktopMain by getting {
-            dependsOn(jvmMain)
-        }
-        val androidMain by getting {
-            dependsOn(jvmMain)
-        }
+        val jvmMain by creating { dependsOn(commonMain) }
+        val androidMain by getting { dependsOn(jvmMain) }
+        val desktopMain by getting { dependsOn(jvmMain) }
 
         commonMain.dependencies {
             implementation(compose.components.resources)
@@ -101,6 +115,7 @@ kotlin {
 
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(project(":test"))
         }
     }
 }
@@ -145,5 +160,21 @@ compose.desktop {
             packageName = "org.beatonma.gclocks"
             packageVersion = "1.0.0"
         }
+    }
+}
+
+
+val wasmJsDistributionZip by tasks.registering(Zip::class) {
+    description = "Collect the output of wasmJsBrowserDistribution into a zip file"
+    group = "distribution"
+
+    dependsOn("wasmJsBrowserDistribution")
+
+    destinationDirectory.set(layout.buildDirectory.dir("outputs"))
+    archiveFileName.set("wasmJs.zip")
+    from(wasmOutputDirectoryPath) {
+        exclude("*.html")
+        exclude("*.css")
+        into("")
     }
 }
