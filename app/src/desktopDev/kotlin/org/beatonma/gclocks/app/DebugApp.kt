@@ -54,29 +54,21 @@ import org.beatonma.gclocks.compose.plus
 import org.beatonma.gclocks.core.ClockGlyph
 import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.GlyphState
-import org.beatonma.gclocks.core.geometry.VerticalAlignment
 import org.beatonma.gclocks.core.options.Options
-import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.core.types.ProgressFloat
 import org.beatonma.gclocks.core.util.TimeOfDay
 import org.beatonma.gclocks.core.util.getTime
 import org.beatonma.gclocks.core.util.interpolate
 import org.beatonma.gclocks.core.util.nextSecond
 import org.beatonma.gclocks.form.FormGlyph
-import org.beatonma.gclocks.form.FormLayoutOptions
-import org.beatonma.gclocks.form.FormOptions
 import org.beatonma.gclocks.form.FormPaints
 import org.beatonma.gclocks.io16.Io16Glyph
 import org.beatonma.gclocks.io16.Io16GlyphRenderer
-import org.beatonma.gclocks.io16.Io16LayoutOptions
 import org.beatonma.gclocks.io16.Io16Options
 import org.beatonma.gclocks.io16.Io16Paints
 import org.beatonma.gclocks.io18.GlyphAnimations
 import org.beatonma.gclocks.io18.Io18Glyph
-import org.beatonma.gclocks.io18.Io18LayoutOptions
-import org.beatonma.gclocks.io18.Io18Options
 import org.beatonma.gclocks.io18.Io18Paints
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.math.roundToInt
 
 
@@ -85,7 +77,6 @@ private val ItemModifier = Modifier.border(1.dp, Color.Black.copy(alpha = 0.33f)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Preview
 fun DebugApp() {
     val keys = remember { ClockGlyph.Key.entries.map { it.key } }
     var animationPosition by remember { mutableStateOf<Float?>(null) }
@@ -108,32 +99,32 @@ fun DebugApp() {
                     .background(Color.DarkGray),
                 contentPadding = WindowInsets.systemBars.asPaddingValues() + VerticalBottomContentPadding
             ) {
-                clockPreview(
-                    FormOptions(
-                        layout = FormLayoutOptions(
-                            format = TimeFormat.hh_MM_SS_12,
-                            verticalAlignment = VerticalAlignment.Bottom
-                        )
-                    ), timeFunc, state
-                )
-                clockPreview(
-                    Io16Options(
-                        layout = Io16LayoutOptions(
-                            format = TimeFormat.hh_MM_SS_12
-                        )
-                    ), timeFunc, state
-                )
-                clockPreview(
-                    Io18Options(
-                        layout = Io18LayoutOptions(
-                            format = TimeFormat.hh_MM_SS_12
-                        )
-                    ), timeFunc, state
-                )
+//                clockPreview(
+//                    FormOptions(
+//                        layout = FormLayoutOptions(
+//                            format = TimeFormat.hh_MM_SS_12,
+//                            verticalAlignment = VerticalAlignment.Bottom
+//                        )
+//                    ), timeFunc, state
+//                )
+//                clockPreview(
+//                    Io16Options(
+//                        layout = Io16LayoutOptions(
+//                            format = TimeFormat.hh_MM_SS_12
+//                        )
+//                    ), timeFunc, state
+//                )
+//                clockPreview(
+//                    Io18Options(
+//                        layout = Io18LayoutOptions(
+//                            format = TimeFormat.hh_MM_SS_12
+//                        )
+//                    ), timeFunc, state
+//                )
 
-//                FormGlyphs(keys, animationPosition)
-//                Io16Glyphs(keys, animationPosition)
-//                Io18Glyphs(keys, animationPosition)
+                FormGlyphs(keys, animationPosition)
+                Io16Glyphs(keys, animationPosition)
+                Io18Glyphs(keys, animationPosition)
             }
 
             Column(
@@ -175,7 +166,7 @@ fun DebugApp() {
                     Text(
                         when (animationPosition) {
                             null -> ""
-                            else -> "$animationPosition".slice(0..3)
+                            else -> "%.2f".format(animationPosition)
                         }
                     )
                 }
