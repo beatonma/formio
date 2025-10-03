@@ -24,9 +24,10 @@ fun <Opts : Options<*>> Clock(
     options: Opts,
     modifier: Modifier = Modifier,
     getTickTime: () -> TimeOfDay = ::getTime,
+    allowVariance: Boolean = true,
     forcedState: GlyphState? = null,
 ) {
-    val animator = rememberClockAnimator(options, forcedState)
+    val animator = rememberClockAnimator(options, allowVariance, forcedState)
     val frameDeltaMillis = currentFrameDelta()
     val canvasHost = rememberCanvasHost()
 
@@ -57,12 +58,16 @@ fun <Opts : Options<*>> Clock(
 @Composable
 private fun <Opts : Options<*>> rememberClockAnimator(
     options: Opts,
+    allowVariance: Boolean,
     forcedState: GlyphState?,
 ): ClockAnimator<*, *> {
     val path = remember { ComposePath() }
     return remember(options, forcedState) {
         createAnimatorFromOptions(
-            options, path, forcedState = forcedState
+            options,
+            path,
+            allowVariance = allowVariance,
+            forcedState = forcedState
         ) {
             // TODO schedule next frame
         }

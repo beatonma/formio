@@ -264,7 +264,7 @@ private fun ClockPreview(
     clockModifier: Modifier,
 ) {
     Box(modifier) {
-        Clock(options, clockModifier.align(Alignment.Center))
+        Clock(options, clockModifier.align(Alignment.Center), allowVariance = true)
         toolbar?.let { toolbar ->
             IconToolbar(Modifier.align(Alignment.BottomEnd), content = toolbar)
         }

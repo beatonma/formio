@@ -125,7 +125,7 @@ private fun ClockWithBackground(
 ) {
     Layout(
         modifier = modifier,
-        content = { Clock(clockOptions) },
+        content = { Clock(clockOptions, allowVariance = true) },
     ) { measurables, constraints ->
         val position = displayOptions.position
         val left = position.left * constraints.maxWidth

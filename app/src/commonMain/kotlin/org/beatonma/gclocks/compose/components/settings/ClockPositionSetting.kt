@@ -143,7 +143,7 @@ private fun PositionEditor(
             boundaryColor
         ) {
             if (clockPreview != null) {
-                Clock(clockPreview.options)
+                Clock(clockPreview.options, allowVariance = true)
             }
         }
 

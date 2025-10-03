@@ -168,9 +168,9 @@ class ClockWallpaperService : WallpaperService() {
 
         private fun createAnimator(options: Options<*>): ClockAnimator<*, *> {
             val constraints = updateConstraints()
-            return createAnimatorFromOptions(options, path, onScheduleNextFrame = {
+            return createAnimatorFromOptions(options, path, allowVariance = true) {
                 postInvalidate(frameDelayMillis)
-            }).apply {
+            }.apply {
                 setConstraints(constraints)
             }
         }

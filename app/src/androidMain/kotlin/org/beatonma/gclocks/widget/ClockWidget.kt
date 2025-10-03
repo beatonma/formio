@@ -94,7 +94,7 @@ interface ClockWidget {
 
     companion object {
         fun createBitmap(options: Options<*>, width: Int, height: Int): Bitmap {
-            val animator = createAnimatorFromOptions(options, AndroidPath()) {
+            val animator = createAnimatorFromOptions(options, AndroidPath(), allowVariance = false) {
                 // no frame scheduling needed
             }
 
