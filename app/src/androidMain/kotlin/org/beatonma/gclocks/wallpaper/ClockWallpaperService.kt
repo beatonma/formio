@@ -25,6 +25,7 @@ import org.beatonma.gclocks.app.data.settings.DisplayMetrics
 import org.beatonma.gclocks.app.data.settingsRepository
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.ClockAnimator
+import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.graphics.Color
@@ -156,9 +157,13 @@ class ClockWallpaperService : WallpaperService() {
             // TODO hide/show depending on launcher page.
         }
 
-        override fun onTouchEvent(event: MotionEvent?) {
+        override fun onTouchEvent(event: MotionEvent) {
+            animator?.getGlyphAt(
+                event.x - absoluteBounds.left,
+                event.y - absoluteBounds.top
+            )?.setState(GlyphState.Active)
+
             super.onTouchEvent(event)
-            // TODO update glyph state for interactive animations.
         }
 
         private fun createAnimator(options: Options<*>): ClockAnimator<*, *> {

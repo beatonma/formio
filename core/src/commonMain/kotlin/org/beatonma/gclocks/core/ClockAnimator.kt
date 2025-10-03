@@ -51,6 +51,9 @@ interface ClockAnimator<P : Paints, G : ClockGlyph<P>> : ConstrainedLayout {
         layout.setState(state, force)
     }
 
+    fun getGlyphAt(x: Float, y: Float): G? =
+        layout.getGlyphAt(x, y)
+
     override fun setConstraints(constraints: MeasureConstraints): ScaledSize =
         layout.setConstraints(constraints)
 }

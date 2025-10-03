@@ -3,6 +3,7 @@ package org.beatonma.gclocks.compose.components
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.compose.ComposePath
 import org.beatonma.gclocks.compose.rememberCanvasHost
@@ -29,7 +30,21 @@ fun <Opts : Options<*>> Clock(
     val frameDeltaMillis = currentFrameDelta()
     val canvasHost = rememberCanvasHost()
 
-    ConstrainedCanvas(animator, modifier) {
+    ConstrainedCanvas(
+        animator,
+        modifier.pointerInput(Unit) {
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent()
+
+                    val pointer = event.changes.firstOrNull() ?: continue
+                    val (x, y) = pointer.position
+
+                    animator.getGlyphAt(x, y)?.setState(GlyphState.Active)
+                }
+            }
+        }
+    ) {
         frameDeltaMillis
         animator.tick(getTickTime())
 

@@ -2,6 +2,8 @@ package org.beatonma.gclocks.screensaver
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.widget.FrameLayout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,9 +28,28 @@ class DreamView @JvmOverloads constructor(
     private val relativeBounds = MutableRectF(0f, 0f, 1f, 1f)
     private val absoluteBounds = MutableRectF(0f, 0f, 144f, 144f)
 
+    var onWakeFromDaydream: (() -> Unit)? = null
+
+    private val gestureDetector = GestureDetector(context, object : GestureDetector.OnGestureListener {
+        override fun onLongPress(e: MotionEvent) {
+            onWakeFromDaydream?.invoke()
+        }
+
+        override fun onDown(e: MotionEvent): Boolean = true
+        override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean = false
+        override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean = false
+        override fun onShowPress(e: MotionEvent) {}
+        override fun onSingleTapUp(e: MotionEvent): Boolean = false
+    })
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        return gestureDetector.onTouchEvent(event) || super.onTouchEvent(event)
+    }
+
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         coroutineScope.cancel()
+        onWakeFromDaydream = null
     }
 
     override fun onAttachedToWindow() {

@@ -21,6 +21,7 @@ interface Rect<T : Number> {
     /** Return false if any of the boundaries are unset/NaN */
     val isValid: Boolean
 
+    fun contains(x: T, y: T): Boolean
     fun toSize(): Size<T>
 
     operator fun component1(): T = left
@@ -44,6 +45,7 @@ interface FloatRect : Rect<Float> {
     override val center: Position
         get() = FloatPoint(left + (right - left) / 2f, top + (bottom - top) / 2f)
 
+    override fun contains(x: Float, y: Float): Boolean = x in left..right && y in top..bottom
     override fun toSize(): Size<Float> = FloatSize(width, height)
 }
 

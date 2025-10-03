@@ -81,6 +81,20 @@ class ClockLayout<P : Paints, G : ClockGlyph<P>>(
         glyphs.setState(state, force)
     }
 
+    fun getGlyphAt(x: Float, y: Float): G? {
+        var g: G? = null
+        layout.measureFrame(glyphs.glyphs) { _, _, scale ->
+            layoutPass { glyph, _, rect ->
+                if (rect.contains(x / scale, y / scale)) {
+                    g = glyph
+                    return@layoutPass
+                }
+            }
+            if (g != null) return@measureFrame
+        }
+        return g
+    }
+
     override fun toString(): String {
         return "ClockLayout(Constraints=${layout.constraints}, scale=$scale)"
     }

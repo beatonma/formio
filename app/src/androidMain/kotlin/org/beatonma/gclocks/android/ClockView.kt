@@ -3,9 +3,11 @@ package org.beatonma.gclocks.android
 import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.View
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.ClockAnimator
+import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.debug
@@ -64,5 +66,10 @@ class ClockView @JvmOverloads constructor(
                 animator.render(canvas)
             }
         } ?: debug("no animator")
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        animator?.getGlyphAt(event.x, event.y)?.setState(GlyphState.Active)
+        return super.onTouchEvent(event)
     }
 }

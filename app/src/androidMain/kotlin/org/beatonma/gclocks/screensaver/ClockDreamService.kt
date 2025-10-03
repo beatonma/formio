@@ -15,5 +15,6 @@ class ClockDreamService : DreamService() {
         isFullscreen = true
 
         setContentView(R.layout.screeensaver)
+        findViewById<DreamView>(R.id.dream).onWakeFromDaydream = ::wakeUp
     }
 }
