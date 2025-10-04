@@ -62,6 +62,8 @@ class Io16GlyphRenderer<P : Path>(
         )
     )
 
+    private var rendererState = Io16PathRenderer.State.Appearing
+
     override fun draw(glyph: Io16Glyph, canvas: Canvas, paints: Io16Paints) {
         debug(false) {
             if (debugUpdateOnDraw) {
@@ -74,9 +76,11 @@ class Io16GlyphRenderer<P : Path>(
         }
 
         if (glyph.canonicalStartGlyph == ' ' && glyph.canonicalEndGlyph != ' ') {
+            rendererState = Io16PathRenderer.State.Appearing
             glyph.setState(GlyphState.Appearing, force = true)
         }
         if (glyph.canonicalEndGlyph == ' ' && glyph.canonicalStartGlyph != ' ') {
+            rendererState = Io16PathRenderer.State.Disappearing
             glyph.setState(GlyphState.Disappearing, force = true)
         }
 
@@ -106,6 +110,7 @@ class Io16GlyphRenderer<P : Path>(
             offset = segmentOffsetProgress,
             invisible = disappearedSegmentSize,
             inactive = inactiveSegmentSize,
+            state = rendererState
         )
     }
 
@@ -186,13 +191,13 @@ class Io16PathRenderer(
         val activeOffset: Float
         when (state) {
             State.Appearing -> {
-                inactiveOffset = offset + invisible.value
-                activeOffset = offset + invisible.value + inactive.value
+                inactiveOffset = offset + activeLength.value
+                activeOffset = offset
             }
 
             State.Disappearing -> {
-                inactiveOffset = offset + activeLength.value
-                activeOffset = offset
+                inactiveOffset = offset + invisible.value
+                activeOffset = offset + invisible.value + inactive.value
             }
         }
 
