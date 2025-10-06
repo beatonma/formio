@@ -421,7 +421,7 @@ private fun SettingsUi(
 
         with(LocalDensity.current) {
             isWide = constraints.maxWidth.toDp() > ((ColumnPreferredWidth * 2) + ColumnSpacing)
-            isTall = constraints.maxHeight.toDp() > WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND.dp
+            isTall = constraints.maxHeight.toDp() > WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND.dp
         }
 
         when {
