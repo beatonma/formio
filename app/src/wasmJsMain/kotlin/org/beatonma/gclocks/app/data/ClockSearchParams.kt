@@ -4,6 +4,7 @@ import org.beatonma.gclocks.app.data.settings.AppSettings
 import org.beatonma.gclocks.app.data.settings.ClockType
 import org.beatonma.gclocks.app.data.settings.ContextClockOptions
 import org.beatonma.gclocks.app.data.settings.DisplayContextDefaults
+import org.beatonma.gclocks.clocks.whenOptions
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.toColor
 import org.beatonma.gclocks.core.options.Layout
@@ -84,37 +85,33 @@ external fun decodeURIComponent(uri: String): String
 
 
 private fun mergeOptions(options: ContextClockOptions<*>, custom: ClockSearchParams): ContextClockOptions<*> {
-    @Suppress("UNCHECKED_CAST")
-    return when (options.clockOptions) {
-        is FormOptions -> (options as ContextClockOptions<FormOptions>).copy(
-            clockOptions = options.clockOptions.merge(
-                custom
-            ),
-            displayOptions = DisplayContextDefaults.WithBackground(
-                custom.background ?: DisplayContextDefaults.DefaultBackgroundColor,
+    return whenOptions(
+        options,
+        form = { formOptions ->
+            formOptions.copy(
+                clockOptions = formOptions.clockOptions.merge(custom),
+                displayOptions = DisplayContextDefaults.WithBackground(
+                    custom.background ?: DisplayContextDefaults.DefaultBackgroundColor,
+                )
             )
-        )
-
-        is Io16Options -> (options as ContextClockOptions<Io16Options>).copy(
-            clockOptions = options.clockOptions.merge(
-                custom
-            ),
-            displayOptions = DisplayContextDefaults.WithBackground(
-                custom.background ?: DisplayContextDefaults.DefaultBackgroundColor,
+        },
+        io16 = { io16Options ->
+            io16Options.copy(
+                clockOptions = io16Options.clockOptions.merge(custom),
+                displayOptions = DisplayContextDefaults.WithBackground(
+                    custom.background ?: DisplayContextDefaults.DefaultBackgroundColor,
+                )
             )
-        )
-
-        is Io18Options -> (options as ContextClockOptions<Io18Options>).copy(
-            clockOptions = options.clockOptions.merge(
-                custom
-            ),
-            displayOptions = DisplayContextDefaults.WithBackground(
-                custom.background ?: DisplayContextDefaults.DefaultBackgroundColor,
+        },
+        io18 = { io18Options ->
+            io18Options.copy(
+                clockOptions = io18Options.clockOptions.merge(custom),
+                displayOptions = DisplayContextDefaults.WithBackground(
+                    custom.background ?: DisplayContextDefaults.DefaultBackgroundColor,
+                )
             )
-        )
-
-        else -> throw IllegalStateException("Unhandled clock options class '${options.clockOptions::class}'")
-    }
+        }
+    )
 }
 
 
