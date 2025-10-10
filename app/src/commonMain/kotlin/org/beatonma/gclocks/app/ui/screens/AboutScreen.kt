@@ -53,21 +53,19 @@ private val CardContentModifier = Modifier.padding(16.dp)
 
 @Composable
 fun AboutScreen() {
-    Scaffold { contentPadding ->
-        Box(Modifier.padding(contentPadding)) {
-            val itemSpacing = 16.dp
-            LazyVerticalStaggeredGrid(
-                StaggeredGridCells.Adaptive(minSize = 300.dp),
-                contentPadding = PaddingValues(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(itemSpacing),
-                verticalItemSpacing = itemSpacing
-            ) {
-                item { AboutApp() }
-                item { AboutForm() }
-                item { AboutIo() }
-                item { AboutIo16() }
-                item { AboutIo18() }
-            }
+    Scaffold {
+        val itemSpacing = 16.dp
+        LazyVerticalStaggeredGrid(
+            StaggeredGridCells.Adaptive(minSize = 300.dp),
+            contentPadding = PaddingValues(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(itemSpacing),
+            verticalItemSpacing = itemSpacing
+        ) {
+            item { AboutApp() }
+            item { AboutForm() }
+            item { AboutIo() }
+            item { AboutIo16() }
+            item { AboutIo18() }
         }
     }
 }

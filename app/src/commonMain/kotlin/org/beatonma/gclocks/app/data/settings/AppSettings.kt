@@ -1,5 +1,6 @@
 package org.beatonma.gclocks.app.data.settings
 
+import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.form.FormOptions
@@ -9,6 +10,7 @@ import org.beatonma.gclocks.io18.Io18Options
 
 /** Per-context set of options for each clock type. */
 @Serializable
+@Immutable
 data class ContextSettings(
     val context: DisplayContext,
     val clock: ClockType = ClockType.Default,
@@ -30,7 +32,7 @@ data class ContextSettings(
         context.defaultOptions(),
     ),
 ) {
-    fun get(clock: ClockType = this.clock): ContextClockOptions<*> =
+    fun getContextOptions(clock: ClockType = this.clock): ContextClockOptions<*> =
         when (clock) {
             ClockType.Form -> this.form
             ClockType.Io16 -> this.io16
@@ -39,6 +41,7 @@ data class ContextSettings(
 }
 
 @Serializable
+@Immutable
 data class ContextClockOptions<O : Options<*>>(
     val displayContext: DisplayContext,
     val clockOptions: O,
@@ -46,12 +49,14 @@ data class ContextClockOptions<O : Options<*>>(
 )
 
 @Serializable
+@Immutable
 data class AppState(
     val displayContext: DisplayContext,
 )
 
 
 @Serializable
+@Immutable
 data class AppSettings(
     val state: AppState,
     val settings: Map<DisplayContext, ContextSettings>,
@@ -60,7 +65,11 @@ data class AppSettings(
     val contextOptions: ContextClockOptions<*> get() = getContextOptions(state.displayContext)
 
     fun getContextOptions(context: DisplayContext): ContextClockOptions<*> {
-        return getContextSettings(context).get()
+        return getContextSettings(context).getContextOptions()
+    }
+
+    fun copyWithDisplayContext(context: DisplayContext): AppSettings {
+        return copy(state = state.copy(displayContext = context))
     }
 
     fun copyWithClock(clock: ClockType): AppSettings {
@@ -72,12 +81,9 @@ data class AppSettings(
         return copy(settings = updatedSettings)
     }
 
-    fun copyWithOptions(
-        clockOptions: Options<*>,
-        displayOptions: DisplayContext.Options,
-    ): AppSettings {
+    fun copyWithOptions(clockOptions: Options<*>?, displayOptions: DisplayContext.Options?): AppSettings {
         return copyWithOptions(
-            clockOptions.resolveClockType(),
+            clockOptions?.resolveClockType() ?: contextSettings.clock,
             clockOptions,
             displayOptions
         )

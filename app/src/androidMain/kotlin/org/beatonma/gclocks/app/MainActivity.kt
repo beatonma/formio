@@ -26,7 +26,6 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import org.beatonma.R
 import org.beatonma.gclocks.android.alarmManager
@@ -40,8 +39,7 @@ import org.beatonma.gclocks.app.data.settingsRepository
 import org.beatonma.gclocks.app.ui.App
 import org.beatonma.gclocks.app.ui.SystemBarsController
 import org.beatonma.gclocks.app.ui.screens.SettingsEditorScreen
-import org.beatonma.gclocks.app.ui.screens.SettingsEditorViewModel
-import org.beatonma.gclocks.app.ui.screens.SettingsEditorViewModelFactory
+import org.beatonma.gclocks.app.ui.screens.settingsEditorViewModel
 import org.beatonma.gclocks.compose.AndroidIcon
 import org.beatonma.gclocks.wallpaper.ClockWallpaperService
 import org.beatonma.gclocks.widget.ClockWidgetProvider
@@ -66,25 +64,24 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun setAppContent() {
-        val factory = SettingsEditorViewModelFactory(settingsRepository, onSave = {
-            ClockWidgetProvider.refreshWidgets(appContext)
-        })
-
         setContent {
-            val viewModel: SettingsEditorViewModel = viewModel(factory = factory)
-            val state by viewModel.currentState.collectAsStateWithLifecycle(null)
+            val editorViewModel = settingsEditorViewModel(settingsRepository) {
+                ClockWidgetProvider.refreshWidgets(appContext)
+            }
+            val displayContext by editorViewModel.displayContext.collectAsStateWithLifecycle(null)
+
             val snackbarHostState = remember { SnackbarHostState() }
             val systemBarsController = rememberSystemBarsController()
 
-            LaunchedEffect(state, shouldShowWidgetPermissionRequest) {
-                if (state?.displayContext == DisplayContext.Widget && shouldShowWidgetPermissionRequest) {
+            LaunchedEffect(displayContext, shouldShowWidgetPermissionRequest) {
+                if (displayContext == DisplayContext.Widget && shouldShowWidgetPermissionRequest) {
                     showWidgetPermissionRequest(snackbarHostState)
                 }
             }
 
-            App(viewModel, systemBarsController) { navigation ->
+            App(editorViewModel, systemBarsController) { navigation ->
                 SettingsEditorScreen(
-                    viewModel,
+                    editorViewModel,
                     navigation,
                     snackbarHostState = snackbarHostState,
                     toolbar = { ClockToolbar(it) }

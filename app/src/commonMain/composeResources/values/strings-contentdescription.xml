@@ -3,8 +3,6 @@
     <string name="cd_show_more">Show more</string>
     <string name="cd_show_less">Show less</string>
 
-    <string name="cd_navigate_back">Back to previous screen</string>
-
     <string name="cd_fullscreen_open">Expand to fullscreen</string>
     <string name="cd_fullscreen_close">Exit fullscreen</string>
 

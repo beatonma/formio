@@ -44,5 +44,3 @@ internal interface DisplayContextScreen {
     val contentDescription: LocalizedString
     val icon: ImageVector
 }
-
-expect enum class DisplayContextScreens : DisplayContextScreen

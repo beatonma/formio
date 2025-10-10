@@ -1,8 +1,6 @@
 package org.beatonma.gclocks.app.data.settings
 
 import kotlinx.serialization.Serializable
-import org.beatonma.gclocks.app.ui.LocalizedString
-import org.beatonma.gclocks.compose.AndroidIcon
 import org.beatonma.gclocks.core.geometry.RectF
 import org.beatonma.gclocks.core.graphics.Color
 
@@ -42,25 +40,4 @@ actual enum class DisplayContext {
             override val position: RectF = DisplayContextDefaults.DefaultPosition,
         ) : WithBackground
     }
-}
-
-actual enum class DisplayContextScreens : DisplayContextScreen {
-    Widget {
-        override val displayContext = DisplayContext.Widget
-        override val icon = AndroidIcon.Widget
-        override val label = LocalizedString(literal = displayContext.name)
-        override val contentDescription = LocalizedString(literal = displayContext.name)
-    },
-    LiveWallpaper {
-        override val displayContext = DisplayContext.LiveWallpaper
-        override val icon = AndroidIcon.LiveWallpaper
-        override val label = LocalizedString(literal = displayContext.name)
-        override val contentDescription = LocalizedString(literal = displayContext.name)
-    },
-    Screensaver {
-        override val displayContext = DisplayContext.Screensaver
-        override val icon = AndroidIcon.Screensaver
-        override val label = LocalizedString(literal = displayContext.name)
-        override val contentDescription = LocalizedString(literal = displayContext.name)
-    },
 }

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <string name="navigation_widget">Widget</string>
+    <string name="navigation_wallpaper">Wallpaper</string>
+    <string name="navigation_screensaver">Screensaver</string>
+</resources>

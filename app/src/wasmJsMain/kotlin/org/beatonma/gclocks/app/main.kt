@@ -8,7 +8,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeViewport
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.beatonma.gclocks.app.data.ClockSearchParams
@@ -20,8 +19,7 @@ import org.beatonma.gclocks.app.data.settings.DefaultAppSettings
 import org.beatonma.gclocks.app.ui.App
 import org.beatonma.gclocks.app.ui.screens.FullSizeClock
 import org.beatonma.gclocks.app.ui.screens.SettingsEditorScreen
-import org.beatonma.gclocks.app.ui.screens.SettingsEditorViewModel
-import org.beatonma.gclocks.app.ui.screens.SettingsEditorViewModelFactory
+import org.beatonma.gclocks.app.ui.screens.settingsEditorViewModel
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
@@ -43,10 +41,7 @@ fun main() {
 @Composable
 private fun Editable() {
     val repository = remember { WebSettingsRepository() }
-    val factory = remember {
-        SettingsEditorViewModelFactory(repository = repository)
-    }
-    val viewModel: SettingsEditorViewModel = viewModel(factory = factory)
+    val viewModel = settingsEditorViewModel(repository)
 
     App(viewModel) { navigation ->
         SettingsEditorScreen(viewModel, navigation)

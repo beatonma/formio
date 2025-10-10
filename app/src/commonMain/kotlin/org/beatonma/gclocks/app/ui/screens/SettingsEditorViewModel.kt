@@ -1,9 +1,12 @@
 package org.beatonma.gclocks.app.ui.screens
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +21,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.beatonma.gclocks.app.data.AppSettingsRepository
 import org.beatonma.gclocks.app.data.settings.AppSettings
-import org.beatonma.gclocks.app.data.settings.AppState
 import org.beatonma.gclocks.app.data.settings.ClockSettingsAdapter
 import org.beatonma.gclocks.app.data.settings.ClockType
 import org.beatonma.gclocks.app.data.settings.ContextClockOptions
@@ -62,7 +64,7 @@ class SettingsEditorViewModel(
     }.stateIn(viewModelScope, started = SharingStarted.Eagerly, initialValue = false)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val currentState: Flow<AppState?> = appSettings.mapLatest { it?.state }
+    val displayContext: Flow<DisplayContext?> = appSettings.mapLatest { it?.state?.displayContext }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val richSettings: StateFlow<RichSettings?> = appSettings.mapLatest { settings ->
@@ -84,7 +86,7 @@ class SettingsEditorViewModel(
 
     fun setDisplayContext(context: DisplayContext) {
         _appSettings.update { previous ->
-            previous?.copy(state = previous.state.copy(displayContext = context))
+            previous?.copyWithDisplayContext(context)
         }
     }
 
@@ -96,13 +98,13 @@ class SettingsEditorViewModel(
 
     fun <O : Options<*>> setClockOptions(clockOptions: O) {
         _appSettings.update { previous ->
-            previous?.copyWithOptions(clockOptions, previous.contextOptions.displayOptions)
+            previous?.copyWithOptions(clockOptions, null)
         }
     }
 
     fun setDisplayOptions(displayOptions: DisplayContext.Options) {
         _appSettings.update { previous ->
-            previous?.copyWithOptions(previous.contextOptions.clockOptions, displayOptions)
+            previous?.copyWithOptions(null, displayOptions)
         }
     }
 
@@ -110,10 +112,14 @@ class SettingsEditorViewModel(
         viewModelScope.launch {
             appSettings.value?.copy()?.let { currentSettings ->
                 repository.save(currentSettings)
-                _lastSavedAppSettings.update { currentSettings.copy() }
+                _lastSavedAppSettings.update { currentSettings }
                 onSave?.invoke()
             }
         }
+    }
+
+    fun restoreDefaultSettings() {
+        viewModelScope.launch { repository.restoreDefaultSettings() }
     }
 
     private fun <O : Options<*>> buildRichSettings(
@@ -168,8 +174,17 @@ internal fun defaultAddDisplaySettings(
             )
         }
 
-        else -> {
-            throw IllegalStateException("Unhandled DisplayContext.Options: ${options::class}")
-        }
+        else -> throw IllegalStateException("Unhandled DisplayContext.Options: ${options::class}")
     }
+}
+
+@Composable
+fun settingsEditorViewModel(
+    repository: AppSettingsRepository,
+    onSave: (() -> Unit)? = null
+): SettingsEditorViewModel {
+    val factory = remember {
+        SettingsEditorViewModelFactory(repository = repository, onSave = onSave)
+    }
+    return viewModel<SettingsEditorViewModel>(factory = factory)
 }

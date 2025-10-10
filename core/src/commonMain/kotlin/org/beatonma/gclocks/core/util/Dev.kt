@@ -10,6 +10,10 @@ inline fun debug(enabled: Boolean = true, block: () -> Unit) {
     }
 }
 
+inline fun <T> debugValue(debugValue: () -> T, normalValue: () -> T): T {
+    return if (Build.isDebug) debugValue() else normalValue()
+}
+
 
 inline fun debugMeasureTime(label: String?, block: () -> Unit): Duration {
     if (!Build.isDebug) {

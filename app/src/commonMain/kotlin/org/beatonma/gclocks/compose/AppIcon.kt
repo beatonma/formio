@@ -13,9 +13,11 @@ import androidx.compose.material.icons.filled.CropFree
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.OpenInFull
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 
 object AppIcon {
     val About = Icons.Default.Info
@@ -23,9 +25,11 @@ object AppIcon {
     val Back = Icons.AutoMirrored.Default.ArrowLeft
     val Close = Icons.Default.Close
     val Checkmark = Icons.Default.Check
+    val Hamburger = Icons.Default.Menu
     val ArrowDropdown = Icons.Default.ArrowDropDown
     val ArrowDown = Icons.Default.KeyboardArrowDown
     val MoreVert = Icons.Default.MoreVert
+    val Settings = Icons.Default.Settings
 
     val AlignCenterVertical = Icons.Default.AlignVerticalCenter
     val AlignCenterHorizontal = Icons.Default.AlignHorizontalCenter

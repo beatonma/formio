@@ -13,16 +13,13 @@ import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import androidx.lifecycle.viewmodel.compose.viewModel
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.app_name
 import org.beatonma.gclocks.app.data.DataStoreAppSettingsRepository
 import org.beatonma.gclocks.app.data.createDataStore
 import org.beatonma.gclocks.app.ui.App
 import org.beatonma.gclocks.app.ui.SystemBarsController
-import org.beatonma.gclocks.app.ui.screens.SettingsEditorScreen
-import org.beatonma.gclocks.app.ui.screens.SettingsEditorViewModel
-import org.beatonma.gclocks.app.ui.screens.SettingsEditorViewModelFactory
+import org.beatonma.gclocks.app.ui.screens.settingsEditorViewModel
 import org.jetbrains.compose.resources.stringResource
 
 fun main() = application {
@@ -39,12 +36,6 @@ fun main() = application {
         placement = WindowPlacement.Floating
     )
 
-    val factory = remember {
-        SettingsEditorViewModelFactory(
-            repository = DataStoreAppSettingsRepository(createDataStore())
-        )
-    }
-
     LaunchedEffect(isWindowFullscreen) {
         windowState.placement = when (isWindowFullscreen) {
             true -> WindowPlacement.Fullscreen
@@ -57,10 +48,9 @@ fun main() = application {
         onCloseRequest = ::exitApplication,
         title = stringResource(Res.string.app_name),
     ) {
-        val viewModel: SettingsEditorViewModel = viewModel(factory = factory)
+        val repository = remember { DataStoreAppSettingsRepository(createDataStore()) }
+        val editorViewModel = settingsEditorViewModel(repository)
 
-        App(viewModel, systemBarsController) { navigation ->
-            SettingsEditorScreen(viewModel, navigation)
-        }
+        App(editorViewModel, systemBarsController)
     }
 }
