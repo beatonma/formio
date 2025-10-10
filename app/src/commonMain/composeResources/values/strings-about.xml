@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <string name="about_app_markdown"><![CDATA[
+# Formio
+
+**This app has no affiliation with Google.**
+
+The animated clocks found in this app are based on typefaces that were originally designed by Google. Each typeface was created for use in promotional material for specific company events.
+
+I made this app because I found each of them delightful and thought they still deserve to be enjoyed.
+]]></string>
+
+    <string name="about_form_markdown"><![CDATA[
+# FORM
+
+FORM was a 2014 Google conference focussing on design and technology. Its branding featured a unique typeface which was adapted into an [Android Wear watchface](https://experiments.withgoogle.com/form-watch-face) by [Roman Nurik](https://roman.nurik.net/).
+
+Google introduced the original version of [Material Design](https://material.io) that same year. The FORM typeface compliments this with each character comprised of paper-like blocks of color tessellating and folding together.
+]]></string>
+
+    <string name="about_io_markdown"><![CDATA[
+# I/O
+
+[Google I/O](https://io.google/) is a developer conference held annually since 2008. Its keynote presentation is often used to announce new products.
+]]></string>
+
+    <string name="about_io16_markdown"><![CDATA[
+# IO16
+
+The 2016 I/O website featured an animated countdown where each character was represented by a simple wireframe and burst into color whenever the digits changed.
+]]></string>
+
+    <string name="about_io18_markdown"><![CDATA[
+# IO18
+
+Again, the 2018 I/O website featured a bespoke animated countdown, this time with simple geometric elements playfully combining to create each digit.
+]]></string>
+</resources>
