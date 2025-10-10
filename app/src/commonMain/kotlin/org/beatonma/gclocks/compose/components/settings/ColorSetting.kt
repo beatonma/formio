@@ -35,7 +35,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.window.core.layout.WindowSizeClass
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.setting_color_contentdescription_edited
 import gclocks_multiplatform.app.generated.resources.setting_color_contentdescription_selected
@@ -61,6 +60,7 @@ import org.beatonma.gclocks.compose.components.settings.components.ScrollingRow
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
 import org.beatonma.gclocks.compose.components.settings.components.rememberMaterialColorSwatch
 import org.beatonma.gclocks.compose.components.settings.data.RichSetting
+import org.beatonma.gclocks.compose.isHeightAtLeastMedium
 import org.beatonma.gclocks.compose.toCompose
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.toColor
@@ -350,7 +350,7 @@ private fun SampleColors(
     val horizontalArrangement =
         Arrangement.spacedBy(spacing, alignment = Alignment.CenterHorizontally)
     val isVerticallySmall =
-        currentWindowAdaptiveInfo().windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
+        currentWindowAdaptiveInfo().windowSizeClass.isHeightAtLeastMedium()
 
     when (isVerticallySmall) {
         true -> {
