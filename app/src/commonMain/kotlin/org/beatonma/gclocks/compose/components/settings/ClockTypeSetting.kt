@@ -3,6 +3,7 @@ package org.beatonma.gclocks.compose.components.settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import org.beatonma.gclocks.app.data.settings.ClockType
+import org.beatonma.gclocks.app.theme.colorScheme
 import org.beatonma.gclocks.compose.components.ButtonGroup
 import org.beatonma.gclocks.compose.components.settings.components.SettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
@@ -35,9 +36,10 @@ fun ClockTypeSetting(
 
         ButtonGroup(
             selected,
-            { it.name },
+            { it.name.uppercase() },
             onSelect,
             ClockType.entries,
+            ClockType::colorScheme
         )
     }
 }

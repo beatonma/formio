@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
@@ -24,9 +26,7 @@ import gclocks_multiplatform.app.generated.resources.about_form_markdown
 import gclocks_multiplatform.app.generated.resources.about_io16_markdown
 import gclocks_multiplatform.app.generated.resources.about_io18_markdown
 import gclocks_multiplatform.app.generated.resources.about_io_markdown
-import org.beatonma.gclocks.app.theme.FormColorScheme
-import org.beatonma.gclocks.app.theme.Io16ColorScheme
-import org.beatonma.gclocks.app.theme.Io18ColorScheme
+import org.beatonma.gclocks.app.theme.ClockColorScheme
 import org.beatonma.gclocks.clocks.layoutOptions
 import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.components.MarkdownText
@@ -79,12 +79,16 @@ private fun AboutApp(modifier: Modifier = Modifier) {
 
 @Composable
 private fun AboutForm(modifier: Modifier = Modifier) {
-    AboutCard(stringResource(Res.string.about_form_markdown), modifier) {
+    AboutCard(
+        stringResource(Res.string.about_form_markdown),
+        modifier,
+        colors = ClockColorScheme.Form.cardColors
+    ) {
         Clock(
             FormOptions(
                 layout = previewLayoutOptions<FormLayoutOptions>()
             ),
-            clockPreviewModifier(FormColorScheme.backgroundColor)
+            clockPreviewModifier(ClockColorScheme.Form.backgroundColor)
         )
     }
 }
@@ -98,24 +102,32 @@ private fun AboutIo(modifier: Modifier = Modifier) {
 
 @Composable
 private fun AboutIo16(modifier: Modifier = Modifier) {
-    AboutCard(stringResource(Res.string.about_io16_markdown), modifier) {
+    AboutCard(
+        stringResource(Res.string.about_io16_markdown),
+        modifier,
+        colors = ClockColorScheme.Io16.cardColors
+    ) {
         Clock(
             Io16Options(
                 layout = previewLayoutOptions<Io16LayoutOptions>()
             ),
-            clockPreviewModifier(Io16ColorScheme.backgroundColor)
+            clockPreviewModifier(ClockColorScheme.Io16.backgroundColor)
         )
     }
 }
 
 @Composable
 private fun AboutIo18(modifier: Modifier = Modifier) {
-    AboutCard(stringResource(Res.string.about_io18_markdown), modifier) {
+    AboutCard(
+        stringResource(Res.string.about_io18_markdown),
+        modifier,
+        colors = ClockColorScheme.Io18.cardColors
+    ) {
         Clock(
             Io18Options(
                 layout = previewLayoutOptions<Io18LayoutOptions>()
             ),
-            clockPreviewModifier(Io18ColorScheme.backgroundColor)
+            clockPreviewModifier(ClockColorScheme.Io18.backgroundColor)
         )
     }
 }
@@ -125,9 +137,10 @@ private fun AboutIo18(modifier: Modifier = Modifier) {
 private fun AboutCard(
     rawMarkdown: String,
     modifier: Modifier = Modifier,
+    colors: CardColors = CardDefaults.cardColors(),
     header: (@Composable () -> Unit)? = null,
 ) {
-    Card(modifier.widthIn(max = 600.dp)) {
+    Card(modifier.widthIn(max = 600.dp), colors = colors) {
         header?.invoke()
         MarkdownText(rawMarkdown, CardContentModifier)
     }

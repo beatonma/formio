@@ -49,7 +49,6 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -73,12 +72,12 @@ import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import org.beatonma.gclocks.compose.components.settings.data.RichSettings
 import org.beatonma.gclocks.compose.components.settings.data.RichSettingsGroup
 import org.beatonma.gclocks.compose.components.settings.data.Setting
+import org.beatonma.gclocks.compose.debugKeyEvent
 import org.beatonma.gclocks.compose.horizontal
 import org.beatonma.gclocks.compose.onlyIf
 import org.beatonma.gclocks.compose.plus
 import org.beatonma.gclocks.compose.toCompose
 import org.beatonma.gclocks.core.options.Options
-import org.beatonma.gclocks.core.util.debugValue
 import org.jetbrains.compose.resources.stringResource
 
 
@@ -142,7 +141,7 @@ fun SettingsEditorScreen(
     }
 
     ClockSettingsScaffold(
-        debugKeyEventsModifier(viewModel::restoreDefaultSettings),
+        Modifier.debugKeyEvents(viewModel::restoreDefaultSettings),
         key = "${settings.state.displayContext}_${settings.contextSettings.clock}",
         options = settings.contextOptions,
         richSettings = richSettings,
@@ -474,21 +473,16 @@ private fun resolveClockBackgroundColor(displayOptions: DisplayContext.Options):
 }
 
 
-private fun debugKeyEventsModifier(onRestoreDefaultSettings: () -> Unit) = debugValue(
-    {
-        Modifier.onKeyEvent { event ->
-            if (event.type == KeyEventType.KeyDown) {
-                when (event.key) {
-                    Key.R -> {
-                        if (event.isCtrlPressed) {
-                            onRestoreDefaultSettings()
-                            return@onKeyEvent true
-                        }
-                    }
+private fun Modifier.debugKeyEvents(onRestoreDefaultSettings: () -> Unit) = debugKeyEvent { event ->
+    if (event.type == KeyEventType.KeyDown) {
+        when (event.key) {
+            Key.R -> {
+                if (event.isCtrlPressed) {
+                    onRestoreDefaultSettings()
+                    return@debugKeyEvent true
                 }
             }
-            false
         }
-    },
-    { Modifier }
-)
+    }
+    false
+}

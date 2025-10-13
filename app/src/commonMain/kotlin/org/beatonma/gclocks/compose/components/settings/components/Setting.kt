@@ -25,7 +25,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 
@@ -60,7 +59,8 @@ internal fun CollapsibleSettingLayout(
     val verticalPadding by animateDpAsState(if (isExpanded) 16.dp else 0.dp)
     val innerVerticalPadding by animateDpAsState(if (isExpanded) 8.dp else 0.dp)
     val innerHorizontalPadding by animateDpAsState(if (isExpanded) 8.dp else 0.dp)
-    val backgroundColor by animateColorAsState(if (isExpanded) colorScheme.surface else Color.Transparent)
+    val backgroundColor by animateColorAsState(if (isExpanded) colorScheme.surface else colorScheme.background)
+    val elevation by animateDpAsState(if (isExpanded) 1.dp else 0.dp)
 
     LaunchedEffect(isExpanded) {
         if (isExpanded) {
@@ -72,6 +72,7 @@ internal fun CollapsibleSettingLayout(
         modifier.padding(vertical = verticalPadding, horizontal = horizontalPadding),
         color = backgroundColor,
         shape = shapes.small,
+        shadowElevation = elevation,
     ) {
         SettingLayout(
             Modifier.padding(vertical = innerVerticalPadding, horizontal = innerHorizontalPadding),

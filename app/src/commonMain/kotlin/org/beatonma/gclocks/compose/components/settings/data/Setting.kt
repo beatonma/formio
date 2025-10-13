@@ -1,5 +1,6 @@
 package org.beatonma.gclocks.compose.components.settings.data
 
+import androidx.compose.runtime.Immutable
 import org.beatonma.gclocks.app.ui.LocalizedString
 import org.beatonma.gclocks.core.geometry.RectF
 import org.beatonma.gclocks.core.options.Options
@@ -85,6 +86,7 @@ sealed interface RichSetting<T : Any> : Setting {
     val value: T
     val onValueChange: (T) -> Unit
 
+    @Immutable
     data class Color(
         override val key: Key.ColorKey,
         override val localized: LocalizedString,
@@ -93,6 +95,7 @@ sealed interface RichSetting<T : Any> : Setting {
         override val onValueChange: (GraphicsColor) -> Unit,
     ) : RichSetting<GraphicsColor>
 
+    @Immutable
     data class Colors(
         override val key: Key.ColorsKey,
         override val localized: LocalizedString,
@@ -101,6 +104,7 @@ sealed interface RichSetting<T : Any> : Setting {
         override val onValueChange: (List<GraphicsColor>) -> Unit,
     ) : RichSetting<List<GraphicsColor>>
 
+    @Immutable
     data class SingleSelect<E : Enum<E>>(
         override val key: Key.EnumKey<E>,
         override val localized: LocalizedString,
@@ -110,6 +114,7 @@ sealed interface RichSetting<T : Any> : Setting {
         val values: Set<E>,
     ) : RichSetting<E>
 
+    @Immutable
     data class MultiSelect<E : Enum<E>>(
         override val key: Key.EnumKey<E>,
         override val localized: LocalizedString,
@@ -119,6 +124,7 @@ sealed interface RichSetting<T : Any> : Setting {
         val values: Set<E>,
     ) : RichSetting<Set<E>>
 
+    @Immutable
     data class Int(
         override val key: Key.IntKey,
         override val localized: LocalizedString,
@@ -131,6 +137,7 @@ sealed interface RichSetting<T : Any> : Setting {
         override val onValueChange: (kotlin.Int) -> Unit,
     ) : RichSetting<kotlin.Int>
 
+    @Immutable
     data class Float(
         override val key: Key.FloatKey,
         override val localized: LocalizedString,
@@ -143,6 +150,7 @@ sealed interface RichSetting<T : Any> : Setting {
         override val onValueChange: (kotlin.Float) -> Unit,
     ) : RichSetting<kotlin.Float>
 
+    @Immutable
     data class Bool(
         override val key: Key.BoolKey,
         override val localized: LocalizedString,
@@ -151,6 +159,7 @@ sealed interface RichSetting<T : Any> : Setting {
         override val onValueChange: (Boolean) -> Unit,
     ) : RichSetting<Boolean>
 
+    @Immutable
     data class ClockPosition(
         override val key: Key.RectFKey,
         override val localized: LocalizedString,
@@ -159,6 +168,7 @@ sealed interface RichSetting<T : Any> : Setting {
         override val onValueChange: (RectF) -> Unit,
     ) : RichSetting<RectF>
 
+    @Immutable
     data class ClockType(
         override val key: Key.EnumKey<ClockTypeData>,
         override val localized: LocalizedString,
