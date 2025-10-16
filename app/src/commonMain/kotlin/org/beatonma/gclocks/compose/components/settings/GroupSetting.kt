@@ -63,8 +63,8 @@ fun <E : Enum<E>> SingleSelectSetting(
     helpText: String? = null,
     onValueChange: (newValue: E) -> Unit,
 ) {
-    val resourceMap by remember(value) { mutableStateOf(value::class.stringResourceMap) }
-    val helpResourceMap by remember(value) { mutableStateOf(value::class.helpStringResourceMap) }
+    val resourceMap = remember(value) { value::class.stringResourceMap }
+    val helpResourceMap = remember(value) { value::class.helpStringResourceMap }
 
     GroupSetting(
         name,
@@ -122,8 +122,8 @@ fun <E : Enum<E>> MultiSelectSetting(
     defaultValue: E = values.first(),
     allowEmptySet: Boolean = false,
 ) {
-    val resourceMap by remember(defaultValue) { mutableStateOf(defaultValue::class.stringResourceMap) }
-    val helpResourceMap by remember(defaultValue) { mutableStateOf(defaultValue::class.helpStringResourceMap) }
+    val resourceMap = remember(defaultValue) { defaultValue::class.stringResourceMap }
+    val helpResourceMap = remember(defaultValue) { defaultValue::class.helpStringResourceMap }
 
     @Suppress("SimplifiableCallChain")
     GroupSetting(
