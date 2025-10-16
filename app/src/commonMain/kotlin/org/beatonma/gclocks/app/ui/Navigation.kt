@@ -3,9 +3,7 @@ package org.beatonma.gclocks.app.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -18,6 +16,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.savedstate.SavedState
@@ -169,31 +168,28 @@ private fun NavigationUI(
 ) {
     // Navigation destinations for this controller fill only the content slot.of navigation UI.
     val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val route = navBackStackEntry?.destination?.route ?: Pane.SettingsEditor::class.qualifiedName
 
-    var currentPane: NavigationMenuItem by remember {
-        mutableStateOf(
-            when (startDestination) {
-                Pane.SettingsEditor -> NavigationMenuItem.entries.find { it.name == displayContext.name }
-                    ?: NavigationMenuItem.entries.first()
+    val currentPane: NavigationMenuItem = when (route) {
+        Pane.About::class.qualifiedName -> NavigationMenuItem.About
+        Pane.SettingsEditor::class.qualifiedName -> NavigationMenuItem.entries.find { it.name == displayContext.name }
+        else -> null
+    } ?: throw IllegalStateException("Unhandled route $route")
 
-                Pane.About -> NavigationMenuItem.About
-                else -> throw IllegalStateException("Unhandled Pane startDestination: $startDestination")
-            }
-        )
-    }
-
-    fun navigateTo(item: NavigationMenuItem, displayContext: DisplayContext?) {
-        currentPane = item
-        displayContext?.let(setDisplayContext)
+    fun navigateTo(item: NavigationMenuItem) {
         when (item) {
             NavigationMenuItem.About -> navController.navigate(Pane.About) {
                 launchSingleTop = true
             }
 
-            else -> navController.navigate(Pane.SettingsEditor) {
-                launchSingleTop = true
-                popUpTo(navController.graph.id) {
-                    inclusive = true
+            else -> {
+                DisplayContext.entries.find { it.name == item.name }?.let(setDisplayContext)
+                navController.navigate(Pane.SettingsEditor) {
+                    launchSingleTop = true
+                    popUpTo(navController.graph.id) {
+                        inclusive = true
+                    }
                 }
             }
         }
@@ -208,7 +204,7 @@ private fun NavigationUI(
 
     NavigationScaffold(
         selected = currentPane,
-        onSelect = { navigateTo(it, null) },
+        onSelect = { navigateTo(it) },
         menu = menu,
     ) {
         NavHost(
@@ -219,7 +215,7 @@ private fun NavigationUI(
         ) {
             composable<Pane.SettingsEditor> {
                 val appNavigation = AppNavigation(
-                    onNavigateAbout = dropUnlessResumed { navigateTo(NavigationMenuItem.About, null) },
+                    onNavigateAbout = dropUnlessResumed { navigateTo(NavigationMenuItem.About) },
                     onNavigateClockPreview = { contextClockOptions ->
                         val preview = whenOptions(
                             contextClockOptions,
