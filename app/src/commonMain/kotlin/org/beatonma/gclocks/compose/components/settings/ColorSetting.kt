@@ -1,22 +1,31 @@
 package org.beatonma.gclocks.compose.components.settings
 
-
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Card
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -26,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,10 +43,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
 import gclocks_multiplatform.app.generated.resources.Res
-import gclocks_multiplatform.app.generated.resources.setting_color_contentdescription_edited
+import gclocks_multiplatform.app.generated.resources.cd_save_changes
 import gclocks_multiplatform.app.generated.resources.setting_color_contentdescription_selected
 import gclocks_multiplatform.app.generated.resources.setting_color_label_hsl_hue_initial
 import gclocks_multiplatform.app.generated.resources.setting_color_label_hsl_lightness_initial
@@ -44,23 +56,26 @@ import gclocks_multiplatform.app.generated.resources.setting_color_label_hsl_sat
 import gclocks_multiplatform.app.generated.resources.setting_color_label_rgb_blue_initial
 import gclocks_multiplatform.app.generated.resources.setting_color_label_rgb_green_initial
 import gclocks_multiplatform.app.generated.resources.setting_color_label_rgb_red_initial
+import org.beatonma.gclocks.app.data.settings.copyWithColors
+import org.beatonma.gclocks.app.theme.DesignSpec.FloatingActionButtonSize
+import org.beatonma.gclocks.app.theme.DesignSpec.floatingActionButton
 import org.beatonma.gclocks.app.theme.rememberContentColor
 import org.beatonma.gclocks.app.ui.Localization.stringResourceMap
+import org.beatonma.gclocks.app.ui.screens.LocalClockPreview
 import org.beatonma.gclocks.compose.AppIcon
-import org.beatonma.gclocks.compose.animation.EnterScale
-import org.beatonma.gclocks.compose.animation.EnterVertical
-import org.beatonma.gclocks.compose.animation.ExitScale
-import org.beatonma.gclocks.compose.animation.ExitVertical
+import org.beatonma.gclocks.compose.LoadingSpinner
 import org.beatonma.gclocks.compose.components.ButtonGroup
 import org.beatonma.gclocks.compose.components.ButtonGroupSize
-import org.beatonma.gclocks.compose.components.settings.components.CollapsibleSettingLayout
+import org.beatonma.gclocks.compose.components.Clock
+import org.beatonma.gclocks.compose.components.FullScreenOverlay
+import org.beatonma.gclocks.compose.components.settings.components.CheckableSettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.LabelledSlider
-import org.beatonma.gclocks.compose.components.settings.components.OnFocusSetting
 import org.beatonma.gclocks.compose.components.settings.components.ScrollingRow
-import org.beatonma.gclocks.compose.components.settings.components.SettingName
 import org.beatonma.gclocks.compose.components.settings.components.rememberMaterialColorSwatch
 import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import org.beatonma.gclocks.compose.isHeightAtLeastMedium
+import org.beatonma.gclocks.compose.isHeightSmall
+import org.beatonma.gclocks.compose.isWidthSmall
 import org.beatonma.gclocks.compose.toCompose
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.toColor
@@ -70,140 +85,203 @@ import org.beatonma.gclocks.core.graphics.withHue
 import org.beatonma.gclocks.core.graphics.withLightness
 import org.beatonma.gclocks.core.graphics.withRed
 import org.beatonma.gclocks.core.graphics.withSaturation
+import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.fastForEach
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.graphics.Color as ComposeColor
 
+private val DefaultPatchSize = 48.dp
 private val EditablePatchSize = 64.dp
 
-@Composable
-fun MultiColorSetting(
-    setting: RichSetting.Colors,
-    modifier: Modifier = Modifier,
-    onFocus: OnFocusSetting?,
-) {
-    MultiColorSetting(
-        setting.localized.resolve(),
-        setting.value,
-        modifier,
-        onFocus = onFocus,
-        onValueChange = { index, color ->
-            val value = setting.value.toMutableList()
-            value[index] = color
-            setting.onValueChange(value)
-        },
+@Immutable
+data class ClockColors(
+    val background: Color?,
+    val colors: List<Color>,
+)
+
+private fun ClockColors.unpack(): List<Color> = (listOf(background) + colors.toList()).filterNotNull()
+private fun List<Color>.pack(hasBackgroundColor: Boolean): ClockColors =
+    ClockColors(
+        background = this.background(hasBackgroundColor),
+        colors = this.colors(hasBackgroundColor)
     )
-}
+
+
+private fun List<Color>.background(hasBackgroundColor: Boolean): Color? = if (hasBackgroundColor) this[0] else null
+private fun List<Color>.colors(hasBackgroundColor: Boolean): List<Color> =
+    if (hasBackgroundColor) this.subList(1, size) else this
 
 @Composable
-fun MultiColorSetting(
-    name: String,
-    colors: List<Color>,
+fun ClockColorsSetting(
+    setting: RichSetting.ClockColors,
     modifier: Modifier = Modifier,
-    onFocus: OnFocusSetting?,
-    onValueChange: (index: Int, color: Color) -> Unit,
 ) {
-    var editingIndex: Int? by remember(colors.size) { mutableStateOf(null) }
-    val editorOpenPadding by animateDpAsState(if (editingIndex != null) 48.dp else 0.dp)
-
-    CollapsibleSettingLayout(editingIndex != null, modifier, onFocus = onFocus) {
-        SettingName(name)
-
-        ScrollingRow(
-            Modifier
-                .fillMaxWidth()
-                .requiredHeight(EditablePatchSize + (editorOpenPadding * 2f)),
-            horizontalArrangement = Arrangement.spacedBy(
-                16.dp,
-                Alignment.CenterHorizontally
-            )
-        ) {
-            itemsIndexed(colors) { index, color ->
-                val isSelected = index == editingIndex
-                val padding by animateDpAsState(if (isSelected) editorOpenPadding else 0.dp)
-
-                EditablePreviewPatch(
-                    color,
-                    isSelected,
-                    {
-                        editingIndex = when (isSelected) {
-                            true -> null
-                            false -> index
-                        }
-                    },
-                    Modifier.padding(
-                        top = padding * 1.5f,
-                        start = padding * 0.5f,
-                        end = padding * 0.5f
-                    ),
-                )
-            }
-        }
-
-        ColorEditor(
-            editingIndex != null,
-            colors[editingIndex ?: 0],
-            { color -> onValueChange(editingIndex ?: 0, color) },
-        )
-    }
-}
-
-
-@Composable
-fun ColorSetting(
-    setting: RichSetting.Color,
-    modifier: Modifier = Modifier,
-    onFocus: OnFocusSetting?,
-) {
-    ColorSetting(
+    ClockColorsSetting(
+        setting.key,
         setting.localized.resolve(),
+        setting.helpText?.resolve(),
         setting.value,
         modifier,
-        onFocus = onFocus,
         onValueChange = setting.onValueChange
     )
 }
 
-
 @Composable
-fun ColorSetting(
+fun ClockColorsSetting(
+    key: Any,
     name: String,
-    value: Color,
+    helpText: String?,
+    colors: ClockColors,
     modifier: Modifier = Modifier,
-    onFocus: OnFocusSetting?,
-    onValueChange: (newValue: Color) -> Unit,
+    onValueChange: (ClockColors) -> Unit,
 ) {
-    var isEditing by remember { mutableStateOf(false) }
+    val hasBackgroundColor = colors.background != null
+    var editingIndex: Int? by rememberSaveable(key) { mutableStateOf(null) }
 
-    CollapsibleSettingLayout(isEditing, modifier, onFocus = onFocus) {
-        SettingName(name)
+    CheckableSettingLayout(
+        onClick = { editingIndex = 0 },
+        role = Role.Button,
+        modifier = modifier,
+        helpText = helpText,
+        text = { Text(name) },
+        checkable = {
+            @Composable
+            fun ColorBlock(color: Color) {
+                Box(
+                    Modifier
+                        .size(24.dp)
+                        .border(Dp.Hairline, LocalContentColor.current.copy(alpha = 0.2f), shapes.small)
+                        .background(color.toCompose(), shapes.small)
+                        .aspectRatio(1f)
+                ) {}
+            }
 
-        EditablePreviewPatch(
-            color = value,
-            isSelected = isEditing,
-            onClick = { isEditing = !isEditing },
-        )
+            colors.unpack().forEach { ColorBlock(it) }
+        },
+    )
 
-        ColorEditor(isEditing, value, onValueChange)
+    FullScreenOverlay(editingIndex != null, { editingIndex = null }) {
+        val clockPreview = LocalClockPreview.current
+            ?: throw IllegalStateException("ColorSetting expects LocalClockPreview to be provided")
+
+        var editableColors: List<Color> by remember(colors) { mutableStateOf(colors.unpack()) }
+
+        val saveChanges: () -> Unit = {
+            onValueChange(editableColors.pack(hasBackgroundColor))
+            editingIndex = null
+        }
+
+        val clockPreviewOptions = clockPreview.options.copyWithColors(editableColors.colors(hasBackgroundColor))
+
+        Box(
+            Modifier
+                .background(editableColors.background(hasBackgroundColor)?.toCompose() ?: colorScheme.background)
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing)
+        ) {
+            val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+            if (windowSizeClass.isHeightAtLeastMedium()) {
+                Column(
+                    Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    EditorContent(
+                        clockPreviewOptions,
+                        windowSizeClass,
+                        editingIndex,
+                        { editingIndex = it },
+                        editableColors,
+                        { editableColors = it },
+                    )
+                }
+            } else {
+                Row(
+                    Modifier.fillMaxSize().padding(end = FloatingActionButtonSize),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    EditorContent(
+                        clockPreviewOptions,
+                        windowSizeClass,
+                        editingIndex,
+                        { editingIndex = it },
+                        editableColors,
+                        { editableColors = it },
+                        Modifier.weight(1f, fill = false)
+                    )
+                }
+            }
+
+            FloatingActionButton(
+                onClick = saveChanges,
+                Modifier.floatingActionButton().align(Alignment.BottomEnd)
+            ) {
+                Icon(AppIcon.Checkmark, stringResource(Res.string.cd_save_changes))
+            }
+        }
     }
 }
 
 @Composable
-private fun ColorEditor(
-    isVisible: Boolean,
-    value: Color,
-    onValueChange: (Color) -> Unit,
-    modifier: Modifier = Modifier,
+private fun EditorContent(
+    clockOptions: Options<*>,
+    windowSizeClass: WindowSizeClass,
+    editingIndex: Int?,
+    setEditingIndex: (Int?) -> Unit,
+    editableColors: List<Color>,
+    setEditableColors: (List<Color>) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    AnimatedVisibility(
-        visible = isVisible,
-        enter = EnterVertical,
-        exit = ExitVertical,
-    ) {
-        ColorEditor(value, onValueChange, modifier)
+    if (!(windowSizeClass.isHeightSmall() && windowSizeClass.isWidthSmall())) {
+        Clock(
+            clockOptions,
+            modifier
+                .sizeIn(maxWidth = 600.dp, maxHeight = 400.dp)
+                .padding(32.dp)
+        )
+    }
+
+    Card(modifier.padding(16.dp)) {
+        Column(
+            Modifier
+                .widthIn(max = 600.dp)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            val rowState = rememberLazyListState()
+
+            ScrollingRow(
+                Modifier.heightIn(min = EditablePatchSize),
+                rowState,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                itemsIndexed(editableColors) { index, color ->
+                    val isSelected = index == editingIndex
+                    val size by animateDpAsState(if (isSelected) EditablePatchSize else DefaultPatchSize)
+
+                    Patch(color.toCompose(), { setEditingIndex(index) }, size = size) {
+                        if (isSelected) {
+                            Icon(AppIcon.ArrowDown, null)
+                        }
+                    }
+                }
+            }
+
+            editingIndex?.let { index ->
+                val editingColor = editableColors[index]
+                ColorEditor(
+                    editingColor,
+                    {
+                        val value = editableColors.toMutableList()
+                        value[index] = it
+                        setEditableColors(value.toList())
+                    },
+                )
+            }
+        }
     }
 }
-
 
 enum class ColorEditorMode {
     Samples,
@@ -221,93 +299,115 @@ private fun ColorEditor(
     var mode by rememberSaveable { mutableStateOf(ColorEditorMode.Samples) }
     val localizedModes = remember { ColorEditorMode::class.stringResourceMap }
 
-    Column(
+    LazyColumn(
         modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        ButtonGroup(
-            mode,
-            { localizedModes[it]?.resolve() ?: it.name },
-            { mode = it },
-            ColorEditorMode.entries,
-            size = ButtonGroupSize.Small
-        )
+        item {
+            ButtonGroup(
+                mode,
+                { localizedModes[it]?.resolve() ?: it.name },
+                { mode = it },
+                ColorEditorMode.entries,
+                size = ButtonGroupSize.Small
+            )
+        }
 
-        when (mode) {
-            ColorEditorMode.Samples -> SampleColors(color, onColorChange, Modifier.fillMaxWidth())
-            ColorEditorMode.HSL -> HslComponents(color, onColorChange, Modifier.fillMaxWidth())
-            ColorEditorMode.RGB -> RgbComponents(color, onColorChange, Modifier.fillMaxWidth())
-            ColorEditorMode.HEX -> HexEditor(color, onColorChange, Modifier.fillMaxWidth())
+        item {
+            Box(Modifier.animateContentSize()) {
+                when (mode) {
+                    ColorEditorMode.Samples -> SampleColors(color, onColorChange)
+                    ColorEditorMode.HSL -> HslComponents(color, onColorChange)
+                    ColorEditorMode.RGB -> RgbComponents(color, onColorChange)
+                    ColorEditorMode.HEX -> HexEditor(color, onColorChange)
+                }
+            }
         }
     }
 }
 
 
 @Composable
-private fun ColumnScope.HslComponents(
+private fun ColorComponents(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        content = content
+    )
+}
+
+@Composable
+private fun HslComponents(
     color: Color,
     onColorChange: (Color) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val (hue, saturation, lightness) = color.hsl()
 
-    ColorComponent(
-        hue,
-        { onColorChange(color.withHue(it)) },
-        stringResource(Res.string.setting_color_label_hsl_hue_initial),
-        0f,
-        360f,
-        modifier,
-    )
-    ColorComponent(
-        saturation,
-        { onColorChange(color.withSaturation(it)) },
-        stringResource(Res.string.setting_color_label_hsl_saturation_initial),
-        0f,
-        1f,
-        modifier,
-    )
-    ColorComponent(
-        lightness,
-        { onColorChange(color.withLightness(it)) },
-        stringResource(Res.string.setting_color_label_hsl_lightness_initial),
-        0f,
-        1f,
-        modifier,
-    )
+    ColorComponents(modifier) {
+        ColorComponent(
+            hue,
+            { onColorChange(color.withHue(it)) },
+            stringResource(Res.string.setting_color_label_hsl_hue_initial),
+            0f,
+            360f,
+            modifier,
+        )
+        ColorComponent(
+            saturation,
+            { onColorChange(color.withSaturation(it)) },
+            stringResource(Res.string.setting_color_label_hsl_saturation_initial),
+            0f,
+            1f,
+            modifier,
+        )
+        ColorComponent(
+            lightness,
+            { onColorChange(color.withLightness(it)) },
+            stringResource(Res.string.setting_color_label_hsl_lightness_initial),
+            0f,
+            1f,
+            modifier,
+        )
+    }
 }
 
 @Composable
-private fun ColumnScope.RgbComponents(
+private fun RgbComponents(
     color: Color,
     onColorChange: (Color) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    ColorComponent(
-        color.red,
-        { onColorChange(color.withRed(it)) },
-        stringResource(Res.string.setting_color_label_rgb_red_initial),
-        0,
-        255,
-        modifier,
-    )
-    ColorComponent(
-        color.green,
-        { onColorChange(color.withGreen(it)) },
-        stringResource(Res.string.setting_color_label_rgb_green_initial),
-        0,
-        255,
-        modifier,
-    )
-    ColorComponent(
-        color.blue,
-        { onColorChange(color.withBlue(it)) },
-        stringResource(Res.string.setting_color_label_rgb_blue_initial),
-        0,
-        255,
-        modifier,
-    )
+    ColorComponents(modifier) {
+        ColorComponent(
+            color.red,
+            { onColorChange(color.withRed(it)) },
+            stringResource(Res.string.setting_color_label_rgb_red_initial),
+            0,
+            255,
+            modifier,
+        )
+        ColorComponent(
+            color.green,
+            { onColorChange(color.withGreen(it)) },
+            stringResource(Res.string.setting_color_label_rgb_green_initial),
+            0,
+            255,
+            modifier,
+        )
+        ColorComponent(
+            color.blue,
+            { onColorChange(color.withBlue(it)) },
+            stringResource(Res.string.setting_color_label_rgb_blue_initial),
+            0,
+            255,
+            modifier,
+        )
+    }
 }
 
 @Composable
@@ -343,38 +443,21 @@ private fun HexEditor(
 private fun SampleColors(
     value: Color,
     onValueChange: (Color) -> Unit,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
 ) {
-    val swatch = rememberMaterialColorSwatch()
-    val spacing = 12.dp
-    val horizontalArrangement =
-        Arrangement.spacedBy(spacing, alignment = Alignment.CenterHorizontally)
-    val isVerticallySmall =
-        currentWindowAdaptiveInfo().windowSizeClass.isHeightAtLeastMedium()
+    val swatch = rememberMaterialColorSwatch() ?: return LoadingSpinner()
+    val spacing = 8.dp
 
-    when (isVerticallySmall) {
-        true -> {
-            ScrollingRow(modifier, horizontalArrangement = horizontalArrangement) {
-                items(swatch) { color ->
-                    SampleColorPatch(color, onValueChange, color == value)
-                }
-            }
-        }
-
-        false -> {
-            FlowRow(
-                modifier,
-                horizontalArrangement = horizontalArrangement,
-                verticalArrangement = Arrangement.spacedBy(spacing),
-                maxItemsInEachRow = 5
-            ) {
-                swatch.fastForEach { color ->
-                    SampleColorPatch(color, onValueChange, color == value)
-                }
-            }
-        }
+    FlowRow(
+        modifier,
+        horizontalArrangement = Arrangement.spacedBy(spacing),
+        verticalArrangement = Arrangement.spacedBy(spacing),
+        maxItemsInEachRow = 5,
+    ) {
+        swatch.fastForEach { color -> SampleColorPatch(color, onValueChange, color == value) }
     }
 }
+
 
 @Composable
 private fun SampleColorPatch(
@@ -446,7 +529,7 @@ private fun Patch(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     contentColor: ComposeColor = rememberContentColor(color),
-    size: Dp = 48.dp,
+    size: Dp = DefaultPatchSize,
     content: (@Composable () -> Unit)? = null,
 ) {
     Surface(
@@ -461,35 +544,6 @@ private fun Patch(
             Box(contentAlignment = Alignment.Center) {
                 content.invoke()
             }
-        }
-    }
-}
-
-@Composable
-private fun EditablePreviewPatch(
-    color: Color,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val patchScale by animateFloatAsState(if (isSelected) 1.2f else 1f)
-
-    Patch(
-        color.toCompose(),
-        onClick = onClick,
-        size = EditablePatchSize * patchScale,
-        modifier = modifier
-    ) {
-        AnimatedVisibility(
-            visible = isSelected,
-            enter = EnterScale,
-            exit = ExitScale,
-        ) {
-            Icon(
-                AppIcon.ArrowDown,
-                stringResource(Res.string.setting_color_contentdescription_edited),
-                Modifier.requiredSize(32.dp)
-            )
         }
     }
 }

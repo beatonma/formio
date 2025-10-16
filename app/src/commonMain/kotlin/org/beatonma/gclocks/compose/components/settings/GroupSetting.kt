@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
@@ -30,7 +29,6 @@ import org.beatonma.gclocks.compose.animation.ExitFade
 import org.beatonma.gclocks.compose.animation.ExitVertical
 import org.beatonma.gclocks.compose.components.settings.components.CheckableSettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.CollapsibleSettingLayout
-import org.beatonma.gclocks.compose.components.settings.components.OnFocusSetting
 import org.beatonma.gclocks.compose.components.settings.components.SettingName
 import org.beatonma.gclocks.compose.components.settings.components.SettingValue
 import org.beatonma.gclocks.compose.components.settings.data.RichSetting
@@ -43,14 +41,12 @@ import org.jetbrains.compose.resources.stringResource
 fun <E : Enum<E>> SingleSelectSetting(
     setting: RichSetting.SingleSelect<E>,
     modifier: Modifier = Modifier,
-    onFocus: OnFocusSetting? = null,
 ) {
     SingleSelectSetting(
         name = setting.localized.resolve(),
         value = setting.value,
         values = setting.values,
         modifier = modifier,
-        onFocus = onFocus,
         helpText = setting.helpText?.resolve(),
         onValueChange = setting.onValueChange,
     )
@@ -64,7 +60,6 @@ fun <E : Enum<E>> SingleSelectSetting(
     value: E,
     values: Set<E>,
     modifier: Modifier = Modifier,
-    onFocus: OnFocusSetting? = null,
     helpText: String? = null,
     onValueChange: (newValue: E) -> Unit,
 ) {
@@ -75,7 +70,6 @@ fun <E : Enum<E>> SingleSelectSetting(
         name,
         modifier,
         helpText = helpText,
-        onFocus = onFocus,
         valueDescription = resourceMap.getValue(value).resolve()
     ) {
         for (v in values) {
@@ -101,7 +95,6 @@ fun <E : Enum<E>> SingleSelectSetting(
 fun <E : Enum<E>> MultiSelectSetting(
     setting: RichSetting.MultiSelect<E>,
     modifier: Modifier = Modifier,
-    onFocus: OnFocusSetting? = null,
     defaultValue: E = setting.values.first(),
     allowEmptySet: Boolean = false,
 ) {
@@ -112,7 +105,6 @@ fun <E : Enum<E>> MultiSelectSetting(
         onValueChange = setting.onValueChange,
         modifier = modifier,
         helpText = setting.helpText?.resolve(),
-        onFocus = onFocus,
         defaultValue = defaultValue,
         allowEmptySet = allowEmptySet
     )
@@ -127,7 +119,6 @@ fun <E : Enum<E>> MultiSelectSetting(
     onValueChange: (newValue: Set<E>) -> Unit,
     modifier: Modifier = Modifier,
     helpText: String? = null,
-    onFocus: OnFocusSetting? = null,
     defaultValue: E = values.first(),
     allowEmptySet: Boolean = false,
 ) {
@@ -139,7 +130,6 @@ fun <E : Enum<E>> MultiSelectSetting(
         name,
         modifier,
         helpText = helpText,
-        onFocus = onFocus,
         valueDescription = values.map { resourceMap.getValue(it).resolve() }.joinToString(", ")
     ) {
         for (v in values) {
@@ -177,7 +167,6 @@ private fun GroupSetting(
     modifier: Modifier,
     helpText: String?,
     valueDescription: String,
-    onFocus: OnFocusSetting?,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -185,7 +174,7 @@ private fun GroupSetting(
 
     val iconRotation by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
 
-    CollapsibleSettingLayout(expanded, modifier, helpText, onFocus = onFocus) {
+    CollapsibleSettingLayout(expanded, modifier, helpText) {
         CheckableSettingLayout(
             helpText = helpText,
             onClick = onClick,
@@ -201,18 +190,16 @@ private fun GroupSetting(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            IconButton(onClick = onClick, Modifier.weight(1f, false)) {
-                Icon(
-                    AppIcon.ArrowDropdown,
-                    stringResource(
-                        when (expanded) {
-                            true -> Res.string.cd_show_less
-                            false -> Res.string.cd_show_more
-                        }
-                    ),
-                    modifier = Modifier.rotate(iconRotation)
-                )
-            }
+            Icon(
+                AppIcon.ArrowDropdown,
+                stringResource(
+                    when (expanded) {
+                        true -> Res.string.cd_show_less
+                        false -> Res.string.cd_show_more
+                    }
+                ),
+                modifier = Modifier.weight(1f, false).rotate(iconRotation)
+            )
         }
 
         AnimatedVisibility(

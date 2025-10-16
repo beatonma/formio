@@ -34,8 +34,8 @@ private fun buildPaintsSettings(
     onUpdate: (Io18Paints) -> Unit,
 ): List<Setting> =
     listOf(
-        createColorsAdapter(paints) { newValue ->
-            onUpdate(paints.copy(colors = newValue.toTypedArray()))
+        chooseClockColors(paints) { colors ->
+            onUpdate(paints.copy(colors = colors.toTypedArray()))
         }
     )
 

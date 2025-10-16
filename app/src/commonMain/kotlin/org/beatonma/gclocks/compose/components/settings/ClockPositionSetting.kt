@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.OutlinedIconButton
@@ -99,10 +98,9 @@ fun ClockPositionSetting(
         onClick = { isEditMode = true },
         role = Role.Button,
         modifier = modifier,
-        text = { SettingName(name) }) {
-        IconButton({ isEditMode = true }) {
-            Icon(AppIcon.PositionAndSize, null)
-        }
+        text = { SettingName(name) }
+    ) {
+        Icon(AppIcon.PositionAndSize, null)
     }
 
     FullScreenOverlay(

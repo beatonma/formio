@@ -3,7 +3,6 @@ package org.beatonma.gclocks.app.data.settings.clocks
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.setting_alignment_horizontal
 import gclocks_multiplatform.app.generated.resources.setting_alignment_vertical
-import gclocks_multiplatform.app.generated.resources.setting_background_color
 import gclocks_multiplatform.app.generated.resources.setting_choose_clock_style
 import gclocks_multiplatform.app.generated.resources.setting_clock_layout
 import gclocks_multiplatform.app.generated.resources.setting_clock_position
@@ -17,6 +16,7 @@ import gclocks_multiplatform.app.generated.resources.setting_time_is_zero_padded
 import gclocks_multiplatform.app.generated.resources.setting_time_show_seconds
 import org.beatonma.gclocks.app.data.settings.ClockType
 import org.beatonma.gclocks.app.ui.LocalizedString
+import org.beatonma.gclocks.compose.components.settings.ClockColors
 import org.beatonma.gclocks.compose.components.settings.data.Key
 import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import org.beatonma.gclocks.compose.components.settings.data.Setting
@@ -30,29 +30,41 @@ import org.beatonma.gclocks.core.options.TimeFormat
 
 
 object SettingKey {
-    val clockColors = Key.ColorsKey("clock_colors")
     val clockLayout = Key.EnumKey<Layout>("clock_layout")
     val clockHorizontalAlignment = Key.EnumKey<HorizontalAlignment>("clock_horizontal_alignment")
     val clockVerticalAlignment = Key.EnumKey<VerticalAlignment>("clock_vertical_alignment")
     val clockSpacing = Key.IntKey("clock_spacing")
     val clockSecondsScale = Key.FloatKey("clock_seconds_scale")
-    val backgroundColor = Key.ColorKey("background_color")
     val clockPosition = Key.RectFKey("clock_position")
     val clockType = Key.EnumKey<ClockType>("clock_type")
     val clockTimeFormatIs24Hour = Key.BoolKey("clock_is_24_hour")
     val clockTimeFormatIsZeroPadded = Key.BoolKey("clock_is_zero_padded")
     val clockTimeFormatShowSeconds = Key.BoolKey("clock_show_seconds")
+    val clockColors = Key.ClockColorsKey("clock_colors")
+    val clockColorsWithBackground = Key.ClockColorsKey("clock_colors_with_background")
 }
 
 
-internal fun createColorsAdapter(
+internal fun chooseClockColors(
     paints: Paints,
     onValueChange: (value: List<Color>) -> Unit,
-) = RichSetting.Colors(
+) = RichSetting.ClockColors(
     key = SettingKey.clockColors,
     localized = LocalizedString(Res.string.setting_colors),
     helpText = null,
-    value = paints.colors.toList(),
+    value = ClockColors(null, paints.colors.toList()),
+    onValueChange = { onValueChange(it.colors) },
+)
+
+internal fun chooseClockColors(
+    background: Color,
+    colors: List<Color>,
+    onValueChange: (ClockColors) -> Unit,
+) = RichSetting.ClockColors(
+    key = SettingKey.clockColorsWithBackground,
+    localized = LocalizedString(Res.string.setting_colors),
+    helpText = null,
+    value = ClockColors(background, colors),
     onValueChange = onValueChange,
 )
 
@@ -164,13 +176,6 @@ internal fun chooseSecondScale(value: Float, onUpdate: (Float) -> Unit) =
         stepSize = 0.1f,
         onValueChange = onUpdate
     )
-
-internal fun chooseBackgroundColor(value: Color, onUpdate: (Color) -> Unit) = RichSetting.Color(
-    key = SettingKey.backgroundColor,
-    localized = LocalizedString(Res.string.setting_background_color),
-    value = value,
-    onValueChange = onUpdate,
-)
 
 internal fun chooseClockPosition(value: RectF, onUpdate: (RectF) -> Unit) = RichSetting.ClockPosition(
     key = SettingKey.clockPosition,

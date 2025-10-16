@@ -33,7 +33,7 @@ private fun buildPaintsSettings(
     onUpdate: (FormPaints) -> Unit,
 ): List<Setting> =
     listOf(
-        createColorsAdapter(paints) { colors ->
+        chooseClockColors(paints) { colors ->
             onUpdate(paints.copy(colors = colors.toTypedArray()))
         }
     )

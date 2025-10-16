@@ -7,7 +7,7 @@ import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.warn
 import kotlin.jvm.JvmInline
 import org.beatonma.gclocks.app.data.settings.ClockType as ClockTypeData
-import org.beatonma.gclocks.core.graphics.Color as GraphicsColor
+import org.beatonma.gclocks.compose.components.settings.ClockColors as ClockColorsData
 
 sealed interface Setting
 
@@ -38,14 +38,6 @@ data class RichSettings(
             time = this.time + time,
             sizes = this.sizes + sizes,
         )
-
-    fun applyGroups(): RichSettings = copy(
-        core = listOf(RichSettingsGroup(core)),
-        colors = listOf(RichSettingsGroup(colors)),
-        layout = listOf(RichSettingsGroup(layout)),
-        time = listOf(RichSettingsGroup(time)),
-        sizes = listOf(RichSettingsGroup(sizes))
-    )
 
     fun groups(groupCount: Int): List<List<Setting>> {
         return when (groupCount) {
@@ -87,22 +79,13 @@ sealed interface RichSetting<T : Any> : Setting {
     val onValueChange: (T) -> Unit
 
     @Immutable
-    data class Color(
-        override val key: Key.ColorKey,
+    data class ClockColors(
+        override val key: Key.ClockColorsKey,
         override val localized: LocalizedString,
         override val helpText: LocalizedString? = null,
-        override val value: GraphicsColor,
-        override val onValueChange: (GraphicsColor) -> Unit,
-    ) : RichSetting<GraphicsColor>
-
-    @Immutable
-    data class Colors(
-        override val key: Key.ColorsKey,
-        override val localized: LocalizedString,
-        override val helpText: LocalizedString? = null,
-        override val value: List<GraphicsColor>,
-        override val onValueChange: (List<GraphicsColor>) -> Unit,
-    ) : RichSetting<List<GraphicsColor>>
+        override val value: ClockColorsData,
+        override val onValueChange: (ClockColorsData) -> Unit,
+    ) : RichSetting<ClockColorsData>
 
     @Immutable
     data class SingleSelect<E : Enum<E>>(
@@ -192,10 +175,7 @@ sealed interface Key {
     value class FloatKey(override val value: String) : Key
 
     @JvmInline
-    value class ColorKey(override val value: String) : Key
-
-    @JvmInline
-    value class ColorsKey(override val value: String) : Key
+    value class ClockColorsKey(override val value: String) : Key
 
     @JvmInline
     value class EnumKey<E : Enum<E>>(override val value: String) : Key
@@ -255,6 +235,18 @@ fun List<Setting>.insertAfter(key: Key, setting: Setting): List<Setting> {
             add(index + 1, setting)
         } else {
             warn("insertAfter: Setting with key $key not found.")
+        }
+    }.toList()
+}
+
+fun List<Setting>.replace(key: Key, block: (Setting) -> Setting): List<Setting> {
+    val index = indexOfFirst { it is RichSetting<*> && it.key == key }
+
+    return toMutableList().apply {
+        if (index >= 0) {
+            this[index] = block(this[index])
+        } else {
+            warn("replace: Setting with key $key not found.")
         }
     }.toList()
 }

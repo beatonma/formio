@@ -36,6 +36,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.compositionLocalOf
@@ -44,7 +45,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
@@ -79,6 +79,7 @@ import org.beatonma.gclocks.compose.plus
 import org.beatonma.gclocks.compose.toCompose
 import org.beatonma.gclocks.core.options.Options
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.graphics.Color as ComposeColor
 
 
 private val ColumnPreferredWidth = 350.dp
@@ -96,9 +97,10 @@ private fun Modifier.horizontalMarginModifier() = composed {
 /**
  * Data needed to render a preview of a clock with current settings.
  */
+@Immutable
 data class ClockPreview(
     val options: Options<*>,
-    val background: Color,
+    val background: ComposeColor,
 )
 
 val LocalClockPreview: ProvidableCompositionLocal<ClockPreview?> = compositionLocalOf { null }
@@ -444,7 +446,7 @@ private fun ClockSettingsColumn(
                         key = item.key.value,
                         contentType = item.key
                     ) {
-                        Setting(item, itemModifier, onFocus = null)
+                        Setting(item, itemModifier)
                         if (index == _settings.size - 1) {
                             GroupSeparator(groupModifier)
                         }
@@ -465,7 +467,7 @@ private fun GroupSeparator(modifier: Modifier, content: @Composable BoxScope.() 
 
 
 @Composable
-private fun resolveClockBackgroundColor(displayOptions: DisplayContext.Options): Color {
+private fun resolveClockBackgroundColor(displayOptions: DisplayContext.Options): ComposeColor {
     return when (displayOptions) {
         is DisplayContext.Options.WithBackground -> displayOptions.backgroundColor.toCompose()
         else -> null

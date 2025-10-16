@@ -37,7 +37,7 @@ interface Io16ClockSettingsAdapter : ClockSettingsAdapter<Io16Options> {
 
 private fun buildColorSettings(paints: Io16Paints, onUpdate: (Io16Paints) -> Unit): List<Setting> =
     listOf(
-        createColorsAdapter(paints) { colors ->
+        chooseClockColors(paints) { colors ->
             onUpdate(paints.copy(colors = colors.toTypedArray()))
         }
     )

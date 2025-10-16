@@ -28,11 +28,12 @@ import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.data.settings.DisplayContextDefaults
 import org.beatonma.gclocks.app.data.settings.buildClockSettingsAdapter
 import org.beatonma.gclocks.app.data.settings.clocks.SettingKey
-import org.beatonma.gclocks.app.data.settings.clocks.chooseBackgroundColor
 import org.beatonma.gclocks.app.data.settings.clocks.chooseClockPosition
 import org.beatonma.gclocks.app.data.settings.clocks.chooseClockType
+import org.beatonma.gclocks.app.data.settings.clocks.chooseClockColors
+import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import org.beatonma.gclocks.compose.components.settings.data.RichSettings
-import org.beatonma.gclocks.compose.components.settings.data.insertBefore
+import org.beatonma.gclocks.compose.components.settings.data.replace
 import org.beatonma.gclocks.core.options.Options
 import kotlin.reflect.KClass
 
@@ -158,12 +159,21 @@ internal fun defaultAddDisplaySettings(
     return when (options) {
         is DisplayContextDefaults.WithBackground -> {
             settings.copy(
-                colors = settings.colors.insertBefore(
+                colors = settings.colors.replace(
                     SettingKey.clockColors,
-                    chooseBackgroundColor(
-                        value = options.backgroundColor,
-                        onUpdate = { update(options.copy(backgroundColor = it)) },
-                    ),
+                    { previous ->
+                        val previous = previous as RichSetting.ClockColors
+                        chooseClockColors(
+                            options.backgroundColor,
+                            previous.value.colors,
+                            onValueChange = {
+                                it.background?.let { backgroundColor ->
+                                    update(options.copy(backgroundColor = backgroundColor))
+                                }
+                                previous.onValueChange(it)
+                            }
+                        )
+                    }
                 ),
                 layout = listOf(
                     chooseClockPosition(

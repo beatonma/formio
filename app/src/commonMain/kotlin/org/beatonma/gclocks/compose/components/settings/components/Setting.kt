@@ -19,16 +19,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults.rememberPlainTooltipPositionProvider
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 
-typealias OnFocusSetting = () -> Unit
 
 @Composable
 internal fun SettingLayout(
@@ -52,7 +51,6 @@ internal fun CollapsibleSettingLayout(
     isExpanded: Boolean,
     modifier: Modifier = Modifier,
     helpText: String? = null,
-    onFocus: OnFocusSetting?,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val horizontalPadding by animateDpAsState(if (isExpanded) 8.dp else 0.dp)
@@ -61,12 +59,6 @@ internal fun CollapsibleSettingLayout(
     val innerHorizontalPadding by animateDpAsState(if (isExpanded) 8.dp else 0.dp)
     val backgroundColor by animateColorAsState(if (isExpanded) colorScheme.surface else colorScheme.background)
     val elevation by animateDpAsState(if (isExpanded) 1.dp else 0.dp)
-
-    LaunchedEffect(isExpanded) {
-        if (isExpanded) {
-            onFocus?.invoke()
-        }
-    }
 
     Surface(
         modifier.padding(vertical = verticalPadding, horizontal = horizontalPadding),
@@ -95,6 +87,7 @@ internal fun CheckableSettingLayout(
         Row(
             Modifier
                 .clickable(onClick = onClick, role = role)
+                .minimumInteractiveComponentSize()
                 .padding(horizontal = 8.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,

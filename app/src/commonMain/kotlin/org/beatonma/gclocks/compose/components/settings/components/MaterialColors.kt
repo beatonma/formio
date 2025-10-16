@@ -1,12 +1,24 @@
 package org.beatonma.gclocks.compose.components.settings.components
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.beatonma.gclocks.core.graphics.Color
 
 @Composable
-fun rememberMaterialColorSwatch(): List<Color> =
-    remember { MaterialColorSwatch.map(::Color) }
+fun rememberMaterialColorSwatch(
+    scope: CoroutineScope = rememberCoroutineScope(),
+): List<Color>? {
+    var swatch: List<Color>? by remember { mutableStateOf(null) }
+    LaunchedEffect(Unit) { scope.launch { swatch = MaterialColorSwatch.map(::Color) } }
+    return swatch
+}
 
 const val MaterialRed50 = 0xffFFEBEE_UL
 const val MaterialRed100 = 0xffFFCDD2_UL

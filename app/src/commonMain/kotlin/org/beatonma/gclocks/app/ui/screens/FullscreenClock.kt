@@ -43,7 +43,7 @@ fun FullSizeClock(
     modifier: Modifier = Modifier,
 ) {
     EdgeToEdgeClock(options, modifier) {
-        FullscreenClock(options)
+        ClockWithBackground(options)
     }
 }
 
@@ -97,14 +97,14 @@ private fun EdgeToEdgeClock(
 ) {
     val background = rememberBackground(options.displayOptions)
     EdgeToEdge(Modifier.background(background.backgroundColor.toCompose()).then(modifier)) {
-        FullscreenClock(options)
+        ClockWithBackground(options)
 
         overlay?.invoke(this)
     }
 }
 
 @Composable
-private fun FullscreenClock(options: ContextClockOptions<*>) {
+private fun ClockWithBackground(options: ContextClockOptions<*>) {
     val displayOptions = when (options.displayOptions) {
         is DisplayContext.Options.WithBackground -> options.displayOptions
         else -> remember { DisplayContextDefaults.WithBackground() }

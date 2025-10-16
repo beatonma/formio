@@ -2,10 +2,11 @@ package org.beatonma.gclocks.app.ui.screens
 
 import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.data.settings.clocks.SettingKey
-import org.beatonma.gclocks.app.data.settings.clocks.chooseBackgroundColor
+import org.beatonma.gclocks.app.data.settings.clocks.chooseClockColors
 import org.beatonma.gclocks.app.data.settings.clocks.chooseClockPosition
+import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import org.beatonma.gclocks.compose.components.settings.data.RichSettings
-import org.beatonma.gclocks.compose.components.settings.data.insertBefore
+import org.beatonma.gclocks.compose.components.settings.data.replace
 
 
 actual fun addDisplaySettings(
@@ -17,12 +18,21 @@ actual fun addDisplaySettings(
         is DisplayContext.Options.Widget -> settings
 
         is DisplayContext.Options.Screensaver -> settings.copy(
-            colors = settings.colors.insertBefore(
+            colors = settings.colors.replace(
                 SettingKey.clockColors,
-                chooseBackgroundColor(
-                    value = options.backgroundColor,
-                    onUpdate = { update(options.copy(backgroundColor = it)) },
-                ),
+                { previous ->
+                    previous as RichSetting.ClockColors
+                    chooseClockColors(
+                        options.backgroundColor,
+                        previous.value.colors,
+                        { updated ->
+                            updated.background?.let {
+                                update(options.copy(backgroundColor = it))
+                            }
+                            previous.onValueChange(updated)
+                        }
+                    )
+                },
             ),
             layout = listOf(
                 chooseClockPosition(
@@ -33,12 +43,21 @@ actual fun addDisplaySettings(
         )
 
         is DisplayContext.Options.Wallpaper -> settings.copy(
-            colors = settings.colors.insertBefore(
+            colors = settings.colors.replace(
                 SettingKey.clockColors,
-                chooseBackgroundColor(
-                    value = options.backgroundColor,
-                    onUpdate = { update(options.copy(backgroundColor = it)) },
-                ),
+                { previous ->
+                    previous as RichSetting.ClockColors
+                    chooseClockColors(
+                        options.backgroundColor,
+                        previous.value.colors,
+                        { updated ->
+                            updated.background?.let {
+                                update(options.copy(backgroundColor = it))
+                            }
+                            previous.onValueChange(updated)
+                        }
+                    )
+                },
             ),
             layout = listOf(
                 chooseClockPosition(
