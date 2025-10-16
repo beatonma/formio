@@ -67,11 +67,17 @@ sealed interface FullScreen : NavigationTarget {
 }
 
 interface Pane : NavigationTarget {
-    @Serializable
-    object SettingsEditor : Pane
+    val route: String
 
     @Serializable
-    object About : Pane
+    object SettingsEditor : Pane {
+        override val route: String = "SettingsEditor"
+    }
+
+    @Serializable
+    object About : Pane {
+        override val route: String = "About"
+    }
 }
 
 
@@ -169,11 +175,11 @@ private fun NavigationUI(
     // Navigation destinations for this controller fill only the content slot.of navigation UI.
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val route = navBackStackEntry?.destination?.route ?: Pane.SettingsEditor::class.qualifiedName
+    val route = navBackStackEntry?.destination?.route ?: Pane.SettingsEditor.route
 
-    val currentPane: NavigationMenuItem = when (route) {
-        Pane.About::class.qualifiedName -> NavigationMenuItem.About
-        Pane.SettingsEditor::class.qualifiedName -> NavigationMenuItem.entries.find { it.name == displayContext.name }
+    val currentPane: NavigationMenuItem = when {
+        route.endsWith(Pane.About.route) -> NavigationMenuItem.About
+        route.endsWith(Pane.SettingsEditor.route) -> NavigationMenuItem.entries.find { it.name == displayContext.name }
         else -> null
     } ?: throw IllegalStateException("Unhandled route $route")
 
