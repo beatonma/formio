@@ -1,10 +1,11 @@
 package org.beatonma.gclocks.core
 
 import org.beatonma.gclocks.core.geometry.NativeSize
-import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Canvas
+import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.options.GlyphOptions
+import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 
 enum class GlyphState {
@@ -244,7 +245,9 @@ abstract class BaseGlyph<P : Paints> internal constructor(
 
             GlyphState.Inactive, GlyphState.Deactivating -> state = GlyphState.Activating
 
-            else -> {}
+            else -> {
+                debug("setActive has no effect when state == $state")
+            }
         }
     }
 
@@ -254,7 +257,9 @@ abstract class BaseGlyph<P : Paints> internal constructor(
                 state = GlyphState.Deactivating
             }
 
-            else -> {}
+            else -> {
+                debug("setInactive has no effect when state == $state")
+            }
         }
     }
 
@@ -268,7 +273,9 @@ abstract class BaseGlyph<P : Paints> internal constructor(
                 state = GlyphState.Appearing
             }
 
-            else -> {}
+            else -> {
+                debug("setAppearing has no effect when state == $state")
+            }
         }
     }
 
@@ -281,7 +288,9 @@ abstract class BaseGlyph<P : Paints> internal constructor(
                 state = GlyphState.Disappeared
             }
 
-            else -> {}
+            else -> {
+                debug("setDisappeared has no effect when state == $state")
+            }
         }
     }
 }
@@ -382,4 +391,3 @@ abstract class BaseClockGlyph<P : Paints>(
         drawLine(Color.Red, width, 0f, 0f, height)
     }
 }
-

@@ -1,5 +1,6 @@
 package org.beatonma.gclocks.wallpaper
 
+import android.app.KeyguardManager
 import android.app.wallpaper.WallpaperDescription
 import android.graphics.Canvas
 import android.service.wallpaper.WallpaperService
@@ -52,7 +53,7 @@ class ClockWallpaperService : WallpaperService() {
     }
 
     private inner class ClockEngine : Engine() {
-        private var engineScope: CoroutineScope? = null
+        private var engineScope: CoroutineScope = createCoroutineScope()
 
         @OptIn(ExperimentalCoroutinesApi::class)
         private val settings: Flow<ContextClockOptions<*>> = settingsRepository
@@ -61,44 +62,42 @@ class ClockWallpaperService : WallpaperService() {
 
         private val displayMetrics: Flow<DisplayMetrics> = settingsRepository.loadDisplayMetrics()
 
-        private val canvasHost = AndroidCanvasHost()
+        private val canvasHost: AndroidCanvasHost = AndroidCanvasHost()
         private val path: AndroidPath = AndroidPath()
         private var animator: ClockAnimator<*, *>? = null
         private var backgroundColor: Int = 0xff000000.toInt()
         private val relativeBounds: MutableRectF = MutableRectF(0f, 0f, 1f, 1f)
         private val absoluteBounds: MutableRectF = MutableRectF(0f, 0f, 0f, 0f)
-        private var width = 0
-        private var height = 0
+        private var width: Int = 0
+        private var height: Int = 0
         private var frameDelayMillis: Long = (1000f / 60f).toLong()
 
-        // TODO update glyph state for interactive animations.
-        // private val keyguardManager = getSystemService(KEYGUARD_SERVICE) as KeyguardManager
+        private val keyguardManager = getSystemService(KEYGUARD_SERVICE) as KeyguardManager
 
         init {
             initialize()
         }
 
-        fun initialize() {
-            if (engineScope?.isActive != true) {
+        fun initialize(state: GlyphState = GlyphState.Appearing) {
+            if (!engineScope.isActive) {
                 engineScope = createCoroutineScope()
             }
-            val scope = engineScope ?: run {
-                debug("Failed to initialize wallpaper: engineScope is null")
-                return
-            }
-            scope.launch {
+
+            engineScope.launch {
                 settings.collectLatest {
                     val wallpaperOptions = it.displayOptions as DisplayContext.Options.Wallpaper
 
                     backgroundColor = wallpaperOptions.backgroundColor.toRgbInt()
                     relativeBounds.set(wallpaperOptions.position)
 
-                    animator = createAnimator(it.clockOptions)
+                    animator = createAnimator(it.clockOptions).apply {
+                        setState(state, true)
+                    }
                     invalidate()
                 }
             }
 
-            scope.launch {
+            engineScope.launch {
                 displayMetrics.collectLatest { metrics ->
                     frameDelayMillis = metrics.frameDelayMillis
                 }
@@ -110,10 +109,10 @@ class ClockWallpaperService : WallpaperService() {
         }
 
         private fun postInvalidate(delayMillis: Long) {
-            engineScope?.launch(Dispatchers.Main) {
+            engineScope.launch(Dispatchers.Main) {
                 delay(delayMillis)
                 invalidate()
-            } ?: debug("postInvalidate failed: engineScope is null")
+            }
         }
 
         override fun onSurfaceChanged(
@@ -132,9 +131,24 @@ class ClockWallpaperService : WallpaperService() {
         override fun onVisibilityChanged(visible: Boolean) {
             super.onVisibilityChanged(visible)
 
-            when (visible) {
-                true -> initialize()
-                false -> engineScope?.cancel()
+            val isLocked = keyguardManager.isKeyguardLocked
+
+            if (isVisible) {
+                initialize(if (isLocked) GlyphState.Disappeared else GlyphState.Appearing)
+                if (isLocked) {
+                    engineScope.launch(Dispatchers.Main) {
+                        // Poll keyguard lock state and animate visibility when unlocked
+                        while (true) {
+                            delay(500)
+                            if (!keyguardManager.isKeyguardLocked) {
+                                animator?.setState(GlyphState.Appearing, false)
+                                break
+                            }
+                        }
+                    }
+                }
+            } else {
+                engineScope.cancel()
             }
         }
 
@@ -222,7 +236,7 @@ class ClockWallpaperService : WallpaperService() {
 
         override fun onDestroy() {
             path.beginPath()
-            engineScope?.cancel()
+            engineScope.cancel()
             super.onDestroy()
         }
 
