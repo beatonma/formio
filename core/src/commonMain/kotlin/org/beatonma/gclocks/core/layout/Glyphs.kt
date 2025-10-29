@@ -3,6 +3,7 @@ package org.beatonma.gclocks.core.layout
 import org.beatonma.gclocks.core.ClockFont
 import org.beatonma.gclocks.core.Glyph
 import org.beatonma.gclocks.core.GlyphState
+import org.beatonma.gclocks.core.GlyphVisibility
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.TimeOfDay
@@ -41,8 +42,16 @@ internal class Glyphs<P : Paints, G : Glyph<P>>(
         updateGlyphs(nowString, nextString)
     }
 
+    fun setState(state: GlyphState, visibility: GlyphVisibility, force: Boolean) {
+        glyphs.forEach { it.glyph.setState(state, visibility, force) }
+    }
+
     fun setState(state: GlyphState, force: Boolean) {
         glyphs.forEach { it.glyph.setState(state, force) }
+    }
+
+    fun setState(visibility: GlyphVisibility, force: Boolean) {
+        glyphs.forEach { it.glyph.setState(visibility, force) }
     }
 
     private fun updateGlyphs(now: String, next: String) {

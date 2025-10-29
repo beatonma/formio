@@ -4,6 +4,7 @@ import org.beatonma.gclocks.core.ClockRenderer
 import org.beatonma.gclocks.core.Glyph
 import org.beatonma.gclocks.core.GlyphRenderer
 import org.beatonma.gclocks.core.GlyphState
+import org.beatonma.gclocks.core.GlyphVisibility
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Path
@@ -62,40 +63,20 @@ class Io16GlyphRenderer<P : Path>(
         )
     )
 
-    private var rendererState = Io16PathRenderer.State.Appearing
-
     override fun draw(glyph: Io16Glyph, canvas: Canvas, paints: Io16Paints) {
         debug(false) {
             if (debugUpdateOnDraw) {
                 now = getCurrentTimeMillis()
             }
         }
-//
-        if (now - glyph.stateChangedAt > options.activeStateDurationMillis) {
-            glyph.setState(GlyphState.Inactive)
-        }
 
-        if (glyph.canonicalStartGlyph == ' ' && glyph.canonicalEndGlyph != ' ') {
-            rendererState = Io16PathRenderer.State.Appearing
-            glyph.setState(GlyphState.Appearing, force = true)
-        }
-        if (glyph.canonicalEndGlyph == ' ' && glyph.canonicalStartGlyph != ' ') {
-            rendererState = Io16PathRenderer.State.Disappearing
-            glyph.setState(GlyphState.Disappearing, force = true)
-        }
-
-        val transitionProgress = progress(
-            (now - glyph.stateChangedAt).toFloat(),
-            0f,
-            options.stateChangeDurationMillis.toFloat()
-        ).pf
-        val disappearedSegmentSize = getDisappearedSegmentLength(glyph, transitionProgress)
+        val disappearedSegmentSize = getDisappearedSegmentLength(glyph, glyph.visibilityChangedProgress.pf)
         if (disappearedSegmentSize.isOne) {
             // Nothing to render
             return
         }
 
-        val inactiveSegmentSize = getInactiveSegmentLength(glyph, transitionProgress)
+        val inactiveSegmentSize = getInactiveSegmentLength(glyph, glyph.stateChangeProgress.pf)
 
         // If fully inactive, only one color is needed so just render the full path and return.
         if (disappearedSegmentSize.isZero && inactiveSegmentSize.isOne) {
@@ -110,7 +91,10 @@ class Io16GlyphRenderer<P : Path>(
             offset = segmentOffsetProgress,
             invisible = disappearedSegmentSize,
             inactive = inactiveSegmentSize,
-            state = rendererState
+            state = when (glyph.visibility) {
+                GlyphVisibility.Visible, GlyphVisibility.Appearing -> Io16PathRenderer.State.Appearing
+                GlyphVisibility.Hidden, GlyphVisibility.Disappearing -> Io16PathRenderer.State.Disappearing
+            }
         )
     }
 
@@ -122,17 +106,8 @@ class Io16GlyphRenderer<P : Path>(
         if (glyph.lock == GlyphState.Inactive) return ProgressFloat.One
 
         return when (glyph.state) {
-            GlyphState.Inactive,
-            GlyphState.DisappearingFromInactive,
-                -> ProgressFloat.One
-
-            GlyphState.Active,
-            GlyphState.Appearing,
-            GlyphState.DisappearingFromActive,
-            GlyphState.Disappearing,
-            GlyphState.Disappeared,
-                -> ProgressFloat.Zero
-
+            GlyphState.Inactive -> ProgressFloat.One
+            GlyphState.Active -> ProgressFloat.Zero
             GlyphState.Activating -> transitionProgress.reversed
             GlyphState.Deactivating -> transitionProgress
         }
@@ -142,22 +117,13 @@ class Io16GlyphRenderer<P : Path>(
     private fun getDisappearedSegmentLength(
         glyph: Glyph<*>,
         transitionProgress: ProgressFloat,
-    ): ProgressFloat = when (glyph.state) {
-        GlyphState.Disappeared -> ProgressFloat.One
-
-        GlyphState.Inactive,
-        GlyphState.Active,
-        GlyphState.Activating,
-        GlyphState.Deactivating,
-            -> ProgressFloat.Zero
-
-        GlyphState.Appearing -> transitionProgress.reversed
-
-        GlyphState.Disappearing,
-        GlyphState.DisappearingFromActive,
-        GlyphState.DisappearingFromInactive,
-            -> transitionProgress
-    }
+    ): ProgressFloat =
+        when (glyph.visibility) {
+            GlyphVisibility.Hidden -> ProgressFloat.One
+            GlyphVisibility.Visible -> ProgressFloat.Zero
+            GlyphVisibility.Appearing -> transitionProgress.reversed
+            GlyphVisibility.Disappearing -> transitionProgress
+        }
 }
 
 

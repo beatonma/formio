@@ -9,8 +9,11 @@ import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.graphics.Canvas
 
 
-class TestGlyph(role: GlyphRole, scale: Float = 1f, val separatorWidth: Float) :
-    BaseClockGlyph<TestPaints>(role, scale) {
+open class TestGlyph(
+    role: GlyphRole,
+    scale: Float = 1f,
+    val separatorWidth: Float = 0f,
+) : BaseClockGlyph<TestPaints>(role, scale) {
     override val companion: GlyphCompanion = TestGlyph
 
     companion object : GlyphCompanion {

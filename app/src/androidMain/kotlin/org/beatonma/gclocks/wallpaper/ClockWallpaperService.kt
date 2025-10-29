@@ -27,6 +27,7 @@ import org.beatonma.gclocks.app.data.settingsRepository
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.GlyphState
+import org.beatonma.gclocks.core.GlyphVisibility
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.graphics.Color
@@ -78,7 +79,10 @@ class ClockWallpaperService : WallpaperService() {
             initialize()
         }
 
-        fun initialize(state: GlyphState = GlyphState.Appearing) {
+        fun initialize(
+            state: GlyphState = GlyphState.Activating,
+            visibility: GlyphVisibility = GlyphVisibility.Appearing
+        ) {
             if (!engineScope.isActive) {
                 engineScope = createCoroutineScope()
             }
@@ -134,14 +138,14 @@ class ClockWallpaperService : WallpaperService() {
             val isLocked = keyguardManager.isKeyguardLocked
 
             if (isVisible) {
-                initialize(if (isLocked) GlyphState.Disappeared else GlyphState.Appearing)
+                initialize(visibility = if (isLocked) GlyphVisibility.Hidden else GlyphVisibility.Appearing)
                 if (isLocked) {
                     engineScope.launch(Dispatchers.Main) {
                         // Poll keyguard lock state and animate visibility when unlocked
                         while (true) {
                             delay(500)
                             if (!keyguardManager.isKeyguardLocked) {
-                                animator?.setState(GlyphState.Appearing, false)
+                                animator?.setState(GlyphVisibility.Appearing, false)
                                 break
                             }
                         }

@@ -47,8 +47,16 @@ interface ClockAnimator<P : Paints, G : ClockGlyph<P>> : ConstrainedLayout {
         render(canvas)
     }
 
+    fun setState(state: GlyphState, visibility: GlyphVisibility, force: Boolean) {
+        layout.setState(state, visibility, force)
+    }
+
     fun setState(state: GlyphState, force: Boolean) {
         layout.setState(state, force)
+    }
+
+    fun setState(visibility: GlyphVisibility, force: Boolean) {
+        layout.setState(visibility, force)
     }
 
     fun getGlyphAt(x: Float, y: Float): G? =

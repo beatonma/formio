@@ -6,25 +6,23 @@ import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.options.GlyphOptions
 import org.beatonma.gclocks.core.util.debug
-import org.beatonma.gclocks.core.util.getCurrentTimeMillis
+import org.beatonma.gclocks.core.util.progress
+
+
+enum class GlyphVisibility {
+    Visible,
+    Appearing,
+    Disappearing,
+    Hidden,
+    ;
+}
 
 enum class GlyphState {
-    Inactive,
     Active,
     Activating,
     Deactivating,
-    Appearing,
-    Disappearing,
-    DisappearingFromActive,
-    DisappearingFromInactive,
-    Disappeared,
+    Inactive,
     ;
-
-    val affectsVisibility: Boolean
-        get() = when (this) {
-            Appearing, Disappeared, Disappearing, DisappearingFromActive, DisappearingFromInactive -> true
-            else -> false
-        }
 }
 
 enum class GlyphRole {
@@ -39,8 +37,6 @@ enum class GlyphRole {
     val isSeparator: Boolean get() = this == SeparatorMinutesSeconds || this == SeparatorHoursMinutes
 }
 
-private typealias OnStateChange = (newState: GlyphState) -> Unit
-
 interface GlyphCompanion {
     val maxSize: NativeSize
 }
@@ -52,18 +48,21 @@ interface Glyph<P : Paints> {
     val maxSize: NativeSize get() = companion.maxSize
     val role: GlyphRole
     val state: GlyphState
+    val visibility: GlyphVisibility
     val lock: GlyphState?
     val scale: Float
+    val stateChangeProgress: Float
+    val visibilityChangedProgress: Float
     var key: String
-    var stateChangedAt: Long
-    var onStateChange: OnStateChange?
 
     val canonicalStartGlyph: Char
     val canonicalEndGlyph: Char
 
     fun draw(canvas: Canvas, glyphProgress: Float, paints: P, renderGlyph: RenderGlyph? = null)
     fun getWidthAtProgress(glyphProgress: Float): Float
+    fun setState(newState: GlyphState, newVisibility: GlyphVisibility, force: Boolean = false)
     fun setState(newState: GlyphState, force: Boolean = false)
+    fun setState(newVisibility: GlyphVisibility, force: Boolean = false)
     fun tickState(options: GlyphOptions)
 }
 
@@ -136,26 +135,35 @@ abstract class BaseGlyph<P : Paints> internal constructor(
     override val scale: Float = 1f,
     override val lock: GlyphState? = null,
 ) : Glyph<P> {
-    final override var state: GlyphState = GlyphState.Appearing
-        private set(value) {
-            if (value != field || value == GlyphState.Active) {
-                // Setting as active resets the timeout, even if already active
-                stateChangedAt = getCurrentTimeMillis()
-            }
+    final override var state: GlyphState = GlyphState.Active
+        private set
 
-            field = value
-            onStateChange?.invoke(value)
-        }
+    final override var visibility = GlyphVisibility.Visible
+        private set
 
-    override var onStateChange: OnStateChange? = null
+    private var stateChangedAt: Long = getCurrentTimeMillis()
+    private var visibilityChangedAt: Long = getCurrentTimeMillis()
 
-    override var stateChangedAt: Long = getCurrentTimeMillis()
+    final override var stateChangeProgress: Float = 0f
+        private set
+    final override var visibilityChangedProgress: Float = 0f
+        private set
+
+    open fun getCurrentTimeMillis(): Long = org.beatonma.gclocks.core.util.getCurrentTimeMillis()
 
     override var key: String = " "
         set(value) {
             field = value
-            canonicalStartGlyph = value.first()
-            canonicalEndGlyph = value.last()
+            val canonicalStartGlyph = value.first()
+            val canonicalEndGlyph = value.last()
+
+            if (canonicalStartGlyph == ' ' && canonicalEndGlyph != ' ') {
+                setState(GlyphVisibility.Visible)
+            } else if (canonicalEndGlyph == ' ' && canonicalStartGlyph != ' ') {
+                setState(GlyphVisibility.Hidden)
+            }
+            this.canonicalStartGlyph = canonicalStartGlyph
+            this.canonicalEndGlyph = canonicalEndGlyph
         }
 
     final override var canonicalStartGlyph: Char = ' '
@@ -163,25 +171,27 @@ abstract class BaseGlyph<P : Paints> internal constructor(
     final override var canonicalEndGlyph: Char = ' '
         protected set
 
-    override fun toString(): String {
-        return key
+    override fun toString(): String = key
+
+    override fun setState(newState: GlyphState, newVisibility: GlyphVisibility, force: Boolean) {
+        setState(newState, force)
+        setState(newVisibility, force)
     }
 
     override fun setState(newState: GlyphState, force: Boolean) {
         if (force) {
+            if (newState == GlyphState.Active || newState != state) {
+                updateStateChangedAt()
+            }
             state = newState
             return
         }
-        if (state == lock && !newState.affectsVisibility) {
-            /*
-            * Lock is overruled when:
-            * - Current state is transitional, so we can tick over to a steady state
-            * - New state affects visibility (appearing/disappearing)
-            */
+        if (state == lock) {
+            // Lock is overruled when current state is transitional and can tick over to a steady state
             return
         }
 
-        return when (newState) {
+        when (newState) {
             GlyphState.Activating,
             GlyphState.Active,
                 -> setActive()
@@ -189,63 +199,96 @@ abstract class BaseGlyph<P : Paints> internal constructor(
             GlyphState.Deactivating,
             GlyphState.Inactive,
                 -> setInactive()
+        }
+    }
 
-            GlyphState.Appearing -> setAppearing()
-            GlyphState.Disappeared,
-            GlyphState.Disappearing,
-            GlyphState.DisappearingFromActive,
-            GlyphState.DisappearingFromInactive,
-                -> setDisappeared()
+    override fun setState(newVisibility: GlyphVisibility, force: Boolean) {
+        if (force) {
+            if (newVisibility != visibility) {
+                updateVisibilityChangedAt()
+            }
+            visibility = newVisibility
+            return
+        }
+
+        when (newVisibility) {
+            GlyphVisibility.Visible, GlyphVisibility.Appearing -> appear()
+            GlyphVisibility.Disappearing, GlyphVisibility.Hidden -> disappear()
         }
     }
 
     override fun tickState(options: GlyphOptions) {
         val now = getCurrentTimeMillis()
-        val millisSinceChange = now - stateChangedAt
-        val transitionStateExpired = millisSinceChange > options.stateChangeDurationMillis
+
+        val millisSinceStateChange = now - stateChangedAt
+        val millisSinceVisibilityChange = now - visibilityChangedAt
+
+        stateChangeProgress =
+            progress(millisSinceStateChange.toFloat(), 0f, options.stateChangeDurationMillis.toFloat())
+        visibilityChangedProgress =
+            progress(millisSinceVisibilityChange.toFloat(), 0f, options.stateChangeDurationMillis.toFloat())
+
+        val isStateTransitionExpired: Boolean = millisSinceStateChange > options.stateChangeDurationMillis
+        val isVisibilityTransitionExpired: Boolean = millisSinceVisibilityChange > options.stateChangeDurationMillis
+
+////        val millisSinceStateChange: Long = now - stateChangedAt
+
+        var newState: GlyphState? = null
+        var newVisibility: GlyphVisibility? = null
 
         when (state) {
-            GlyphState.Inactive, GlyphState.Disappeared -> {}
-
             GlyphState.Active -> {
-                if (millisSinceChange > options.activeStateDurationMillis) {
-                    setState(GlyphState.Deactivating)
+                // Active state decays after period of inactivity
+                if (millisSinceStateChange > options.activeStateDurationMillis) {
+                    newState = GlyphState.Deactivating
                 }
             }
 
-            GlyphState.Appearing, GlyphState.Activating -> {
-                if (transitionStateExpired) {
-                    setState(GlyphState.Active, force = true)
+            GlyphState.Activating -> {
+                if (isStateTransitionExpired) {
+                    newState = GlyphState.Active
                 }
             }
 
             GlyphState.Deactivating -> {
-                if (transitionStateExpired) {
-                    setState(GlyphState.Inactive, force = true)
+                if (isStateTransitionExpired) {
+                    newState = GlyphState.Inactive
                 }
             }
 
-            GlyphState.Disappearing, GlyphState.DisappearingFromActive, GlyphState.DisappearingFromInactive -> {
-                if (transitionStateExpired) {
-                    setState(GlyphState.Disappeared, force = true)
-                }
+            else -> {}
+        }
+
+        if (isVisibilityTransitionExpired) {
+            when (visibility) {
+                GlyphVisibility.Appearing -> newVisibility = GlyphVisibility.Visible
+                GlyphVisibility.Disappearing -> newVisibility = GlyphVisibility.Hidden
+                else -> {}
             }
         }
+
+        when {
+            newState != null && newVisibility != null -> setState(newState, newVisibility, force = true)
+            newState != null -> setState(newState, force = true)
+            newVisibility != null -> setState(newVisibility, force = true)
+        }
+    }
+
+    private fun updateStateChangedAt() {
+        stateChangedAt = getCurrentTimeMillis()
+    }
+
+    private fun updateVisibilityChangedAt() {
+        visibilityChangedAt = getCurrentTimeMillis()
     }
 
     private fun setActive() {
         when (state) {
-            GlyphState.Active -> {
-                stateChangedAt = getCurrentTimeMillis()
-            }
+            GlyphState.Active -> setState(GlyphState.Active, force = true)
 
-            GlyphState.Activating, GlyphState.Appearing -> {
-                // State will be updated directly via tickState
-            }
+            GlyphState.Inactive, GlyphState.Deactivating -> setState(GlyphState.Activating, force = true)
 
-            GlyphState.Inactive, GlyphState.Deactivating -> state = GlyphState.Activating
-
-            else -> {
+            GlyphState.Activating -> debug(false) {
                 debug("setActive has no effect when state == $state")
             }
         }
@@ -253,43 +296,34 @@ abstract class BaseGlyph<P : Paints> internal constructor(
 
     private fun setInactive() {
         when (state) {
-            GlyphState.Active, GlyphState.Activating -> {
-                state = GlyphState.Deactivating
-            }
+            GlyphState.Active, GlyphState.Activating -> setState(GlyphState.Deactivating, force = true)
 
-            else -> {
+            else -> debug(false) {
                 debug("setInactive has no effect when state == $state")
             }
         }
     }
 
-    private fun setAppearing() {
-        when (state) {
-            GlyphState.Disappeared,
-            GlyphState.Disappearing,
-            GlyphState.DisappearingFromActive,
-            GlyphState.DisappearingFromInactive,
-                -> {
-                state = GlyphState.Appearing
+    private fun appear() {
+        when (visibility) {
+            GlyphVisibility.Hidden, GlyphVisibility.Disappearing -> {
+                setState(GlyphVisibility.Appearing, force = true)
             }
 
-            else -> {
-                debug("setAppearing has no effect when state == $state")
+            else -> debug(false) {
+                debug("appear() has no effect when visibility == $visibility")
             }
         }
     }
 
-    private fun setDisappeared() {
-        when (state) {
-            GlyphState.Disappearing,
-            GlyphState.DisappearingFromActive,
-            GlyphState.DisappearingFromInactive,
-                -> {
-                state = GlyphState.Disappeared
+    private fun disappear() {
+        when (visibility) {
+            GlyphVisibility.Visible, GlyphVisibility.Appearing -> {
+                setState(GlyphVisibility.Disappearing, force = true)
             }
 
-            else -> {
-                debug("setDisappeared has no effect when state == $state")
+            else -> debug(false) {
+                debug("disappear() has no effect when state == $state")
             }
         }
     }
@@ -305,11 +339,9 @@ abstract class BaseClockGlyph<P : Paints>(
     override var key: String
         get() = clockKey.key
         set(value) {
-            clockKey =
-                ClockGlyph.Key.entries.firstOrNull { it.key == value }
-                    ?: throw IllegalStateException("Unknown key: $value")
-            canonicalStartGlyph = value.first()
-            canonicalEndGlyph = value.last()
+            clockKey = ClockGlyph.Key.entries.firstOrNull { it.key == value }
+                ?: throw IllegalStateException("Unknown key: $value")
+            super.key = value
         }
 
 

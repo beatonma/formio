@@ -35,7 +35,7 @@ interface ClockRenderer<P : Paints, G : ClockGlyph<P>> {
                     }
 
                     debug(false) {
-                        canvas.debugDrawGlyphBoundary(rect)
+                        canvas.debugDrawGlyphBoundary(glyph, rect)
                     }
                 }
             }
@@ -44,7 +44,7 @@ interface ClockRenderer<P : Paints, G : ClockGlyph<P>> {
                 // Show bounds at native scale
                 canvas.debugDrawBounds(drawBounds, nativeSize)
                 layout.layoutPass { glyph, glyphAnimationProgress, rect ->
-                    canvas.debugDrawGlyphBoundary(rect)
+                    canvas.debugDrawGlyphBoundary(glyph, rect)
                 }
             }
         }
@@ -71,7 +71,21 @@ interface ClockRenderer<P : Paints, G : ClockGlyph<P>> {
         drawDebugRect(Color.Yellow, nativeSize.toRect())
     }
 
-    private fun Canvas.debugDrawGlyphBoundary(boundary: Rect<Float>) {
-        drawDebugRect(Color.Magenta, MutableRectF(boundary).extrude(paints.strokeWidth / 2f))
+    private fun Canvas.debugDrawGlyphBoundary(glyph: G, boundary: Rect<Float>) {
+        val visibilityColor = when (glyph.visibility) {
+            GlyphVisibility.Visible -> Color.Green
+            GlyphVisibility.Appearing -> Color.Yellow
+            GlyphVisibility.Disappearing -> Color.Orange
+            GlyphVisibility.Hidden -> Color.Red
+        }
+        val stateColor = when (glyph.state) {
+            GlyphState.Active -> Color.Green
+            GlyphState.Activating -> Color.Yellow
+            GlyphState.Deactivating -> Color.Orange
+            GlyphState.Inactive -> Color.Red
+        }
+
+        drawDebugRect(stateColor, MutableRectF(boundary).extrude(paints.strokeWidth / 2f))
+        drawDebugRect(visibilityColor, boundary)
     }
 }

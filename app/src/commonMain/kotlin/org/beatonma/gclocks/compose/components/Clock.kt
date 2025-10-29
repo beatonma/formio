@@ -3,12 +3,17 @@ package org.beatonma.gclocks.compose.components
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.pointer.pointerInput
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.compose.ComposePath
+import org.beatonma.gclocks.compose.debugKeyEvent
 import org.beatonma.gclocks.compose.rememberCanvasHost
 import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.GlyphState
+import org.beatonma.gclocks.core.GlyphVisibility
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.TimeOfDay
 import org.beatonma.gclocks.core.util.getTime
@@ -33,18 +38,47 @@ fun <Opts : Options<*>> Clock(
 
     ConstrainedCanvas(
         animator,
-        modifier.pointerInput(Unit) {
-            awaitPointerEventScope {
-                while (true) {
-                    val event = awaitPointerEvent()
+        modifier
+            .debugKeyEvent { event ->
+                if (event.isCtrlPressed) {
+                    return@debugKeyEvent when (event.key) {
+                        Key.One -> {
+                            animator.setState(GlyphState.Inactive, false)
+                            true
+                        }
 
-                    val pointer = event.changes.firstOrNull() ?: continue
-                    val (x, y) = pointer.position
+                        Key.Two -> {
+                            animator.setState(GlyphState.Active, false)
+                            true
+                        }
 
-                    animator.getGlyphAt(x, y)?.setState(GlyphState.Active)
+                        Key.Three -> {
+                            animator.setState(GlyphVisibility.Hidden, false)
+                            true
+                        }
+
+                        Key.Four -> {
+                            animator.setState(GlyphVisibility.Visible, false)
+                            true
+                        }
+
+                        else -> false
+                    }
+                }
+                false
+            }
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+
+                        val pointer = event.changes.firstOrNull() ?: continue
+                        val (x, y) = pointer.position
+
+                        animator.getGlyphAt(x, y)?.setState(GlyphState.Active)
+                    }
                 }
             }
-        }
     ) {
         frameDeltaMillis
         animator.tick(getTickTime())
