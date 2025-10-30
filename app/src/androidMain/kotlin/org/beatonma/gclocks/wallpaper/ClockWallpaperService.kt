@@ -33,6 +33,7 @@ import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.debug
+import kotlin.math.roundToInt
 
 
 class ClockWallpaperService : WallpaperService() {
@@ -73,9 +74,42 @@ class ClockWallpaperService : WallpaperService() {
         private var height: Int = 0
         private var frameDelayMillis: Long = (1000f / 60f).toLong()
 
+        private val visibilityManager = VisibilityManager()
+
+        private inner class VisibilityManager {
+            var launcherPages: List<Int>? = null
+                set(value) {
+                    field = value
+                    updateVisibility()
+                }
+            var isKeyguardLocked: Boolean = false
+                set(value) {
+                    field = value
+                    updateVisibility()
+                }
+            var currentLauncherPage: Int = 0
+                set(value) {
+                    field = value
+                    updateVisibility()
+                }
+
+            private fun updateVisibility() {
+                val isPageAllowed = launcherPages?.let { pages ->
+                    currentLauncherPage in pages
+                } ?: true
+
+                if (!isKeyguardLocked && isPageAllowed) {
+                    animator?.setState(GlyphVisibility.Visible, false)
+                } else {
+                    animator?.setState(GlyphVisibility.Hidden, false)
+                }
+            }
+        }
+
         private val keyguardManager = getSystemService(KEYGUARD_SERVICE) as KeyguardManager
 
         init {
+            setOffsetNotificationsEnabled(true)
             initialize()
         }
 
@@ -95,8 +129,12 @@ class ClockWallpaperService : WallpaperService() {
                     relativeBounds.set(wallpaperOptions.position)
 
                     animator = createAnimator(it.clockOptions).apply {
-                        setState(state, true)
+                        setState(state, visibility, true)
                     }
+
+                    visibilityManager.launcherPages = wallpaperOptions.zeroIndexLauncherPages.ifEmpty { null }
+
+//                    launcherPages = wallpaperOptions.zeroIndexLauncherPages.ifEmpty { null }
                     invalidate()
                 }
             }
@@ -136,6 +174,7 @@ class ClockWallpaperService : WallpaperService() {
             super.onVisibilityChanged(visible)
 
             val isLocked = keyguardManager.isKeyguardLocked
+            visibilityManager.isKeyguardLocked = isLocked
 
             if (isVisible) {
                 initialize(visibility = if (isLocked) GlyphVisibility.Hidden else GlyphVisibility.Appearing)
@@ -145,7 +184,7 @@ class ClockWallpaperService : WallpaperService() {
                         while (true) {
                             delay(500)
                             if (!keyguardManager.isKeyguardLocked) {
-                                animator?.setState(GlyphVisibility.Appearing, false)
+                                visibilityManager.isKeyguardLocked = false
                                 break
                             }
                         }
@@ -172,7 +211,8 @@ class ClockWallpaperService : WallpaperService() {
                 xPixelOffset,
                 yPixelOffset
             )
-            // TODO hide/show depending on launcher page.
+            val currentPosition: Float = (1f / xOffsetStep) * xOffset
+            visibilityManager.currentLauncherPage = currentPosition.roundToInt()
         }
 
         override fun onTouchEvent(event: MotionEvent) {

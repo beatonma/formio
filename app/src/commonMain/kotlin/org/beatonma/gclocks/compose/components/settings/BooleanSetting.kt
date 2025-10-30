@@ -32,7 +32,6 @@ fun BooleanSetting(
     modifier: Modifier = Modifier,
 ) {
     CheckableSettingLayout(
-//        name,
         helpText = helpText,
         modifier = modifier.fillMaxWidth(),
         onClick = { onValueChange(!value) },

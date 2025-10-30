@@ -1,39 +1,18 @@
 package org.beatonma.gclocks.compose.components.settings
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.style.TextOverflow
-import gclocks_multiplatform.app.generated.resources.Res
-import gclocks_multiplatform.app.generated.resources.cd_show_less
-import gclocks_multiplatform.app.generated.resources.cd_show_more
 import org.beatonma.gclocks.app.ui.Localization.helpStringResourceMap
 import org.beatonma.gclocks.app.ui.Localization.stringResourceMap
-import org.beatonma.gclocks.compose.AppIcon
-import org.beatonma.gclocks.compose.animation.EnterFade
-import org.beatonma.gclocks.compose.animation.EnterVertical
-import org.beatonma.gclocks.compose.animation.ExitFade
-import org.beatonma.gclocks.compose.animation.ExitVertical
 import org.beatonma.gclocks.compose.components.settings.components.CheckableSettingLayout
-import org.beatonma.gclocks.compose.components.settings.components.CollapsibleSettingLayout
-import org.beatonma.gclocks.compose.components.settings.components.SettingName
+import org.beatonma.gclocks.compose.components.settings.components.DropdownSettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.SettingValue
 import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.stringResource
 
 
 @OptIn(ExperimentalResourceApi::class)
@@ -66,7 +45,7 @@ fun <E : Enum<E>> SingleSelectSetting(
     val resourceMap = remember(value) { value::class.stringResourceMap }
     val helpResourceMap = remember(value) { value::class.helpStringResourceMap }
 
-    GroupSetting(
+    DropdownSettingLayout(
         name,
         modifier,
         helpText = helpText,
@@ -126,7 +105,7 @@ fun <E : Enum<E>> MultiSelectSetting(
     val helpResourceMap = remember(defaultValue) { defaultValue::class.helpStringResourceMap }
 
     @Suppress("SimplifiableCallChain")
-    GroupSetting(
+    DropdownSettingLayout(
         name,
         modifier,
         helpText = helpText,
@@ -157,57 +136,6 @@ fun <E : Enum<E>> MultiSelectSetting(
                     onCheckedChange = { onClick() }
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun GroupSetting(
-    name: String,
-    modifier: Modifier,
-    helpText: String?,
-    valueDescription: String,
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val onClick = { expanded = !expanded }
-
-    val iconRotation by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
-
-    CollapsibleSettingLayout(expanded, modifier, helpText) {
-        CheckableSettingLayout(
-            helpText = helpText,
-            onClick = onClick,
-            role = Role.DropdownList,
-            text = {
-                SettingName(name)
-            }
-        ) {
-            AnimatedVisibility(!expanded, enter = EnterFade, exit = ExitFade) {
-                SettingValue(
-                    valueDescription,
-                    color = colorScheme.onSurfaceVariant,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-            Icon(
-                AppIcon.ArrowDropdown,
-                stringResource(
-                    when (expanded) {
-                        true -> Res.string.cd_show_less
-                        false -> Res.string.cd_show_more
-                    }
-                ),
-                modifier = Modifier.weight(1f, false).rotate(iconRotation)
-            )
-        }
-
-        AnimatedVisibility(
-            visible = expanded,
-            enter = EnterVertical,
-            exit = ExitVertical,
-        ) {
-            Column(content = content)
         }
     }
 }

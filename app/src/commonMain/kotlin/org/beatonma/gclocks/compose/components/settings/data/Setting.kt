@@ -80,7 +80,7 @@ sealed interface RichSetting<T : Any> : Setting {
 
     @Immutable
     data class ClockColors(
-        override val key: Key.ClockColorsKey,
+        override val key: Key.ClockColors,
         override val localized: LocalizedString,
         override val helpText: LocalizedString? = null,
         override val value: ClockColorsData,
@@ -89,7 +89,7 @@ sealed interface RichSetting<T : Any> : Setting {
 
     @Immutable
     data class SingleSelect<E : Enum<E>>(
-        override val key: Key.EnumKey<E>,
+        override val key: Key.Enum<E>,
         override val localized: LocalizedString,
         override val helpText: LocalizedString? = null,
         override val value: E,
@@ -99,7 +99,7 @@ sealed interface RichSetting<T : Any> : Setting {
 
     @Immutable
     data class MultiSelect<E : Enum<E>>(
-        override val key: Key.EnumKey<E>,
+        override val key: Key.Enum<E>,
         override val localized: LocalizedString,
         override val helpText: LocalizedString? = null,
         override val value: Set<E>,
@@ -109,7 +109,7 @@ sealed interface RichSetting<T : Any> : Setting {
 
     @Immutable
     data class Int(
-        override val key: Key.IntKey,
+        override val key: Key.Int,
         override val localized: LocalizedString,
         override val helpText: LocalizedString? = null,
         override val value: kotlin.Int,
@@ -122,7 +122,7 @@ sealed interface RichSetting<T : Any> : Setting {
 
     @Immutable
     data class Float(
-        override val key: Key.FloatKey,
+        override val key: Key.Float,
         override val localized: LocalizedString,
         override val helpText: LocalizedString? = null,
         override val value: kotlin.Float,
@@ -135,7 +135,7 @@ sealed interface RichSetting<T : Any> : Setting {
 
     @Immutable
     data class Bool(
-        override val key: Key.BoolKey,
+        override val key: Key.Bool,
         override val localized: LocalizedString,
         override val helpText: LocalizedString? = null,
         override val value: Boolean,
@@ -144,7 +144,7 @@ sealed interface RichSetting<T : Any> : Setting {
 
     @Immutable
     data class ClockPosition(
-        override val key: Key.RectFKey,
+        override val key: Key.RectF,
         override val localized: LocalizedString,
         override val helpText: LocalizedString? = null,
         override val value: RectF,
@@ -153,12 +153,22 @@ sealed interface RichSetting<T : Any> : Setting {
 
     @Immutable
     data class ClockType(
-        override val key: Key.EnumKey<ClockTypeData>,
+        override val key: Key.Enum<ClockTypeData>,
         override val localized: LocalizedString,
         override val helpText: LocalizedString? = null,
         override val value: ClockTypeData,
         override val onValueChange: (ClockTypeData) -> Unit,
     ) : RichSetting<ClockTypeData>
+
+    data class IntList(
+        override val key: Key.IntList,
+        override val localized: LocalizedString,
+        override val helpText: LocalizedString? = null,
+        override val value: List<kotlin.Int>,
+        override val onValueChange: (List<kotlin.Int>) -> Unit,
+        val validator: SettingValidator<kotlin.Int>,
+        val placeholder: LocalizedString? = null
+    ) : RichSetting<List<kotlin.Int>>
 }
 
 
@@ -166,23 +176,38 @@ sealed interface Key {
     val value: String
 
     @JvmInline
-    value class BoolKey(override val value: String) : Key
+    value class Bool(override val value: String) : Key
 
     @JvmInline
-    value class IntKey(override val value: String) : Key
+    value class Int(override val value: String) : Key
 
     @JvmInline
-    value class FloatKey(override val value: String) : Key
+    value class IntList(override val value: String) : Key
+
+//    @JvmInline
+//    value class StringKey(override val value: String) : Key
 
     @JvmInline
-    value class ClockColorsKey(override val value: String) : Key
+    value class Float(override val value: String) : Key
 
     @JvmInline
-    value class EnumKey<E : Enum<E>>(override val value: String) : Key
+    value class ClockColors(override val value: String) : Key
 
     @JvmInline
-    value class RectFKey(override val value: String) : Key
+    value class Enum<E : kotlin.Enum<E>>(override val value: String) : Key
+
+    @JvmInline
+    value class RectF(override val value: String) : Key
 }
+
+fun interface SettingValidator<T> {
+    /**
+     * @throws ValidationFailed
+     */
+    fun validate(value: T)
+}
+
+class ValidationFailed(message: String?) : Exception(message)
 
 
 private fun List<Setting>.filterSettings(block: (RichSetting<*>) -> RichSetting<*>?): List<Setting> {

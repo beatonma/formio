@@ -70,7 +70,7 @@ private fun buildTimeSettings(
 }
 
 
-private val StrokeWidthKey = Key.FloatKey("stroke_width")
+private val StrokeWidthKey = Key.Float("stroke_width")
 private fun buildSizeSettings(
     options: Io16Options,
     updateOptions: (Io16Options) -> Unit,

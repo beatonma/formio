@@ -3,6 +3,8 @@ package org.beatonma.gclocks.app.data.settings
 import kotlinx.serialization.Serializable
 import org.beatonma.gclocks.core.geometry.RectF
 import org.beatonma.gclocks.core.graphics.Color
+import org.beatonma.gclocks.core.util.debug
+import org.beatonma.gclocks.core.util.fastForEach
 
 actual enum class DisplayContext {
     Widget {
@@ -32,7 +34,20 @@ actual enum class DisplayContext {
         data class Wallpaper(
             override val backgroundColor: Color = DisplayContextDefaults.DefaultBackgroundColor,
             override val position: RectF = DisplayContextDefaults.DefaultPosition,
-        ) : WithBackground
+
+            /** 1-indexed list of pages */
+            val launcherPages: List<Int> = listOf()
+        ) : WithBackground {
+            init {
+                debug {
+                    launcherPages.fastForEach {
+                        require(it > 0) { "Launcher pages must be positive" }
+                    }
+                }
+            }
+
+            val zeroIndexLauncherPages get() = launcherPages.map { it - 1 }
+        }
 
         @Serializable
         data class Screensaver(

@@ -30,18 +30,18 @@ import org.beatonma.gclocks.core.options.TimeFormat
 
 
 object SettingKey {
-    val clockLayout = Key.EnumKey<Layout>("clock_layout")
-    val clockHorizontalAlignment = Key.EnumKey<HorizontalAlignment>("clock_horizontal_alignment")
-    val clockVerticalAlignment = Key.EnumKey<VerticalAlignment>("clock_vertical_alignment")
-    val clockSpacing = Key.IntKey("clock_spacing")
-    val clockSecondsScale = Key.FloatKey("clock_seconds_scale")
-    val clockPosition = Key.RectFKey("clock_position")
-    val clockType = Key.EnumKey<ClockType>("clock_type")
-    val clockTimeFormatIs24Hour = Key.BoolKey("clock_is_24_hour")
-    val clockTimeFormatIsZeroPadded = Key.BoolKey("clock_is_zero_padded")
-    val clockTimeFormatShowSeconds = Key.BoolKey("clock_show_seconds")
-    val clockColors = Key.ClockColorsKey("clock_colors")
-    val clockColorsWithBackground = Key.ClockColorsKey("clock_colors_with_background")
+    val clockLayout = Key.Enum<Layout>("clock_layout")
+    val clockHorizontalAlignment = Key.Enum<HorizontalAlignment>("clock_horizontal_alignment")
+    val clockVerticalAlignment = Key.Enum<VerticalAlignment>("clock_vertical_alignment")
+    val clockSpacing = Key.Int("clock_spacing")
+    val clockSecondsScale = Key.Float("clock_seconds_scale")
+    val clockPosition = Key.RectF("clock_position")
+    val clockType = Key.Enum<ClockType>("clock_type")
+    val clockTimeFormatIs24Hour = Key.Bool("clock_is_24_hour")
+    val clockTimeFormatIsZeroPadded = Key.Bool("clock_is_zero_padded")
+    val clockTimeFormatShowSeconds = Key.Bool("clock_show_seconds")
+    val clockColors = Key.ClockColors("clock_colors")
+    val clockColorsWithBackground = Key.ClockColors("clock_colors_with_background")
 }
 
 

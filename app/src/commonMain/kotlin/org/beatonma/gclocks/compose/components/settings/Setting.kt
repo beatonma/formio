@@ -18,5 +18,6 @@ fun Setting(
         is RichSetting.Bool -> BooleanSetting(setting, modifier)
         is RichSetting.Float -> FloatSetting(setting, modifier)
         is RichSetting.Int -> IntegerSetting(setting, modifier)
+        is RichSetting.IntList -> IntListSetting(setting, modifier)
     }
 }
