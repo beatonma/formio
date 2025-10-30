@@ -17,8 +17,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.waterfall
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -57,6 +57,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.cd_fullscreen_open
+import gclocks_multiplatform.app.generated.resources.setting_save_changes_fab
 import org.beatonma.gclocks.app.data.settings.ContextClockOptions
 import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.theme.rememberContentColor
@@ -77,6 +78,7 @@ import org.beatonma.gclocks.compose.horizontal
 import org.beatonma.gclocks.compose.onlyIf
 import org.beatonma.gclocks.compose.plus
 import org.beatonma.gclocks.compose.toCompose
+import org.beatonma.gclocks.compose.vertical
 import org.beatonma.gclocks.core.options.Options
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.graphics.Color as ComposeColor
@@ -172,8 +174,8 @@ private fun ClockSettingsScaffold(
         snackbarHost = { settingsEditorAdapter?.snackbarHostState?.let { SnackbarHost(it) } },
         floatingActionButton = {
             AnimatedFade(hasUnsavedChanges) {
-                ExtendedFloatingActionButton(onSave, Modifier.safeDrawingPadding()) {
-                    Text("Save changes")
+                ExtendedFloatingActionButton(onSave) {
+                    Text(stringResource(Res.string.setting_save_changes_fab))
                 }
             }
         },
@@ -312,7 +314,7 @@ private fun WideAndShort(
             ClockSettingsColumn(
                 key,
                 settings,
-                contentPadding,
+                contentPadding + WindowInsets.systemBars.asPaddingValues().vertical(),
                 modifier = Modifier.widthIn(max = ColumnMaxWidth),
                 itemModifier = itemModifier,
                 groupModifier = groupModifier
@@ -335,7 +337,7 @@ private fun NarrowAndShort(
     ClockSettingsColumn(
         key,
         settings,
-        contentPadding,
+        contentPadding + WindowInsets.systemBars.asPaddingValues().vertical(),
         itemModifier = itemModifier,
         groupModifier = groupModifier
     ) {

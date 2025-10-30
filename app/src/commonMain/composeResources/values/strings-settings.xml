@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <resources>
+    <string name="setting_save_changes_fab">Save changes</string>
+
     <string name="setting_choose_clock_style">Clock style</string>
 
     <!-- Alignment -->

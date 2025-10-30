@@ -1,13 +1,18 @@
 package org.beatonma.gclocks.compose.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -22,9 +27,11 @@ import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailDefaults
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.Text
@@ -44,6 +51,7 @@ import kotlinx.coroutines.launch
 import org.beatonma.gclocks.app.ui.NavigationMenu
 import org.beatonma.gclocks.app.ui.NavigationMenuItem
 import org.beatonma.gclocks.compose.AppIcon
+import org.beatonma.gclocks.compose.horizontal
 import org.beatonma.gclocks.compose.isHeightAtLeastMedium
 import org.beatonma.gclocks.compose.isWidthAtLeastExpanded
 import org.beatonma.gclocks.compose.isWidthAtLeastMedium
@@ -77,7 +85,20 @@ fun NavigationScaffold(
             navigationSuite = { PrimaryNavigation(menu, navigationType, selected, onSelect) },
             layoutType = navigationType,
         ) {
-            content()
+            Box(
+                Modifier.consumeWindowInsets(
+                    when (navigationType) {
+                        NavigationSuiteType.NavigationBar -> NavigationBarDefaults.windowInsets
+                        NavigationSuiteType.NavigationRail -> NavigationRailDefaults.windowInsets
+                        NavigationSuiteType.NavigationDrawer -> DrawerDefaults.windowInsets
+                        else -> WindowInsets(0, 0, 0, 0)
+                    }
+                )
+                    .padding(WindowInsets.navigationBars.asPaddingValues().horizontal())
+                    .consumeWindowInsets(WindowInsets.navigationBars.asPaddingValues().horizontal())
+            ) {
+                content()
+            }
         }
     }
 }
