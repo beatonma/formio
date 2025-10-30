@@ -8,7 +8,6 @@ import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.data.settings.clocks.SettingKey
 import org.beatonma.gclocks.app.data.settings.clocks.chooseClockColors
 import org.beatonma.gclocks.app.data.settings.clocks.chooseClockPosition
-import org.beatonma.gclocks.app.ui.LocalizedString
 import org.beatonma.gclocks.compose.components.settings.data.Key
 import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import org.beatonma.gclocks.compose.components.settings.data.RichSettings
@@ -89,6 +88,9 @@ private fun chooseLwpLauncherPages(value: List<Int>, onUpdate: (List<Int>) -> Un
     localized = LocalizedString(Res.string.setting_lwp_launcher_pages),
     helpText = LocalizedString(Res.string.setting_help_lwp_launcher_pages),
     placeholder = LocalizedString(Res.string.setting_placeholder_lwp_launcher_pages),
+    localized = Res.string.setting_lwp_launcher_pages,
+    helpText = Res.string.setting_help_lwp_launcher_pages,
+    placeholder = Res.string.setting_placeholder_lwp_launcher_pages,
     value = value,
     onValueChange = onUpdate,
     validator = { page ->

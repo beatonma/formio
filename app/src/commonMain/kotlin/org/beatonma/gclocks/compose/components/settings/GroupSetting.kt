@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import org.beatonma.gclocks.app.ui.Localization.helpStringResourceMap
 import org.beatonma.gclocks.app.ui.Localization.stringResourceMap
+import org.beatonma.gclocks.app.ui.resolve
 import org.beatonma.gclocks.compose.components.settings.components.CheckableSettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.DropdownSettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.SettingValue

@@ -1,9 +1,7 @@
 package org.beatonma.gclocks.app.data.settings
 
-import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.Serializable
 import org.beatonma.gclocks.app.data.settings.DisplayContext.Options
-import org.beatonma.gclocks.app.ui.LocalizedString
 import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.geometry.RectF
 import org.beatonma.gclocks.core.graphics.Color
@@ -36,11 +34,4 @@ object DisplayContextDefaults {
         override val backgroundColor: Color = DefaultBackgroundColor,
         override val position: RectF = DefaultPosition,
     ) : Options.WithBackground
-}
-
-internal interface DisplayContextScreen {
-    val displayContext: DisplayContext
-    val label: LocalizedString
-    val contentDescription: LocalizedString
-    val icon: ImageVector
 }

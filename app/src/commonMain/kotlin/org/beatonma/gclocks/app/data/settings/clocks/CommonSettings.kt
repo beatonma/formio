@@ -15,7 +15,6 @@ import gclocks_multiplatform.app.generated.resources.setting_time_is_24_hour
 import gclocks_multiplatform.app.generated.resources.setting_time_is_zero_padded
 import gclocks_multiplatform.app.generated.resources.setting_time_show_seconds
 import org.beatonma.gclocks.app.data.settings.ClockType
-import org.beatonma.gclocks.app.ui.LocalizedString
 import org.beatonma.gclocks.compose.components.settings.ClockColors
 import org.beatonma.gclocks.compose.components.settings.data.Key
 import org.beatonma.gclocks.compose.components.settings.data.RichSetting
@@ -50,7 +49,7 @@ internal fun chooseClockColors(
     onValueChange: (value: List<Color>) -> Unit,
 ) = RichSetting.ClockColors(
     key = SettingKey.clockColors,
-    localized = LocalizedString(Res.string.setting_colors),
+    localized = Res.string.setting_colors,
     helpText = null,
     value = ClockColors(null, paints.colors.toList()),
     onValueChange = { onValueChange(it.colors) },
@@ -62,7 +61,7 @@ internal fun chooseClockColors(
     onValueChange: (ClockColors) -> Unit,
 ) = RichSetting.ClockColors(
     key = SettingKey.clockColorsWithBackground,
-    localized = LocalizedString(Res.string.setting_colors),
+    localized = Res.string.setting_colors,
     helpText = null,
     value = ClockColors(background, colors),
     onValueChange = onValueChange,
@@ -71,7 +70,7 @@ internal fun chooseClockColors(
 internal fun chooseLayout(value: Layout, onUpdate: (Layout) -> Unit) =
     RichSetting.SingleSelect(
         key = SettingKey.clockLayout,
-        localized = LocalizedString(Res.string.setting_clock_layout),
+        localized = Res.string.setting_clock_layout,
         helpText = null,
         value = value,
         values = Layout.entries.toSet(),
@@ -84,7 +83,7 @@ internal fun chooseHorizontalAlignment(
 ) =
     RichSetting.SingleSelect(
         key = SettingKey.clockHorizontalAlignment,
-        localized = LocalizedString(Res.string.setting_alignment_horizontal),
+        localized = Res.string.setting_alignment_horizontal,
         value = value,
         values = HorizontalAlignment.entries.toSet(),
         onValueChange = onUpdate
@@ -96,7 +95,7 @@ internal fun chooseVerticalAlignment(
 ) =
     RichSetting.SingleSelect(
         key = SettingKey.clockVerticalAlignment,
-        localized = LocalizedString(Res.string.setting_alignment_vertical),
+        localized = Res.string.setting_alignment_vertical,
         value = value,
         values = VerticalAlignment.entries.toSet(),
         onValueChange = onUpdate
@@ -108,7 +107,7 @@ internal fun chooseTimeFormat(
 ): List<Setting> = listOf(
     RichSetting.Bool(
         key = SettingKey.clockTimeFormatIs24Hour,
-        localized = LocalizedString(Res.string.setting_time_is_24_hour),
+        localized = Res.string.setting_time_is_24_hour,
         value = value.is24Hour,
         onValueChange = {
             onUpdate(
@@ -122,7 +121,7 @@ internal fun chooseTimeFormat(
     ),
     RichSetting.Bool(
         key = SettingKey.clockTimeFormatIsZeroPadded,
-        localized = LocalizedString(Res.string.setting_time_is_zero_padded),
+        localized = Res.string.setting_time_is_zero_padded,
         value = value.isZeroPadded,
         onValueChange = {
             onUpdate(
@@ -136,7 +135,7 @@ internal fun chooseTimeFormat(
     ),
     RichSetting.Bool(
         key = SettingKey.clockTimeFormatShowSeconds,
-        localized = LocalizedString(Res.string.setting_time_show_seconds),
+        localized = Res.string.setting_time_show_seconds,
         value = value.showSeconds,
         onValueChange = {
             onUpdate(
@@ -154,8 +153,8 @@ internal fun chooseTimeFormat(
 internal fun chooseSpacing(value: Int, onUpdate: (Int) -> Unit, default: Int, max: Int) =
     RichSetting.Int(
         key = SettingKey.clockSpacing,
-        localized = LocalizedString(Res.string.setting_clock_spacing),
-        helpText = LocalizedString(Res.string.setting_help_clock_spacing),
+        localized = Res.string.setting_clock_spacing,
+        helpText = Res.string.setting_help_clock_spacing,
         value = value,
         default = default,
         min = 0,
@@ -167,8 +166,8 @@ internal fun chooseSpacing(value: Int, onUpdate: (Int) -> Unit, default: Int, ma
 internal fun chooseSecondScale(value: Float, onUpdate: (Float) -> Unit) =
     RichSetting.Float(
         key = SettingKey.clockSecondsScale,
-        localized = LocalizedString(Res.string.setting_second_scale),
-        helpText = LocalizedString(Res.string.setting_help_second_scale),
+        localized = Res.string.setting_second_scale,
+        helpText = Res.string.setting_help_second_scale,
         value = value,
         default = 0.5f,
         min = 0.2f,
@@ -179,14 +178,14 @@ internal fun chooseSecondScale(value: Float, onUpdate: (Float) -> Unit) =
 
 internal fun chooseClockPosition(value: RectF, onUpdate: (RectF) -> Unit) = RichSetting.ClockPosition(
     key = SettingKey.clockPosition,
-    localized = LocalizedString(Res.string.setting_clock_position),
+    localized = Res.string.setting_clock_position,
     value = value,
     onValueChange = onUpdate,
 )
 
 internal fun chooseClockType(value: ClockType, onUpdate: (ClockType) -> Unit) = RichSetting.ClockType(
     key = SettingKey.clockType,
-    localized = LocalizedString(Res.string.setting_choose_clock_style),
+    localized = Res.string.setting_choose_clock_style,
     value = value,
     onValueChange = onUpdate,
 )

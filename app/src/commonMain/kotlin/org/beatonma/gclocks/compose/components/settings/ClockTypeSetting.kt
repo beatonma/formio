@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import org.beatonma.gclocks.app.data.settings.ClockType
 import org.beatonma.gclocks.app.theme.colorScheme
+import org.beatonma.gclocks.app.ui.resolve
 import org.beatonma.gclocks.compose.components.ButtonGroup
 import org.beatonma.gclocks.compose.components.settings.components.SettingLayout
 import org.beatonma.gclocks.compose.components.settings.components.SettingName

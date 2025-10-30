@@ -61,6 +61,7 @@ import org.beatonma.gclocks.app.theme.DesignSpec.FloatingActionButtonSize
 import org.beatonma.gclocks.app.theme.DesignSpec.floatingActionButton
 import org.beatonma.gclocks.app.theme.rememberContentColor
 import org.beatonma.gclocks.app.ui.Localization.stringResourceMap
+import org.beatonma.gclocks.app.ui.resolve
 import org.beatonma.gclocks.app.ui.screens.LocalClockPreview
 import org.beatonma.gclocks.compose.AppIcon
 import org.beatonma.gclocks.compose.LoadingSpinner

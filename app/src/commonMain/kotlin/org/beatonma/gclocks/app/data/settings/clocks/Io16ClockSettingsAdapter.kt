@@ -3,7 +3,6 @@ package org.beatonma.gclocks.app.data.settings.clocks
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.setting_stroke_width
 import org.beatonma.gclocks.app.data.settings.ClockSettingsAdapter
-import org.beatonma.gclocks.app.ui.LocalizedString
 import org.beatonma.gclocks.compose.components.settings.data.Key
 import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import org.beatonma.gclocks.compose.components.settings.data.RichSettings
@@ -86,7 +85,7 @@ private fun buildSizeSettings(
     },
     RichSetting.Float(
         key = StrokeWidthKey,
-        localized = LocalizedString(Res.string.setting_stroke_width),
+        localized = Res.string.setting_stroke_width,
         value = options.paints.strokeWidth,
         default = 2f,
         min = 0f,

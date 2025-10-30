@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import org.beatonma.gclocks.app.ui.resolve
 import org.beatonma.gclocks.compose.AppIcon
 import org.beatonma.gclocks.compose.components.settings.components.DropdownSettingLayout
 import org.beatonma.gclocks.compose.components.settings.data.RichSetting
@@ -34,8 +35,8 @@ fun IntListSetting(
     modifier: Modifier = Modifier,
 ) {
     IntListSetting(
-        setting.localized.resolve(),
-        setting.helpText?.resolve(),
+        name = setting.localized.resolve(),
+        helpText = setting.helpText?.resolve(),
         setting.placeholder?.resolve(),
         setting.value,
         setting.onValueChange,

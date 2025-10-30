@@ -54,6 +54,7 @@ import gclocks_multiplatform.app.generated.resources.cd_save_changes
 import org.beatonma.gclocks.app.theme.DesignSpec
 import org.beatonma.gclocks.app.theme.DesignSpec.floatingActionButton
 import org.beatonma.gclocks.app.theme.rememberContentColor
+import org.beatonma.gclocks.app.ui.resolve
 import org.beatonma.gclocks.app.ui.screens.LocalClockPreview
 import org.beatonma.gclocks.compose.AppIcon
 import org.beatonma.gclocks.compose.components.Clock
