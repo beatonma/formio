@@ -38,6 +38,7 @@ fun IntListSetting(
         name = setting.localized.resolve(),
         helpText = setting.helpText?.resolve(),
         setting.placeholder?.resolve(),
+        setting.defaultValueDescription?.resolve(),
         setting.value,
         setting.onValueChange,
         setting.validator,
@@ -50,13 +51,17 @@ fun IntListSetting(
     name: String,
     helpText: String?,
     placeholder: String?,
+    defaultValueDescription: String?,
     value: List<Int>,
     onValueChange: (newValue: List<Int>) -> Unit,
     validator: SettingValidator<Int>,
     modifier: Modifier = Modifier,
 ) {
     DropdownSettingLayout(
-        name, modifier, helpText, summariseIntList(value).ifEmpty { "-" }
+        name,
+        modifier,
+        helpText,
+        valueDescription = summariseIntList(value).ifEmpty { defaultValueDescription ?: "-" }
     ) {
         var text by remember { mutableStateOf("") }
 

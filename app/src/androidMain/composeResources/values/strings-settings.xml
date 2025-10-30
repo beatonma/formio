@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <resources>
     <string name="setting_lwp_launcher_pages">Launcher pages</string>
+    <string name="setting_lwp_launcher_pages_all">All</string>
     <string name="setting_placeholder_lwp_launcher_pages">Page</string>
     <string name="setting_help_lwp_launcher_pages">Only show the clock on these launcher pages</string>
 </resources>

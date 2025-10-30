@@ -3,6 +3,7 @@ package org.beatonma.gclocks.app.ui.screens
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.setting_help_lwp_launcher_pages
 import gclocks_multiplatform.app.generated.resources.setting_lwp_launcher_pages
+import gclocks_multiplatform.app.generated.resources.setting_lwp_launcher_pages_all
 import gclocks_multiplatform.app.generated.resources.setting_placeholder_lwp_launcher_pages
 import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.data.settings.clocks.SettingKey
@@ -85,12 +86,10 @@ actual fun addDisplaySettings(
 private val LauncherPagesKey = Key.IntList("lwp_launcher_pages")
 private fun chooseLwpLauncherPages(value: List<Int>, onUpdate: (List<Int>) -> Unit) = RichSetting.IntList(
     key = LauncherPagesKey,
-    localized = LocalizedString(Res.string.setting_lwp_launcher_pages),
-    helpText = LocalizedString(Res.string.setting_help_lwp_launcher_pages),
-    placeholder = LocalizedString(Res.string.setting_placeholder_lwp_launcher_pages),
     localized = Res.string.setting_lwp_launcher_pages,
     helpText = Res.string.setting_help_lwp_launcher_pages,
     placeholder = Res.string.setting_placeholder_lwp_launcher_pages,
+    defaultValueDescription = Res.string.setting_lwp_launcher_pages_all,
     value = value,
     onValueChange = onUpdate,
     validator = { page ->
