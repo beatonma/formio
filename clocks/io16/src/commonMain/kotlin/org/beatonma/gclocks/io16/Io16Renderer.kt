@@ -13,6 +13,7 @@ import org.beatonma.gclocks.core.graphics.Stroke
 import org.beatonma.gclocks.core.types.ProgressFloat
 import org.beatonma.gclocks.core.types.pf
 import org.beatonma.gclocks.core.util.debug
+import org.beatonma.gclocks.core.util.decelerate2
 import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 import org.beatonma.gclocks.core.util.progress
 
@@ -61,18 +62,22 @@ class Io16GlyphRenderer<P : Path>(
         )
     )
 
+    private fun ease(progress: Float): Float {
+        return decelerate2(progress)
+    }
+
     override fun update(currentTimeMillis: Long) {
         now = currentTimeMillis
     }
 
     override fun draw(glyph: Io16Glyph, canvas: Canvas, paints: Io16Paints) {
-        val disappearedSegmentSize = getDisappearedSegmentLength(glyph, glyph.visibilityChangedProgress.pf)
+        val disappearedSegmentSize = getDisappearedSegmentLength(glyph, ease(glyph.visibilityChangedProgress).pf)
         if (disappearedSegmentSize.isOne) {
             // Nothing to render
             return
         }
 
-        val inactiveSegmentSize = getInactiveSegmentLength(glyph, glyph.stateChangeProgress.pf)
+        val inactiveSegmentSize = getInactiveSegmentLength(glyph, ease(glyph.stateChangeProgress).pf)
 
         // If fully inactive, only one color is needed so just render the full path and return.
         if (disappearedSegmentSize.isZero && inactiveSegmentSize.isOne) {
@@ -217,6 +222,16 @@ class Io16PathRenderer(
             pathMeasure.getSegment(startDistance, length, segmentPath)
             pathMeasure.getSegment(0f, endDistance, segmentPath)
         }
-        canvas.drawPath(segmentPath, color, style)
+
+        if (segmentLength < 0.01f) {
+            // Reduce 'radius' of paint when path is near zero in length
+            canvas.drawPath(
+                segmentPath,
+                color,
+                style.copy(width = style.width * progress(segmentLength.value, 0f, 0.01f))
+            )
+        } else {
+            canvas.drawPath(segmentPath, color, style)
+        }
     }
 }
