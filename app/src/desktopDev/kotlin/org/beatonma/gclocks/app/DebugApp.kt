@@ -16,7 +16,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material3.Button
@@ -49,7 +49,6 @@ import kotlinx.coroutines.launch
 import org.beatonma.gclocks.compose.ComposePath
 import org.beatonma.gclocks.compose.VerticalBottomContentPadding
 import org.beatonma.gclocks.compose.components.Clock
-import org.beatonma.gclocks.compose.components.GlyphPreview
 import org.beatonma.gclocks.compose.plus
 import org.beatonma.gclocks.core.ClockGlyph
 import org.beatonma.gclocks.core.GlyphRole
@@ -57,9 +56,11 @@ import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.types.ProgressFloat
 import org.beatonma.gclocks.core.util.TimeOfDay
-import org.beatonma.gclocks.core.util.getTime
+import org.beatonma.gclocks.core.util.getInstant
 import org.beatonma.gclocks.core.util.interpolate
 import org.beatonma.gclocks.core.util.nextSecond
+import org.beatonma.gclocks.core.util.timeOfDay
+import org.beatonma.gclocks.core.util.withTimeOfDay
 import org.beatonma.gclocks.form.FormGlyph
 import org.beatonma.gclocks.form.FormPaints
 import org.beatonma.gclocks.io16.Io16Glyph
@@ -70,6 +71,7 @@ import org.beatonma.gclocks.io18.GlyphAnimations
 import org.beatonma.gclocks.io18.Io18Glyph
 import org.beatonma.gclocks.io18.Io18Paints
 import kotlin.math.roundToInt
+import kotlin.time.Instant
 
 
 private val ItemModifier = Modifier.border(1.dp, Color.Black.copy(alpha = 0.33f))
@@ -81,7 +83,7 @@ fun DebugApp() {
     val keys = remember { ClockGlyph.Key.entries.map { it.key } }
     var animationPosition by remember { mutableStateOf<Float?>(null) }
     var customTimeStr by remember { mutableStateOf("") }
-    val timeFunc: () -> TimeOfDay by remember {
+    val timeFunc: () -> Instant by remember {
         mutableStateOf({
             parseTime(
                 customTimeStr,
@@ -151,7 +153,7 @@ fun DebugApp() {
                             parseTime(
                                 customTimeStr,
                                 interpolate(animationPosition ?: 0f, 0f, 1000f).roundToInt()
-                            ).nextSecond().toString()
+                            ).timeOfDay.nextSecond().toString()
                     }
                 }
 
@@ -184,14 +186,14 @@ fun DebugApp() {
 
 private fun <O : Options<*>> LazyGridScope.clockPreview(
     options: O,
-    timeFunc: () -> TimeOfDay,
+    timeFunc: () -> Instant,
     forcedState: GlyphState? = null,
 ) {
     item(span = { GridItemSpan(maxLineSpan) }) {
         Clock(
             options,
             ItemModifier.fillMaxSize(),
-            getTickTime = timeFunc,
+            getInstant = timeFunc,
             forcedState = forcedState,
         )
     }
@@ -201,11 +203,12 @@ private fun <O : Options<*>> LazyGridScope.clockPreview(
 private fun LazyGridScope.FormGlyphs(
     keys: List<String>,
     animationPosition: Float?,
+    state: GlyphState?,
 ) {
-    itemsIndexed(
+    items(
         keys,
-        key = { index, key -> "form_$key" },
-    ) { index, key ->
+        key = { key -> "form_$key" },
+    ) { key ->
         GlyphPreview(
             FormGlyph(GlyphRole.Hour).apply {
                 this.key = key
@@ -221,10 +224,10 @@ private fun LazyGridScope.Io16Glyphs(
     keys: List<String>,
     animationPosition: Float?,
 ) {
-    itemsIndexed(
+    items(
         keys,
-        key = { index, key -> "io16_$key" },
-    ) { index, key ->
+        key = { key -> "io16_$key" },
+    ) { key ->
         GlyphPreview(
             remember {
                 Io16Glyph(GlyphRole.Hour, animationOffset = ProgressFloat.Zero).apply {
@@ -237,7 +240,6 @@ private fun LazyGridScope.Io16Glyphs(
                 Io16GlyphRenderer(
                     ComposePath(),
                     Io16Options(),
-                    debugUpdateOnDraw = true,
                 )
             },
             animPosition = animationPosition,
@@ -252,10 +254,10 @@ private fun LazyGridScope.Io18Glyphs(
     keys: List<String>,
     animationPosition: Float?,
 ) {
-    itemsIndexed(
+    items(
         keys,
-        key = { index, key -> "io18_$key" },
-    ) { index, key ->
+        key = { key -> "io18_$key" },
+    ) { key ->
         val io18Animations = rememberIo18Animations()
         GlyphPreview(
             remember {
@@ -270,7 +272,8 @@ private fun LazyGridScope.Io18Glyphs(
     }
 }
 
-private fun parseTime(str: String, millis: Int): TimeOfDay {
+private fun parseTime(str: String, millis: Int): Instant {
+    val instant = getInstant()
     try {
         Regex("(\\d{1,2}):?(\\d{2})?:?(\\d{2})?").find(str)?.let {
             val h = it.groups[1]?.value?.toInt() ?: 0
@@ -278,19 +281,21 @@ private fun parseTime(str: String, millis: Int): TimeOfDay {
             val s = it.groups[3]?.value?.toInt() ?: 0
 
             if (millis < 1000) {
-                return TimeOfDay(
-                    hour = h,
-                    minute = m,
-                    second = s,
-                    millisecond = millis,
+                return instant.withTimeOfDay(
+                    TimeOfDay(
+                        hour = h,
+                        minute = m,
+                        second = s,
+                        millisecond = millis,
+                    )
                 )
             }
-            return TimeOfDay(h, m, s).nextSecond()
+            return instant.withTimeOfDay(TimeOfDay(h, m, s).nextSecond())
         }
     } catch (e: IllegalArgumentException) {
         // Invalid time string
     }
-    return getTime()
+    return instant
 }
 
 

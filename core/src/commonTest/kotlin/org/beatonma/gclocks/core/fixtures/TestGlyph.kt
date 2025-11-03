@@ -7,6 +7,7 @@ import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.RenderGlyph
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.graphics.Canvas
+import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 
 
 open class TestGlyph(
@@ -14,6 +15,8 @@ open class TestGlyph(
     scale: Float = 1f,
     val separatorWidth: Float = 0f,
 ) : BaseClockGlyph<TestPaints>(role, scale) {
+    currentTimeMillis: Long = getCurrentTimeMillis()
+) : BaseClockGlyph<TestPaints>(role, scale, lock, currentTimeMillis = currentTimeMillis) {
     override val companion: GlyphCompanion = TestGlyph
 
     companion object : GlyphCompanion {

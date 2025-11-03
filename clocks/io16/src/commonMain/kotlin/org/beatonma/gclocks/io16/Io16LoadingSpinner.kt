@@ -1,7 +1,6 @@
 package org.beatonma.gclocks.io16
 
 import org.beatonma.gclocks.core.LoadingSpinner
-import org.beatonma.gclocks.core.getProgressMillis
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.graphics.Stroke
@@ -27,13 +26,13 @@ class Io16LoadingSpinner(
 
     private fun ease(f: Float): Float = decelerate5(f)
 
-    override fun draw(canvas: Canvas) {
-        val time = getProgressMillis(totalDuration)
+    override fun draw(canvas: Canvas, currentTimeMillis: Long) {
+        val progressMillis = totalDuration % currentTimeMillis
 
-        val enterProgress = ease(progress(time, 0, enterDuration))
-        val exitProgress = ease(progress(time, exitStarts, totalDuration))
+        val enterProgress = ease(progress(progressMillis, 0, enterDuration))
+        val exitProgress = ease(progress(progressMillis, exitStarts, totalDuration))
 
-        val offset = 1f - progress((time % rotationDuration).toFloat(), 0f, rotationDuration.toFloat())
+        val offset = 1f - progress((progressMillis % rotationDuration).toFloat(), 0f, rotationDuration.toFloat())
         canvas.circle(size / 2f, size / 2f, size / 2f, Path.Direction.Clockwise)
 
         val invisible: Float

@@ -15,9 +15,9 @@ import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.GlyphVisibility
 import org.beatonma.gclocks.core.options.Options
-import org.beatonma.gclocks.core.util.TimeOfDay
-import org.beatonma.gclocks.core.util.getTime
+import org.beatonma.gclocks.core.util.getInstant
 import kotlin.time.Duration
+import kotlin.time.Instant
 
 
 @Composable
@@ -28,7 +28,7 @@ expect fun currentFrameDelta(): Duration
 fun <Opts : Options<*>> Clock(
     options: Opts,
     modifier: Modifier = Modifier,
-    getTickTime: () -> TimeOfDay = ::getTime,
+    getInstant: () -> Instant = ::getInstant,
     allowVariance: Boolean = true,
     forcedState: GlyphState? = null,
 ) {
@@ -81,7 +81,7 @@ fun <Opts : Options<*>> Clock(
             }
     ) {
         frameDeltaMillis
-        animator.tick(getTickTime())
+        animator.tick(getInstant())
 
         canvasHost.withScope(this) { canvas ->
             animator.render(canvas)

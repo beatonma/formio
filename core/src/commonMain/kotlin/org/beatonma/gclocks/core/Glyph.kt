@@ -6,6 +6,7 @@ import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.options.GlyphOptions
 import org.beatonma.gclocks.core.util.debug
+import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 import org.beatonma.gclocks.core.util.progress
 
 
@@ -60,10 +61,21 @@ interface Glyph<P : Paints> {
 
     fun draw(canvas: Canvas, glyphProgress: Float, paints: P, renderGlyph: RenderGlyph? = null)
     fun getWidthAtProgress(glyphProgress: Float): Float
-    fun setState(newState: GlyphState, newVisibility: GlyphVisibility, force: Boolean = false)
-    fun setState(newState: GlyphState, force: Boolean = false)
-    fun setState(newVisibility: GlyphVisibility, force: Boolean = false)
-    fun tickState(options: GlyphOptions)
+    fun setState(
+        newState: GlyphState,
+        newVisibility: GlyphVisibility,
+        force: Boolean = false,
+        currentTimeMillis: Long = getCurrentTimeMillis()
+    )
+
+    fun setState(newState: GlyphState, force: Boolean = false, currentTimeMillis: Long = getCurrentTimeMillis())
+    fun setState(
+        newVisibility: GlyphVisibility,
+        force: Boolean = false,
+        currentTimeMillis: Long = getCurrentTimeMillis()
+    )
+
+    fun tickState(options: GlyphOptions, currentTimeMillis: Long = getCurrentTimeMillis())
 }
 
 interface ClockGlyph<P : Paints> : Glyph<P> {
@@ -125,15 +137,17 @@ interface ClockGlyph<P : Paints> : Glyph<P> {
     }
 }
 
-fun interface GlyphRenderer<P : Paints, G : Glyph<P>> {
+interface GlyphRenderer<P : Paints, G : Glyph<P>> {
+    fun update(currentTimeMillis: Long) {}
     fun draw(glyph: G, canvas: Canvas, paints: P)
 }
-
 
 abstract class BaseGlyph<P : Paints> internal constructor(
     override val role: GlyphRole,
     override val scale: Float = 1f,
     override val lock: GlyphState? = null,
+    lock: GlyphState? = null,
+    currentTimeMillis: Long = getCurrentTimeMillis()
 ) : Glyph<P> {
     final override var state: GlyphState = GlyphState.Active
         private set
@@ -141,15 +155,13 @@ abstract class BaseGlyph<P : Paints> internal constructor(
     final override var visibility = GlyphVisibility.Visible
         private set
 
-    private var stateChangedAt: Long = getCurrentTimeMillis()
-    private var visibilityChangedAt: Long = getCurrentTimeMillis()
+    private var stateChangedAt: Long = currentTimeMillis
+    private var visibilityChangedAt: Long = currentTimeMillis
 
     final override var stateChangeProgress: Float = 0f
         private set
     final override var visibilityChangedProgress: Float = 0f
         private set
-
-    open fun getCurrentTimeMillis(): Long = org.beatonma.gclocks.core.util.getCurrentTimeMillis()
 
     override var key: String = " "
         set(value) {
@@ -173,15 +185,22 @@ abstract class BaseGlyph<P : Paints> internal constructor(
 
     override fun toString(): String = key
 
-    override fun setState(newState: GlyphState, newVisibility: GlyphVisibility, force: Boolean) {
-        setState(newState, force)
-        setState(newVisibility, force)
+    override fun setState(
+        newState: GlyphState,
+        newVisibility: GlyphVisibility,
+        force: Boolean,
+        currentTimeMillis: Long
+    ) {
+        setState(newState, force, currentTimeMillis)
+        setState(newVisibility, force, currentTimeMillis)
     }
 
     override fun setState(newState: GlyphState, force: Boolean) {
+    override fun setState(newState: GlyphState, force: Boolean, currentTimeMillis: Long) {
         if (force) {
             if (newState == GlyphState.Active || newState != state) {
-                updateStateChangedAt()
+                stateChangedAt = currentTimeMillis
+                stateChangeProgress = 0f
             }
             state = newState
             return
@@ -194,34 +213,33 @@ abstract class BaseGlyph<P : Paints> internal constructor(
         when (newState) {
             GlyphState.Activating,
             GlyphState.Active,
-                -> setActive()
+                -> setActive(currentTimeMillis)
 
             GlyphState.Deactivating,
             GlyphState.Inactive,
-                -> setInactive()
+                -> setInactive(currentTimeMillis)
         }
     }
 
-    override fun setState(newVisibility: GlyphVisibility, force: Boolean) {
+    override fun setState(newVisibility: GlyphVisibility, force: Boolean, currentTimeMillis: Long) {
         if (force) {
             if (newVisibility != visibility) {
-                updateVisibilityChangedAt()
+                visibilityChangedAt = currentTimeMillis
+                visibilityChangedProgress = 0f
             }
             visibility = newVisibility
             return
         }
 
         when (newVisibility) {
-            GlyphVisibility.Visible, GlyphVisibility.Appearing -> appear()
-            GlyphVisibility.Disappearing, GlyphVisibility.Hidden -> disappear()
+            GlyphVisibility.Visible, GlyphVisibility.Appearing -> appear(currentTimeMillis)
+            GlyphVisibility.Disappearing, GlyphVisibility.Hidden -> disappear(currentTimeMillis)
         }
     }
 
-    override fun tickState(options: GlyphOptions) {
-        val now = getCurrentTimeMillis()
-
-        val millisSinceStateChange = now - stateChangedAt
-        val millisSinceVisibilityChange = now - visibilityChangedAt
+    override fun tickState(options: GlyphOptions, currentTimeMillis: Long) {
+        val millisSinceStateChange = currentTimeMillis - stateChangedAt
+        val millisSinceVisibilityChange = currentTimeMillis - visibilityChangedAt
 
         stateChangeProgress =
             progress(millisSinceStateChange.toFloat(), 0f, options.stateChangeDurationMillis.toFloat())
@@ -230,8 +248,6 @@ abstract class BaseGlyph<P : Paints> internal constructor(
 
         val isStateTransitionExpired: Boolean = millisSinceStateChange > options.stateChangeDurationMillis
         val isVisibilityTransitionExpired: Boolean = millisSinceVisibilityChange > options.stateChangeDurationMillis
-
-////        val millisSinceStateChange: Long = now - stateChangedAt
 
         var newState: GlyphState? = null
         var newVisibility: GlyphVisibility? = null
@@ -268,25 +284,27 @@ abstract class BaseGlyph<P : Paints> internal constructor(
         }
 
         when {
-            newState != null && newVisibility != null -> setState(newState, newVisibility, force = true)
-            newState != null -> setState(newState, force = true)
-            newVisibility != null -> setState(newVisibility, force = true)
+            newState != null && newVisibility != null -> setState(
+                newState,
+                newVisibility,
+                force = true,
+                currentTimeMillis = currentTimeMillis
+            )
+
+            newState != null -> setState(newState, force = true, currentTimeMillis = currentTimeMillis)
+            newVisibility != null -> setState(newVisibility, force = true, currentTimeMillis = currentTimeMillis)
         }
     }
 
-    private fun updateStateChangedAt() {
-        stateChangedAt = getCurrentTimeMillis()
-    }
-
-    private fun updateVisibilityChangedAt() {
-        visibilityChangedAt = getCurrentTimeMillis()
-    }
-
-    private fun setActive() {
+    private fun setActive(currentTimeMillis: Long) {
         when (state) {
-            GlyphState.Active -> setState(GlyphState.Active, force = true)
+            GlyphState.Active -> setState(GlyphState.Active, force = true, currentTimeMillis = currentTimeMillis)
 
-            GlyphState.Inactive, GlyphState.Deactivating -> setState(GlyphState.Activating, force = true)
+            GlyphState.Inactive, GlyphState.Deactivating -> setState(
+                GlyphState.Activating,
+                force = true,
+                currentTimeMillis = currentTimeMillis
+            )
 
             GlyphState.Activating -> debug(false) {
                 debug("setActive has no effect when state == $state")
@@ -294,9 +312,13 @@ abstract class BaseGlyph<P : Paints> internal constructor(
         }
     }
 
-    private fun setInactive() {
+    private fun setInactive(currentTimeMillis: Long) {
         when (state) {
-            GlyphState.Active, GlyphState.Activating -> setState(GlyphState.Deactivating, force = true)
+            GlyphState.Active, GlyphState.Activating -> setState(
+                GlyphState.Deactivating,
+                force = true,
+                currentTimeMillis = currentTimeMillis
+            )
 
             else -> debug(false) {
                 debug("setInactive has no effect when state == $state")
@@ -304,10 +326,10 @@ abstract class BaseGlyph<P : Paints> internal constructor(
         }
     }
 
-    private fun appear() {
+    private fun appear(currentTimeMillis: Long) {
         when (visibility) {
             GlyphVisibility.Hidden, GlyphVisibility.Disappearing -> {
-                setState(GlyphVisibility.Appearing, force = true)
+                setState(GlyphVisibility.Appearing, force = true, currentTimeMillis = currentTimeMillis)
             }
 
             else -> debug(false) {
@@ -316,10 +338,10 @@ abstract class BaseGlyph<P : Paints> internal constructor(
         }
     }
 
-    private fun disappear() {
+    private fun disappear(currentTimeMillis: Long) {
         when (visibility) {
             GlyphVisibility.Visible, GlyphVisibility.Appearing -> {
-                setState(GlyphVisibility.Disappearing, force = true)
+                setState(GlyphVisibility.Disappearing, force = true, currentTimeMillis = currentTimeMillis)
             }
 
             else -> debug(false) {
@@ -333,7 +355,8 @@ abstract class BaseClockGlyph<P : Paints>(
     role: GlyphRole,
     scale: Float = 1f,
     lock: GlyphState? = null,
-) : BaseGlyph<P>(role, scale, lock), ClockGlyph<P> {
+    currentTimeMillis: Long = getCurrentTimeMillis()
+) : BaseGlyph<P>(role, scale, lock, currentTimeMillis), ClockGlyph<P> {
     var clockKey: ClockGlyph.Key = ClockGlyph.Key.Empty
         private set
     override var key: String
@@ -345,12 +368,7 @@ abstract class BaseClockGlyph<P : Paints>(
         }
 
 
-    override fun draw(
-        canvas: Canvas,
-        glyphProgress: Float,
-        paints: P,
-        renderGlyph: RenderGlyph?,
-    ) {
+    override fun draw(canvas: Canvas, glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?) {
         canvas.delegateDrawMethod(glyphProgress, paints, renderGlyph)
     }
 

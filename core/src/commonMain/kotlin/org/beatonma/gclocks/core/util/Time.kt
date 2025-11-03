@@ -1,21 +1,38 @@
 package org.beatonma.gclocks.core.util
 
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.beatonma.gclocks.core.options.TimeFormat
+import kotlin.jvm.JvmName
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 
 @OptIn(ExperimentalTime::class)
-fun getCurrentTimeMillis(): Long {
-    return Clock.System.now().toEpochMilliseconds()
+fun getInstant(): Instant = Clock.System.now()
+
+
+@OptIn(ExperimentalTime::class)
+fun getCurrentTimeMillis(instant: Instant): Long {
+    return instant.toEpochMilliseconds()
 }
 
+/*
+ * Explicit overload instead of default parameter so that consumers do
+ * not need to opt in for ExperimentalTime.
+ */
 @OptIn(ExperimentalTime::class)
-fun getTime(): TimeOfDay {
-    val now = Clock.System.now()
-    val time = now.toLocalDateTime(TimeZone.currentSystemDefault()).time
+fun getCurrentTimeMillis(): Long {
+    return getCurrentTimeMillis(getInstant())
+}
+
+
+@OptIn(ExperimentalTime::class)
+fun getTime(instant: Instant): TimeOfDay {
+    val time = instant.toLocalDateTime(TimeZone.currentSystemDefault()).time
 
     return TimeOfDay(
         time.hour,
@@ -24,6 +41,13 @@ fun getTime(): TimeOfDay {
         time.nanosecond / 1_000_000
     )
 }
+
+/*
+ * Explicit overload instead of default parameter so that consumers do
+ * not need to opt in for ExperimentalTime.
+ */
+@OptIn(ExperimentalTime::class)
+fun getTime(): TimeOfDay = getTime(getInstant())
 
 
 data class TimeOfDay(
@@ -63,4 +87,22 @@ fun TimeOfDay.nextSecond(): TimeOfDay {
         second = second,
         millisecond = 0,
     )
+}
+
+
+inline val Instant.timeOfDay
+    get() = getTime(this)
+inline val Instant.currentTimeMillis
+    @JvmName("getCurrentTimeMillisFromInstant") get() = getCurrentTimeMillis(this)
+
+fun Instant.withTimeOfDay(time: TimeOfDay): Instant {
+    val timezone = TimeZone.currentSystemDefault()
+    val date = this.toLocalDateTime(timezone).date
+    val dateTime = LocalDateTime(
+        year = date.year, month = date.month, day = date.day,
+        hour = time.hour, minute = time.minute, second = time.second,
+        nanosecond = time.millisecond * 1_000_000
+    )
+
+    return dateTime.toInstant(timezone)
 }

@@ -4,6 +4,7 @@ import org.beatonma.gclocks.core.BaseClockGlyph
 import org.beatonma.gclocks.core.ClockGlyph
 import org.beatonma.gclocks.core.GlyphCompanion
 import org.beatonma.gclocks.core.GlyphRole
+import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.RenderGlyph
 import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.geometry.NativeSize
@@ -12,9 +13,6 @@ import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.util.decelerate5
 import org.beatonma.gclocks.core.util.interpolate
 import org.beatonma.gclocks.core.util.progress
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.component3
 
 
 private const val TwoThirds = 2f / 3f
@@ -22,7 +20,8 @@ private const val TwoThirds = 2f / 3f
 class FormGlyph(
     role: GlyphRole,
     scale: Float = 1f,
-) : BaseClockGlyph<FormPaints>(role, scale) {
+    lock: GlyphState? = null
+) : BaseClockGlyph<FormPaints>(role, scale, lock) {
     companion object : GlyphCompanion {
         override val maxSize = NativeSize(
             x = 192f,

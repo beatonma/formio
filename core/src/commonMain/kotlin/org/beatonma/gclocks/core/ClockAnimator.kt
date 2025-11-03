@@ -8,9 +8,13 @@ import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.layout.ClockLayout
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.TimeOfDay
+import org.beatonma.gclocks.core.util.currentTimeMillis
 import org.beatonma.gclocks.core.util.fastForEach
+import org.beatonma.gclocks.core.util.getInstant
 import org.beatonma.gclocks.core.util.getTime
+import org.beatonma.gclocks.core.util.timeOfDay
 import kotlin.math.max
+import kotlin.time.Instant
 
 interface ClockAnimator<P : Paints, G : ClockGlyph<P>> : ConstrainedLayout {
     val layout: ClockLayout<P, G>
@@ -18,8 +22,13 @@ interface ClockAnimator<P : Paints, G : ClockGlyph<P>> : ConstrainedLayout {
 
     fun scheduleNextFrame(delayMillis: Int)
 
-    fun tick(time: TimeOfDay = getTime()) {
-        layout.update(time)
+    fun tick(instant: Instant = getInstant()) {
+        layout.update(instant.timeOfDay)
+        renderers.fastForEach { it.update(instant.currentTimeMillis) }
+    }
+
+    private fun tick(timeOfDay: TimeOfDay) {
+        layout.update(timeOfDay)
     }
 
     fun render(canvas: Canvas) {

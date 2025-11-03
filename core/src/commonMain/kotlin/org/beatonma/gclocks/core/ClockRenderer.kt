@@ -19,6 +19,8 @@ interface ClockRenderer<P : Paints, G : ClockGlyph<P>> {
     val renderer: GlyphRenderer<P, G>?
     val paints: P
 
+    fun update(currentTimeMillis: Long) {}
+
     fun draw(canvas: Canvas, layout: ClockLayout<P, G>) {
         if (!layout.isDrawable) {
             debug("layout is not drawable! $layout")

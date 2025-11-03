@@ -6,7 +6,6 @@ import org.beatonma.gclocks.core.geometry.degrees
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.util.decelerate5
-import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 import org.beatonma.gclocks.core.util.progress
 
 private const val OneThird = 1f / 3f
@@ -27,14 +26,14 @@ class FormLoadingSpinner(
 
     private fun ease(f: Float): Float = decelerate5(f)
 
-    override fun draw(canvas: Canvas) {
+    override fun draw(canvas: Canvas, currentTimeMillis: Long) {
         val rotationProgress = progress(
-            (getCurrentTimeMillis() % rotationDuration).toFloat(),
+            (currentTimeMillis % rotationDuration).toFloat(),
             0f,
             rotationDuration.toFloat()
         )
         val totalProgress = progress(
-            (getCurrentTimeMillis() % totalDuration).toFloat(),
+            (currentTimeMillis % totalDuration).toFloat(),
             0f,
             totalDuration.toFloat()
         )

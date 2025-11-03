@@ -22,9 +22,8 @@ class Io16ClockRenderer<P : Path>(
     override val renderer: Io16GlyphRenderer<P>,
     override var paints: Io16Paints,
 ) : ClockRenderer<Io16Paints, Io16Glyph> {
-    override fun draw(canvas: Canvas, layout: ClockLayout<Io16Paints, Io16Glyph>) {
-        renderer.now = getCurrentTimeMillis()
-        super.draw(canvas, layout)
+    override fun update(currentTimeMillis: Long) {
+        renderer.update(currentTimeMillis)
     }
 }
 
@@ -32,11 +31,11 @@ class Io16ClockRenderer<P : Path>(
 class Io16GlyphRenderer<P : Path>(
     segmentPath: P,
     options: Io16Options,
-    private val debugUpdateOnDraw: Boolean = false,
+    initTimeMillis: Long = getCurrentTimeMillis()
 ) : GlyphRenderer<Io16Paints, Io16Glyph> {
     private val options: Io16GlyphOptions = options.glyph
-    private var previousNow: Long = getCurrentTimeMillis()
-    internal var now: Long = getCurrentTimeMillis()
+    private var previousNow: Long = initTimeMillis
+    internal var now: Long = initTimeMillis
         set(value) {
             previousNow = field
 
@@ -63,13 +62,11 @@ class Io16GlyphRenderer<P : Path>(
         )
     )
 
-    override fun draw(glyph: Io16Glyph, canvas: Canvas, paints: Io16Paints) {
-        debug(false) {
-            if (debugUpdateOnDraw) {
-                now = getCurrentTimeMillis()
-            }
-        }
+    override fun update(currentTimeMillis: Long) {
+        now = currentTimeMillis
+    }
 
+    override fun draw(glyph: Io16Glyph, canvas: Canvas, paints: Io16Paints) {
         val disappearedSegmentSize = getDisappearedSegmentLength(glyph, glyph.visibilityChangedProgress.pf)
         if (disappearedSegmentSize.isOne) {
             // Nothing to render

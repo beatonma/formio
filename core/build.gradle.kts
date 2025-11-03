@@ -38,6 +38,10 @@ val generateBuildConfig by tasks.registering(Sync::class) {
 
 
 kotlin {
+    compilerOptions {
+        optIn.add("kotlin.time.ExperimentalTime")
+    }
+
     jvm {}
 
     @OptIn(ExperimentalWasmDsl::class)

@@ -25,8 +25,12 @@ import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.geometry.ScaledSize
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Paints
+import org.beatonma.gclocks.core.options.GlyphOptions
+import org.beatonma.gclocks.core.util.currentTimeMillis
+import org.beatonma.gclocks.core.util.getInstant
 import org.beatonma.gclocks.core.util.getTime
 import org.beatonma.gclocks.core.util.progress
+import kotlin.time.Instant
 
 
 private const val AnimationDurationSeconds = 2f
@@ -53,6 +57,7 @@ fun <P : Paints, G : Glyph<P>> GlyphPreview(
 
     Box(modifier) {
         ConstrainedCanvas(preview, Modifier.fillMaxSize()) {
+            preview.tick()
             canvasHost.withScope(this) { canvas ->
                 preview.draw(canvas, animProgress, paints)
             }
@@ -78,6 +83,11 @@ private class GlyphPreview<P : Paints, G : Glyph<P>>(
     val glyph: G,
     val renderer: GlyphRenderer<P, G>?,
     private val paints: P,
+    private val options: GlyphOptions = object : GlyphOptions {
+        override val activeStateDurationMillis: Int = 5000
+        override val stateChangeDurationMillis: Int = 1200
+        override val glyphMorphMillis: Int = 600
+    },
 ) : ConstrainedLayout {
     private var measureScale: Float = 100f
     private var drawScale: Float = 100f
@@ -99,6 +109,12 @@ private class GlyphPreview<P : Paints, G : Glyph<P>>(
 
 
         return glyph.maxSize * measureScale
+    }
+
+    fun tick(instant: Instant = getInstant()) {
+        val millis = instant.currentTimeMillis
+        glyph.tickState(options, millis)
+        renderer?.update(millis)
     }
 
     fun draw(canvas: Canvas, glyphProgress: Float, paints: P) {

@@ -22,12 +22,9 @@ private val options = TestGlyphOptions(
     glyphMorphMillis = 100,
 )
 
-private fun testGlyph(): Glyph<*> {
-    val timeProvider = TimeProvider()
-    return object : TestGlyph(GlyphRole.Default) {
-        override fun getCurrentTimeMillis(): Long = timeProvider.next()
-    }
-}
+private fun testGlyph(lock: GlyphState? = null): Glyph<*> =
+    TestGlyph(GlyphRole.Default, lock = lock, currentTimeMillis = 0)
+
 
 class GlyphTest {
     @Test
@@ -95,22 +92,23 @@ class GlyphTest {
 
     @Test
     fun `tickState is correct`() {
+        val time = TimeProvider()
         with(testGlyph()) {
             state shouldbe GlyphState.Active
 
-            tickState(options)
+            tickState(options, time.next())
             state shouldbe GlyphState.Deactivating
 
-            tickState(options)
+            tickState(options, time.next())
             state shouldbe GlyphState.Inactive
 
-            tickState(options)
+            tickState(options, time.next())
             state shouldbe GlyphState.Inactive // no change
 
-            setState(GlyphState.Active)
+            setState(GlyphState.Active, currentTimeMillis = time.next())
             state shouldbe GlyphState.Activating
 
-            tickState(options)
+            tickState(options, time.next())
             state shouldbe GlyphState.Active
         }
     }

@@ -5,7 +5,6 @@ import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Stroke
-import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 import org.beatonma.gclocks.core.util.interpolate
 import org.beatonma.gclocks.core.util.progress
 import org.beatonma.gclocks.io18.animation.DiagonalLines
@@ -36,9 +35,9 @@ class Io18LoadingSpinner(
     private val animations: List<Io18Animation.ClassDraw> = listOf(lines, dots, grid).shuffled()
     private val stepSize = 1f / animations.size.toFloat()
 
-    override fun draw(canvas: Canvas) {
-        val time = getCurrentTimeMillis() % totalDuration
-        val totalProgress = progress(time.toFloat(), 0f, totalDuration.toFloat())
+    override fun draw(canvas: Canvas, currentTimeMillis: Long) {
+        val progressMillis = currentTimeMillis % totalDuration
+        val totalProgress = progress(progressMillis.toFloat(), 0f, totalDuration.toFloat())
 
         animations.forEachIndexed { index, animation ->
             val color = paints.colors[index % paints.colors.size]
