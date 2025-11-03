@@ -21,6 +21,7 @@ fun main() = application {
         state = windowState,
         onCloseRequest = ::exitApplication,
         title = stringResource(Res.string.app_name),
+        alwaysOnTop = true,
     ) {
         DebugApp()
     }
