@@ -338,6 +338,9 @@ abstract class BaseGlyph<P : Paints> internal constructor(
     private fun appear(currentTimeMillis: Long) {
         when (visibility) {
             GlyphVisibility.Hidden, GlyphVisibility.Disappearing -> {
+                if (visibility == GlyphVisibility.Hidden) {
+                    setState(GlyphState.Active, force = true, currentTimeMillis = currentTimeMillis)
+                }
                 setState(GlyphVisibility.Appearing, force = true, currentTimeMillis = currentTimeMillis)
             }
 
