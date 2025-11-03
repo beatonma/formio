@@ -10,7 +10,6 @@ import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.graphics.PathMeasureScope
 import org.beatonma.gclocks.core.graphics.Stroke
-import org.beatonma.gclocks.core.layout.ClockLayout
 import org.beatonma.gclocks.core.types.ProgressFloat
 import org.beatonma.gclocks.core.types.pf
 import org.beatonma.gclocks.core.util.debug
@@ -88,9 +87,12 @@ class Io16GlyphRenderer<P : Path>(
             offset = segmentOffsetProgress,
             invisible = disappearedSegmentSize,
             inactive = inactiveSegmentSize,
-            state = when (glyph.visibility) {
-                GlyphVisibility.Visible, GlyphVisibility.Appearing -> Io16PathRenderer.State.Appearing
-                GlyphVisibility.Hidden, GlyphVisibility.Disappearing -> Io16PathRenderer.State.Disappearing
+            state = when {
+                glyph.visibility == GlyphVisibility.Appearing -> Io16PathRenderer.State.Appearing
+                glyph.visibility == GlyphVisibility.Disappearing -> Io16PathRenderer.State.Disappearing
+                glyph.state == GlyphState.Activating -> Io16PathRenderer.State.Appearing
+                glyph.state == GlyphState.Deactivating -> Io16PathRenderer.State.Disappearing
+                else -> Io16PathRenderer.State.Appearing
             }
         )
     }
@@ -166,6 +168,7 @@ class Io16PathRenderer(
 
         canvas.measurePath { pm ->
             debug(false) {
+                // Render the position of `offset` on the path
                 val offset: Float = offset * pm.length
                 pm.getPosition(offset)?.let {
                     canvas.drawPoint(it.x, it.y, 8f, Color.Red)
