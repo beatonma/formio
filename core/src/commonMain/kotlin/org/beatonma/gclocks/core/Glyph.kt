@@ -16,6 +16,8 @@ enum class GlyphVisibility {
     Disappearing,
     Hidden,
     ;
+
+    val isTransitional: Boolean get() = this == Appearing || this == Disappearing
 }
 
 enum class GlyphState {
@@ -24,6 +26,8 @@ enum class GlyphState {
     Deactivating,
     Inactive,
     ;
+
+    val isTransitional: Boolean get() = this == Activating || this == Deactivating
 }
 
 enum class GlyphRole {
@@ -145,14 +149,19 @@ interface GlyphRenderer<P : Paints, G : Glyph<P>> {
 abstract class BaseGlyph<P : Paints> internal constructor(
     override val role: GlyphRole,
     override val scale: Float = 1f,
-    override val lock: GlyphState? = null,
     lock: GlyphState? = null,
     currentTimeMillis: Long = getCurrentTimeMillis()
 ) : Glyph<P> {
-    final override var state: GlyphState = GlyphState.Active
+    final override var state: GlyphState = lock ?: GlyphState.Active
         private set
 
-    final override var visibility = GlyphVisibility.Visible
+    override val lock: GlyphState? = when (lock) {
+        null -> null
+        GlyphState.Activating, GlyphState.Active -> GlyphState.Active
+        GlyphState.Deactivating, GlyphState.Inactive -> GlyphState.Inactive
+    }
+
+    final override var visibility = GlyphVisibility.Appearing
         private set
 
     private var stateChangedAt: Long = currentTimeMillis
@@ -195,18 +204,18 @@ abstract class BaseGlyph<P : Paints> internal constructor(
         setState(newVisibility, force, currentTimeMillis)
     }
 
-    override fun setState(newState: GlyphState, force: Boolean) {
     override fun setState(newState: GlyphState, force: Boolean, currentTimeMillis: Long) {
+        if (lock != null && !state.isTransitional) {
+            // Lock is overruled when current state is transitional and can tick over to a steady state
+            return
+        }
+
         if (force) {
             if (newState == GlyphState.Active || newState != state) {
                 stateChangedAt = currentTimeMillis
                 stateChangeProgress = 0f
             }
             state = newState
-            return
-        }
-        if (state == lock) {
-            // Lock is overruled when current state is transitional and can tick over to a steady state
             return
         }
 

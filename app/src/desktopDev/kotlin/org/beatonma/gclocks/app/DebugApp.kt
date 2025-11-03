@@ -124,9 +124,9 @@ fun DebugApp() {
 //                    ), timeFunc, state
 //                )
 
-                FormGlyphs(keys, animationPosition)
-                Io16Glyphs(keys, animationPosition)
-                Io18Glyphs(keys, animationPosition)
+                FormGlyphs(keys, animationPosition, state)
+                Io16Glyphs(keys, animationPosition, state)
+                Io18Glyphs(keys, animationPosition, state)
             }
 
             Column(
@@ -210,10 +210,12 @@ private fun LazyGridScope.FormGlyphs(
         key = { key -> "form_$key" },
     ) { key ->
         GlyphPreview(
-            FormGlyph(GlyphRole.Hour).apply {
-                this.key = key
+            remember(state) {
+                FormGlyph(GlyphRole.Hour, lock = state).apply {
+                    this.key = key
+                }
             },
-            FormPaints(),
+            remember { FormPaints() },
             ItemModifier.fillMaxSize(),
             animPosition = animationPosition,
         )
@@ -223,14 +225,15 @@ private fun LazyGridScope.FormGlyphs(
 private fun LazyGridScope.Io16Glyphs(
     keys: List<String>,
     animationPosition: Float?,
+    state: GlyphState?,
 ) {
     items(
         keys,
         key = { key -> "io16_$key" },
     ) { key ->
         GlyphPreview(
-            remember {
-                Io16Glyph(GlyphRole.Hour, animationOffset = ProgressFloat.Zero).apply {
+            remember(state) {
+                Io16Glyph(GlyphRole.Hour, animationOffset = ProgressFloat.Zero, lock = state).apply {
                     this.key = key
                 }
             },
@@ -253,6 +256,7 @@ private fun rememberIo18Animations() = remember { GlyphAnimations(ComposePath())
 private fun LazyGridScope.Io18Glyphs(
     keys: List<String>,
     animationPosition: Float?,
+    state: GlyphState?,
 ) {
     items(
         keys,
@@ -260,8 +264,8 @@ private fun LazyGridScope.Io18Glyphs(
     ) { key ->
         val io18Animations = rememberIo18Animations()
         GlyphPreview(
-            remember {
-                Io18Glyph(io18Animations, GlyphRole.Default).apply {
+            remember(state) {
+                Io18Glyph(io18Animations, GlyphRole.Default, lock = state).apply {
                     this.key = key
                 }
             },

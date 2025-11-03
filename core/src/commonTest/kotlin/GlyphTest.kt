@@ -63,7 +63,7 @@ class GlyphTest {
     @Test
     fun `setState with visibility is correct`() {
         with(testGlyph()) {
-            visibility shouldbe GlyphVisibility.Visible
+            visibility shouldbe GlyphVisibility.Appearing
 
             setState(GlyphVisibility.Disappearing, force = true)
             visibility shouldbe GlyphVisibility.Disappearing
@@ -76,7 +76,7 @@ class GlyphTest {
         }
 
         with(testGlyph()) {
-            visibility shouldbe GlyphVisibility.Visible
+            visibility shouldbe GlyphVisibility.Appearing
 
             setState(GlyphVisibility.Hidden, force = false)
             visibility shouldbe GlyphVisibility.Disappearing
@@ -109,6 +109,47 @@ class GlyphTest {
             state shouldbe GlyphState.Activating
 
             tickState(options, time.next())
+            state shouldbe GlyphState.Active
+        }
+    }
+
+    @Test
+    fun `lock is correct`() {
+        val time = TimeProvider()
+        with(testGlyph(lock = GlyphState.Active)) {
+            state shouldbe GlyphState.Active
+
+            tickState(options, time.next())
+            state shouldbe GlyphState.Active
+            tickState(options, time.next())
+            state shouldbe GlyphState.Active
+
+            setState(GlyphState.Inactive)
+            state shouldbe GlyphState.Active
+        }
+
+        with(testGlyph(lock = GlyphState.Inactive)) {
+            state shouldbe GlyphState.Inactive
+
+            tickState(options, time.next())
+            state shouldbe GlyphState.Inactive
+            tickState(options, time.next())
+            state shouldbe GlyphState.Inactive
+
+            setState(GlyphState.Active)
+            state shouldbe GlyphState.Inactive
+        }
+
+
+        with(testGlyph(lock = GlyphState.Activating)) {
+            state shouldbe GlyphState.Activating
+
+            tickState(options, time.next())
+            state shouldbe GlyphState.Active
+            tickState(options, time.next())
+            state shouldbe GlyphState.Active
+
+            setState(GlyphState.Inactive)
             state shouldbe GlyphState.Active
         }
     }

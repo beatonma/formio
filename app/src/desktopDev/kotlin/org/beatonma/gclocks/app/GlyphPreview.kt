@@ -1,4 +1,4 @@
-package org.beatonma.gclocks.compose.components
+package org.beatonma.gclocks.app
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -15,10 +15,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import org.beatonma.gclocks.compose.components.ConstrainedCanvas
 import org.beatonma.gclocks.compose.rememberCanvasHost
 import org.beatonma.gclocks.core.Glyph
 import org.beatonma.gclocks.core.GlyphRenderer
+import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.geometry.ConstrainedLayout
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.NativeSize
@@ -43,7 +47,7 @@ fun <P : Paints, G : Glyph<P>> GlyphPreview(
     renderer: GlyphRenderer<P, G>? = null,
     animPosition: Float? = null,
 ) {
-    val preview = remember { GlyphPreview(glyph, renderer, paints) }
+    val preview = remember(glyph, renderer, paints) { GlyphPreview(glyph, renderer, paints) }
     var animProgress: Float by remember(animPosition) {
         mutableFloatStateOf(
             when {
@@ -55,7 +59,22 @@ fun <P : Paints, G : Glyph<P>> GlyphPreview(
     val canvasHost = rememberCanvasHost()
     var flag by remember { mutableStateOf(false) }
 
-    Box(modifier) {
+    Box(
+        modifier
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+
+                        val pointer = event.changes.firstOrNull() ?: continue
+
+                        if (event.type == PointerEventType.Press) {
+                            preview.glyph.setState(GlyphState.Active)
+                        }
+                    }
+                }
+            }
+    ) {
         ConstrainedCanvas(preview, Modifier.fillMaxSize()) {
             preview.tick()
             canvasHost.withScope(this) { canvas ->
@@ -106,7 +125,6 @@ private class GlyphPreview<P : Paints, G : Glyph<P>>(
                 .run {
                     NativeSize(width, height)
                 })
-
 
         return glyph.maxSize * measureScale
     }
