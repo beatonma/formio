@@ -95,11 +95,10 @@ private fun <Opts : Options<*>> rememberClockAnimator(
     allowVariance: Boolean,
     forcedState: GlyphState?,
 ): ClockAnimator<*, *> {
-    val path = remember { ComposePath() }
     return remember(options, forcedState) {
         createAnimatorFromOptions(
             options,
-            path,
+            ComposePath(),
             allowVariance = allowVariance,
             forcedState = forcedState
         ) {

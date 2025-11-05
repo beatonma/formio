@@ -18,23 +18,13 @@ import kotlin.time.Instant
 
 interface ClockAnimator<P : Paints, G : ClockGlyph<P>> : ConstrainedLayout {
     val layout: ClockLayout<P, G>
-    val renderers: List<ClockRenderer<P, G>>
 
     fun scheduleNextFrame(delayMillis: Int)
-
-    fun tick(instant: Instant = getInstant()) {
-        layout.update(instant.timeOfDay)
-        renderers.fastForEach { it.update(instant.currentTimeMillis) }
-    }
+    fun tick(instant: Instant = getInstant())
+    fun render(canvas: Canvas)
 
     private fun tick(timeOfDay: TimeOfDay) {
         layout.update(timeOfDay)
-    }
-
-    fun render(canvas: Canvas) {
-        renderers.fastForEach { it.draw(canvas, layout) }
-
-        scheduleNextFrame(max(0, 1000 - layout.animationTimeMillis))
     }
 
     /**
@@ -75,16 +65,67 @@ interface ClockAnimator<P : Paints, G : ClockGlyph<P>> : ConstrainedLayout {
         layout.setConstraints(constraints)
 }
 
+private interface SingleRendererClockAnimator<P : Paints, G : ClockGlyph<P>> : ClockAnimator<P, G> {
+    val renderer: ClockRenderer<P, G>
+
+    override fun tick(instant: Instant) {
+        layout.update(instant.timeOfDay)
+        renderer.update(instant.currentTimeMillis)
+    }
+
+    override fun render(canvas: Canvas) {
+        renderer.draw(canvas, layout)
+
+        scheduleNextFrame(max(0, 1000 - layout.animationTimeMillis))
+    }
+}
+
+private interface MultiRendererClockAnimator<P : Paints, G : ClockGlyph<P>> : ClockAnimator<P, G> {
+    val renderers: List<ClockRenderer<P, G>>
+
+    override fun tick(instant: Instant) {
+        layout.update(instant.timeOfDay)
+        val millis = instant.currentTimeMillis
+        renderers.fastForEach { it.update(millis) }
+    }
+
+    override fun render(canvas: Canvas) {
+        renderers.fastForEach { it.draw(canvas, layout) }
+
+        scheduleNextFrame(max(0, 1000 - layout.animationTimeMillis))
+    }
+}
+
 fun <P : Paints, O : Options<P>, G : ClockGlyph<P>> createAnimator(
     options: O,
     font: ClockFont<P, G>,
     renderer: ClockRenderer<P, G>,
     onScheduleNextFrame: (delayMillis: Int) -> Unit,
-) = object : ClockAnimator<P, G> {
-    override val layout = ClockLayout(font = font, options = options)
-    override val renderers: List<ClockRenderer<P, G>> = listOf(renderer)
+): ClockAnimator<P, G> {
+    return object : SingleRendererClockAnimator<P, G> {
+        override val layout = ClockLayout(font = font, options = options)
+        override val renderer: ClockRenderer<P, G> = renderer
+        override fun scheduleNextFrame(delayMillis: Int) {
+            onScheduleNextFrame(delayMillis)
+        }
+    }
+}
 
-    override fun scheduleNextFrame(delayMillis: Int) {
-        onScheduleNextFrame(delayMillis)
+fun <P : Paints, O : Options<P>, G : ClockGlyph<P>> createAnimator(
+    options: O,
+    font: ClockFont<P, G>,
+    renderers: List<ClockRenderer<P, G>>,
+    onScheduleNextFrame: (delayMillis: Int) -> Unit,
+): ClockAnimator<P, G> {
+    if (renderers.size == 1) {
+        return createAnimator(options, font, renderers.first(), onScheduleNextFrame)
+    }
+
+    return object : MultiRendererClockAnimator<P, G> {
+        override val layout = ClockLayout(font = font, options = options)
+        override val renderers: List<ClockRenderer<P, G>> = renderers.toList()
+        override fun scheduleNextFrame(delayMillis: Int) {
+            onScheduleNextFrame(delayMillis)
+        }
     }
 }
