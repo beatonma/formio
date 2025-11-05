@@ -1,17 +1,17 @@
 package org.beatonma.gclocks.core.fixtures
 
-import org.beatonma.gclocks.core.layout.ClockLayout
-import org.beatonma.gclocks.core.options.GlyphOptions
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
-import org.beatonma.gclocks.core.options.Layout
-import org.beatonma.gclocks.core.options.LayoutOptions
-import org.beatonma.gclocks.core.options.Options
-import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.graphics.StrokeCap
 import org.beatonma.gclocks.core.graphics.StrokeJoin
+import org.beatonma.gclocks.core.layout.ClockLayout
+import org.beatonma.gclocks.core.options.GlyphOptions
+import org.beatonma.gclocks.core.options.Layout
+import org.beatonma.gclocks.core.options.LayoutOptions
+import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.options.TimeFormat
 
 data class TestPaints(
     override val colors: Array<Color> = emptyArray(),
@@ -39,6 +39,7 @@ data class TestLayoutOptions(
 data class TestGlyphOptions(
     override val activeStateDurationMillis: Int = 100,
     override val stateChangeDurationMillis: Int = 100,
+    override val visibilityChangeDurationMillis: Int = 100,
     override val glyphMorphMillis: Int = 100,
 ) : GlyphOptions
 

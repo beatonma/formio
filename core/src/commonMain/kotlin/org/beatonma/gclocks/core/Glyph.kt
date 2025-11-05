@@ -253,10 +253,11 @@ abstract class BaseGlyph<P : Paints> internal constructor(
         stateChangeProgress =
             progress(millisSinceStateChange.toFloat(), 0f, options.stateChangeDurationMillis.toFloat())
         visibilityChangedProgress =
-            progress(millisSinceVisibilityChange.toFloat(), 0f, options.stateChangeDurationMillis.toFloat())
+            progress(millisSinceVisibilityChange.toFloat(), 0f, options.visibilityChangeDurationMillis.toFloat())
 
         val isStateTransitionExpired: Boolean = millisSinceStateChange > options.stateChangeDurationMillis
-        val isVisibilityTransitionExpired: Boolean = millisSinceVisibilityChange > options.stateChangeDurationMillis
+        val isVisibilityTransitionExpired: Boolean =
+            millisSinceVisibilityChange > options.visibilityChangeDurationMillis
 
         var newState: GlyphState? = null
         var newVisibility: GlyphVisibility? = null

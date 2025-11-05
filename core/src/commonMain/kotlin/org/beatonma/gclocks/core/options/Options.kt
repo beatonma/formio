@@ -39,12 +39,15 @@ interface LayoutOptions {
 }
 
 interface GlyphOptions {
-    /* How long a glyph remains in the active state */
+    /** How long a glyph remains in the active state */
     val activeStateDurationMillis: Int
 
-    /* How long the transition between active/inactive takes */
+    /** How long the transition between [org.beatonma.gclocks.core.GlyphState.Active]/[org.beatonma.gclocks.core.GlyphState.Inactive] takes */
     val stateChangeDurationMillis: Int
 
-    /* How long it takes to animate from one glyph to the next */
+    /** How long the transition between [org.beatonma.gclocks.core.GlyphVisibility.Visible]/[org.beatonma.gclocks.core.GlyphVisibility.Hidden] takes */
+    val visibilityChangeDurationMillis: Int
+
+    /** How long it takes to animate from one glyph to the next */
     val glyphMorphMillis: Int
 }

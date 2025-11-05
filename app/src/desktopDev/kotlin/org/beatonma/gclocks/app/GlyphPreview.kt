@@ -103,9 +103,10 @@ private class GlyphPreview<P : Paints, G : Glyph<P>>(
     val renderer: GlyphRenderer<P, G>?,
     private val paints: P,
     private val options: GlyphOptions = object : GlyphOptions {
-        override val activeStateDurationMillis: Int = 5000
+        override val activeStateDurationMillis: Int = 2000
         override val stateChangeDurationMillis: Int = 1200
         override val glyphMorphMillis: Int = 600
+        override val visibilityChangeDurationMillis: Int = 600
     },
 ) : ConstrainedLayout {
     private var measureScale: Float = 100f

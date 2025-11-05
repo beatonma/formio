@@ -30,5 +30,6 @@ data class Io18LayoutOptions(
 data class Io18GlyphOptions(
     override val activeStateDurationMillis: Int = 5000,
     override val stateChangeDurationMillis: Int = 1200,
+    override val visibilityChangeDurationMillis: Int = 600,
     override val glyphMorphMillis: Int = 600,
 ) : GlyphOptions

@@ -21,6 +21,7 @@ data class FormOptions(
 data class FormGlyphOptions(
     override val activeStateDurationMillis: Int = 0,
     override val stateChangeDurationMillis: Int = 0,
+    override val visibilityChangeDurationMillis: Int = 600,
     override val glyphMorphMillis: Int = 800,
 ) : GlyphOptions
 
