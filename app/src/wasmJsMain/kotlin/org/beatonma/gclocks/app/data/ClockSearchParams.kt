@@ -32,10 +32,10 @@ internal data class ClockSearchParams(
             try {
                 val map: Map<String, String> = search.removePrefix("?")
                     .split("&")
-                    .mapNotNull {
-                        it.split("=").let {
-                            when (it.size) {
-                                2 -> it
+                    .mapNotNull { param ->
+                        param.split("=").let { parts ->
+                            when (parts.size) {
+                                2 -> parts
                                 else -> null
                             }
                         }

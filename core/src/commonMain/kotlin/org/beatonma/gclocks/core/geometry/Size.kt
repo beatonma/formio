@@ -47,10 +47,16 @@ value class FloatSize private constructor(val packedValue: Long) : SizeF {
         @FloatRange(from = 0.0) y: Float = 0f,
     ) : this(packFloats(x, y))
 
-    override inline val x: Float get() = unpackX(packedValue)
-    override inline val y: Float get() = unpackY(packedValue)
+    @Suppress("OVERRIDE_BY_INLINE")
+    override val x: Float inline get() = unpackX(packedValue)
 
+    @Suppress("OVERRIDE_BY_INLINE")
+    override val y: Float inline get() = unpackY(packedValue)
+
+    @Suppress("OVERRIDE_BY_INLINE")
     override val width: Float inline get() = x
+
+    @Suppress("OVERRIDE_BY_INLINE")
     override val height: Float inline get() = y
 
     override fun times(factor: Float): FloatSize = FloatSize(
@@ -76,10 +82,16 @@ value class NativeSize private constructor(val packedValue: Long) : SizeF {
         @FloatRange(from = 0.0) y: Float = 0f,
     ) : this(packFloats(x, y))
 
-    override inline val x: Float get() = unpackX(packedValue)
-    override inline val y: Float get() = unpackY(packedValue)
+    @Suppress("OVERRIDE_BY_INLINE")
+    override val x: Float inline get() = unpackX(packedValue)
 
+    @Suppress("OVERRIDE_BY_INLINE")
+    override val y: Float inline get() = unpackY(packedValue)
+
+    @Suppress("OVERRIDE_BY_INLINE")
     override val width: Float inline get() = x
+
+    @Suppress("OVERRIDE_BY_INLINE")
     override val height: Float inline get() = y
 
     override fun times(factor: Float): ScaledSize = ScaledSize(
@@ -104,10 +116,16 @@ value class ScaledSize private constructor(val packedValue: Long) : SizeF {
         @FloatRange(from = 0.0) y: Float = 0f,
     ) : this(packFloats(x, y))
 
-    override inline val x: Float get() = unpackX(packedValue)
-    override inline val y: Float get() = unpackY(packedValue)
+    @Suppress("OVERRIDE_BY_INLINE")
+    override val x: Float inline get() = unpackX(packedValue)
 
+    @Suppress("OVERRIDE_BY_INLINE")
+    override val y: Float inline get() = unpackY(packedValue)
+
+    @Suppress("OVERRIDE_BY_INLINE")
     override val width: Float inline get() = x
+
+    @Suppress("OVERRIDE_BY_INLINE")
     override val height: Float inline get() = y
 
     override fun times(factor: Float): ScaledSize = ScaledSize(

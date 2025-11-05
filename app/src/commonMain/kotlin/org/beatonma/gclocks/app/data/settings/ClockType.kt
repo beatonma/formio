@@ -11,7 +11,7 @@ enum class ClockType {
     ;
 
     companion object {
-        val Default get() = Form
+        val Default = Form
     }
 }
 

@@ -5,16 +5,7 @@ import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.options.TimeFormat
 
 class TestFont(
-    override val measurements: ClockFont.Measurements = ClockFont.Measurements(
-        lineHeight = TestGlyph.maxSize.height,
-        separatorWidth = 0f,
-        maxHours24ZeroPaddedWidth = TestGlyph.maxSize.width * 2f,
-        maxHours12ZeroPaddedWidth = TestGlyph.maxSize.width * 2f,
-        maxHours24Width = TestGlyph.maxSize.width * 2f,
-        maxHours12Width = TestGlyph.maxSize.width * 2f,
-        maxMinutesWidth = TestGlyph.maxSize.width * 2f,
-        maxSecondsWidth = TestGlyph.maxSize.width * 2f,
-    )
+    override val measurements: ClockFont.Measurements = DefaultMeasurements
 ) : ClockFont<TestPaints, TestGlyph> {
     override fun getGlyphAt(
         index: Int,
@@ -27,5 +18,18 @@ class TestFont(
             else -> 1f
         }
         return TestGlyph(role, scale, measurements.separatorWidth)
+    }
+
+    companion object {
+        val DefaultMeasurements = ClockFont.Measurements(
+            lineHeight = TestGlyph.maxSize.height,
+            separatorWidth = 0f,
+            maxHours24ZeroPaddedWidth = TestGlyph.maxSize.width * 2f,
+            maxHours12ZeroPaddedWidth = TestGlyph.maxSize.width * 2f,
+            maxHours24Width = TestGlyph.maxSize.width * 2f,
+            maxHours12Width = TestGlyph.maxSize.width * 2f,
+            maxMinutesWidth = TestGlyph.maxSize.width * 2f,
+            maxSecondsWidth = TestGlyph.maxSize.width * 2f,
+        )
     }
 }

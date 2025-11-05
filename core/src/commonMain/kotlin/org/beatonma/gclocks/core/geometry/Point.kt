@@ -19,7 +19,10 @@ interface MutablePoint<T : Number> : Point<T> {
 value class FloatPoint private constructor(val packedValue: Long) : Point<Float>, FloatVector2 {
     constructor(x: Float, y: Float) : this(packFloats(x, y))
 
-    override inline val x get() = unpackX(packedValue)
-    override inline val y get() = unpackY(packedValue)
+    @Suppress("OVERRIDE_BY_INLINE")
+    override val x inline get() = unpackX(packedValue)
+
+    @Suppress("OVERRIDE_BY_INLINE")
+    override val y inline get() = unpackY(packedValue)
 }
 typealias Position = Point<Float>

@@ -6,7 +6,7 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-private val FloatAllowableDifference = 0.01f
+private const val FloatAllowableDifference = 0.01f
 
 infix fun <T : Any> T?.shouldbe(expected: T?) {
     assertEquals(expected, this)

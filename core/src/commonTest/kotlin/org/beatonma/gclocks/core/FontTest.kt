@@ -36,10 +36,14 @@ private fun options(
     paints = TestPaints(strokeWidth = 0f)
 )
 
+private fun testFont(separatorWidth: Float) = TestFont(
+    TestFont.DefaultMeasurements.copy(separatorWidth = separatorWidth)
+)
+
 class HorizontalFontTest : FontLayoutTest() {
     @Test
     fun `measure horizontal layout without spacing`() {
-        TestFont(separatorWidth = 0f).measure(
+        testFont(separatorWidth = 0f).measure(
             options(
                 TimeFormat.HH_MM_SS_24,
                 Layout.Horizontal,
@@ -51,7 +55,7 @@ class HorizontalFontTest : FontLayoutTest() {
         }
 
         /* Without seconds */
-        TestFont(separatorWidth = 0f).measure(
+        testFont(separatorWidth = 0f).measure(
             options(
                 TimeFormat.HH_MM_24,
                 Layout.Horizontal,
@@ -65,7 +69,7 @@ class HorizontalFontTest : FontLayoutTest() {
 
     @Test
     fun `measure horizontal layout with spacing`() {
-        TestFont(separatorWidth = separator).measure(
+        testFont(separatorWidth = separator).measure(
             options(
                 TimeFormat.HH_MM_SS_24,
                 Layout.Horizontal,
@@ -77,7 +81,7 @@ class HorizontalFontTest : FontLayoutTest() {
         }
 
         /* Without seconds */
-        TestFont(separatorWidth = separator).measure(
+        testFont(separatorWidth = separator).measure(
             options(
                 TimeFormat.HH_MM_24,
                 Layout.Horizontal,
@@ -93,7 +97,7 @@ class HorizontalFontTest : FontLayoutTest() {
 class VerticalFontTest : FontLayoutTest() {
     @Test
     fun `measure vertical layout without spacing`() {
-        TestFont(separatorWidth = 0f).measure(
+        testFont(separatorWidth = 0f).measure(
             options(
                 TimeFormat.HH_MM_SS_24,
                 Layout.Vertical,
@@ -105,7 +109,7 @@ class VerticalFontTest : FontLayoutTest() {
         }
 
         /* Without seconds */
-        TestFont(separatorWidth = 0f).measure(
+        testFont(separatorWidth = 0f).measure(
             options(
                 TimeFormat.HH_MM_24,
                 Layout.Vertical,
@@ -119,7 +123,7 @@ class VerticalFontTest : FontLayoutTest() {
 
     @Test
     fun `measure vertical layout with spacing`() {
-        TestFont(separatorWidth = separator).measure(
+        testFont(separatorWidth = separator).measure(
             options(
                 TimeFormat.HH_MM_SS_24,
                 Layout.Vertical,
@@ -131,7 +135,7 @@ class VerticalFontTest : FontLayoutTest() {
         }
 
         /* Without seconds */
-        TestFont(separatorWidth = separator).measure(
+        testFont(separatorWidth = separator).measure(
             options(
                 TimeFormat.HH_MM_24,
                 Layout.Vertical,
@@ -148,7 +152,7 @@ class VerticalFontTest : FontLayoutTest() {
 class WrappedFontTest : FontLayoutTest() {
     @Test
     fun `measure wrapped layout without spacing`() {
-        TestFont(separatorWidth = 0f).measure(
+        testFont(separatorWidth = 0f).measure(
             options(
                 TimeFormat.HH_MM_SS_24,
                 Layout.Wrapped,
@@ -160,7 +164,7 @@ class WrappedFontTest : FontLayoutTest() {
         }
 
         /* Without seconds */
-        TestFont(separatorWidth = 0f).measure(
+        testFont(separatorWidth = 0f).measure(
             options(
                 TimeFormat.HH_MM_24,
                 Layout.Wrapped,
@@ -174,7 +178,7 @@ class WrappedFontTest : FontLayoutTest() {
 
     @Test
     fun `measure wrapped layout with spacing`() {
-        TestFont(separatorWidth = separator).measure(
+        testFont(separatorWidth = separator).measure(
             options(
                 TimeFormat.HH_MM_SS_24,
                 Layout.Wrapped,
@@ -186,7 +190,7 @@ class WrappedFontTest : FontLayoutTest() {
         }
 
         /* Without seconds */
-        TestFont(separatorWidth = separator).measure(
+        testFont(separatorWidth = separator).measure(
             options(
                 TimeFormat.HH_MM_24,
                 Layout.Wrapped,

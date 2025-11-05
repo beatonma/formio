@@ -28,9 +28,9 @@ import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.data.settings.DisplayContextDefaults
 import org.beatonma.gclocks.app.data.settings.buildClockSettingsAdapter
 import org.beatonma.gclocks.app.data.settings.clocks.SettingKey
+import org.beatonma.gclocks.app.data.settings.clocks.chooseClockColors
 import org.beatonma.gclocks.app.data.settings.clocks.chooseClockPosition
 import org.beatonma.gclocks.app.data.settings.clocks.chooseClockType
-import org.beatonma.gclocks.app.data.settings.clocks.chooseClockColors
 import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import org.beatonma.gclocks.compose.components.settings.data.RichSettings
 import org.beatonma.gclocks.compose.components.settings.data.replace
@@ -160,21 +160,20 @@ internal fun defaultAddDisplaySettings(
         is DisplayContextDefaults.WithBackground -> {
             settings.copy(
                 colors = settings.colors.replace(
-                    SettingKey.clockColors,
-                    { previous ->
-                        val previous = previous as RichSetting.ClockColors
-                        chooseClockColors(
-                            options.backgroundColor,
-                            previous.value.colors,
-                            onValueChange = {
-                                it.background?.let { backgroundColor ->
-                                    update(options.copy(backgroundColor = backgroundColor))
-                                }
-                                previous.onValueChange(it)
+                    SettingKey.clockColors
+                ) { previous ->
+                    val previous = previous as RichSetting.ClockColors
+                    chooseClockColors(
+                        options.backgroundColor,
+                        previous.value.colors,
+                        onValueChange = {
+                            it.background?.let { backgroundColor ->
+                                update(options.copy(backgroundColor = backgroundColor))
                             }
-                        )
-                    }
-                ),
+                            previous.onValueChange(it)
+                        }
+                    )
+                },
                 layout = listOf(
                     chooseClockPosition(
                         value = options.position,

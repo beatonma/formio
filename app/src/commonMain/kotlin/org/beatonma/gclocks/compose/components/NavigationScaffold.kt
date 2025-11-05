@@ -115,8 +115,8 @@ private fun PrimaryNavigation(
             if (!menu.usesNavigationBar) return
 
             NavigationBar {
-                menu.primary.forEach {
-                    BarItem(it, it == selected, { onSelect(it) })
+                menu.primary.forEach { menuItem ->
+                    BarItem(menuItem, menuItem == selected, onSelect)
                 }
             }
         }
@@ -124,15 +124,15 @@ private fun PrimaryNavigation(
         NavigationSuiteType.NavigationRail -> {
             NavigationRail(Modifier.width(IntrinsicSize.Max)) {
                 NavigationColumn(RailContentPadding, RailItemSpacing) {
-                    menu.primary.forEach {
-                        RailItem(it, it == selected, { onSelect(it) })
+                    menu.primary.forEach { menuItem ->
+                        RailItem(menuItem, menuItem == selected, onSelect)
                     }
 
                     if (menu.secondary.isNotEmpty()) {
                         Separator()
 
-                        menu.secondary.forEach {
-                            RailItem(it, it == selected, { onSelect(it) })
+                        menu.secondary.forEach { menuItem ->
+                            RailItem(menuItem, menuItem == selected, onSelect)
                         }
                     }
                 }
@@ -145,15 +145,15 @@ private fun PrimaryNavigation(
                 drawerShape = shapes.large,
             ) {
                 NavigationColumn(DrawerContentPadding, DrawerItemSpacing) {
-                    menu.primary.forEach {
-                        DrawerItem(it, it == selected, { onSelect(it) })
+                    menu.primary.forEach { menuItem ->
+                        DrawerItem(menuItem, menuItem == selected, onSelect)
                     }
 
                     if (menu.secondary.isNotEmpty()) {
                         Separator()
 
-                        menu.secondary.forEach {
-                            DrawerItem(it, it == selected, { onSelect(it) })
+                        menu.secondary.forEach { menuItem ->
+                            DrawerItem(menuItem, menuItem == selected, onSelect)
                         }
                     }
                 }
@@ -192,8 +192,8 @@ private fun SecondaryNavigation(
             ModalDrawerSheet(drawerState, Modifier.widthIn(max = NavigationDrawerMaxWidth)) {
                 NavigationColumn(DrawerContentPadding, DrawerItemSpacing) {
                     if (!menu.usesNavigationBar) {
-                        menu.primary.forEach {
-                            DrawerItem(it, it == selected) {
+                        menu.primary.forEach { menuItem ->
+                            DrawerItem(menuItem, menuItem == selected) {
                                 onSelect(it)
                                 scope.launch { drawerState.close() }
                             }
@@ -201,8 +201,8 @@ private fun SecondaryNavigation(
                         Separator()
                     }
 
-                    menu.secondary.forEach {
-                        DrawerItem(it, it == selected) {
+                    menu.secondary.forEach { menuItem ->
+                        DrawerItem(menuItem, menuItem == selected) {
                             onSelect(it)
                             scope.launch { drawerState.close() }
                         }

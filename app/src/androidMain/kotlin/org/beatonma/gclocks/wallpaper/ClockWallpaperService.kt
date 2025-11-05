@@ -89,14 +89,14 @@ class ClockWallpaperService : WallpaperService() {
         fun initialize(visibility: GlyphVisibility? = null) {
             val scope = requireEngineScope()
             scope.launch {
-                settings.collectLatest {
-                    val wallpaperOptions = it.displayOptions as DisplayContext.Options.Wallpaper
+                settings.collectLatest { settings ->
+                    val wallpaperOptions = settings.displayOptions as DisplayContext.Options.Wallpaper
 
                     backgroundColor = wallpaperOptions.backgroundColor
                     relativeBounds = RectF(wallpaperOptions.position)
 
-                    animator = createAnimator(it.clockOptions).apply {
-                        visibility?.let { setState(it, true) }
+                    animator = createAnimator(settings.clockOptions).apply {
+                        visibility?.let { vis -> setState(vis, true) }
                     }
 
                     visibilityManager.update {

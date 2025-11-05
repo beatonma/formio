@@ -29,52 +29,41 @@ actual fun addDisplaySettings(
                 SettingKey.clockColors,
                 { previous ->
                     previous as RichSetting.ClockColors
-                    chooseClockColors(
-                        options.backgroundColor,
-                        previous.value.colors,
-                        { updated ->
-                            updated.background?.let {
-                                update(options.copy(backgroundColor = it))
-                            }
-                            previous.onValueChange(updated)
+                    chooseClockColors(options.backgroundColor, previous.value.colors) { updated ->
+                        updated.background?.let {
+                            update(options.copy(backgroundColor = it))
                         }
-                    )
+                        previous.onValueChange(updated)
+                    }
                 },
             ),
             layout = listOf(
-                chooseClockPosition(
-                    value = options.position,
-                    onUpdate = { update(options.copy(position = it)) },
-                ),
+                chooseClockPosition(options.position) {
+                    update(options.copy(position = it))
+                },
             ) + settings.layout,
         )
 
         is DisplayContext.Options.Wallpaper -> settings.copy(
-            colors = settings.colors.replace(
-                SettingKey.clockColors,
-                { previous ->
-                    previous as RichSetting.ClockColors
-                    chooseClockColors(
-                        options.backgroundColor,
-                        previous.value.colors,
-                        { updated ->
-                            updated.background?.let {
-                                update(options.copy(backgroundColor = it))
-                            }
-                            previous.onValueChange(updated)
-                        }
-                    )
-                },
-            ),
+            colors = settings.colors.replace(SettingKey.clockColors) { previous ->
+                previous as RichSetting.ClockColors
+                chooseClockColors(
+                    options.backgroundColor,
+                    previous.value.colors
+                ) { updated ->
+                    updated.background?.let {
+                        update(options.copy(backgroundColor = it))
+                    }
+                    previous.onValueChange(updated)
+                }
+            },
             layout = listOf(
-                chooseClockPosition(
-                    value = options.position,
-                    onUpdate = { update(options.copy(position = it)) },
-                ),
-                chooseLwpLauncherPages(
-                    value = options.launcherPages,
-                    onUpdate = { update(options.copy(launcherPages = it)) }
-                )
+                chooseClockPosition(options.position) {
+                    update(options.copy(position = it))
+                },
+                chooseLwpLauncherPages(options.launcherPages) {
+                    update(options.copy(launcherPages = it))
+                }
             ) + settings.layout,
         )
 
