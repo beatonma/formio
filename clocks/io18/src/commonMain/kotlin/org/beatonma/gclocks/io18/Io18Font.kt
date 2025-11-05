@@ -10,19 +10,11 @@ private val BaseWidth = Io18Glyph.maxSize.width
 
 class Io18Font(
     path: Path,
+    isAnimated: Boolean = true,
     private val shuffleColors: Boolean = true,
     private val offsetColors: Boolean = true,
-) :
-    ClockFont<Io18Paints, Io18Glyph> {
-    override val lineHeight: Float = Io18Glyph.maxSize.height
-    override val separatorWidth: Float = 24f
-    override val maxHours24ZeroPaddedWidth: Float = BaseWidth * 2f
-    override val maxHours12ZeroPaddedWidth: Float = BaseWidth * 2f
-    override val maxHours24Width: Float = BaseWidth * 2f
-    override val maxHours12Width: Float = BaseWidth * 2f
-    override val maxMinutesWidth: Float = BaseWidth * 2f
-    override val maxSecondsWidth: Float = BaseWidth * 2f
-
+) : ClockFont<Io18Paints, Io18Glyph> {
+    override val measurements: ClockFont.Measurements = getMeasurements(isAnimated)
     private val animations = GlyphAnimations(path)
 
     override fun getGlyphAt(
@@ -47,6 +39,20 @@ class Io18Font(
             lock,
             shuffleColors = shuffleColors,
             colorsOffset = if (offsetColors) index else 0
+        )
+    }
+
+    companion object {
+        /* All widths are at their maximum when progress==0, so static and animated measurements are the same */
+        fun getMeasurements(isAnimated: Boolean) = ClockFont.Measurements(
+            lineHeight = Io18Glyph.maxSize.height,
+            separatorWidth = 24f,
+            maxHours24ZeroPaddedWidth = BaseWidth * 2f,
+            maxHours12ZeroPaddedWidth = BaseWidth * 2f,
+            maxHours24Width = BaseWidth * 2f,
+            maxHours12Width = BaseWidth * 2f,
+            maxMinutesWidth = BaseWidth * 2f,
+            maxSecondsWidth = BaseWidth * 2f,
         )
     }
 }

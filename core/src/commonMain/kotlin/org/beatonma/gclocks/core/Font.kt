@@ -9,6 +9,8 @@ import org.beatonma.gclocks.core.options.TimeResolution
 
 
 interface ClockFont<P : Paints, G : Glyph<P>> {
+    val measurements: Measurements
+
     /**
      * Create a new glyph instance for the given position.
      */
@@ -41,12 +43,12 @@ interface ClockFont<P : Paints, G : Glyph<P>> {
         val hasSeconds = format.resolution == TimeResolution.Seconds
         val spacingPx = spacingPx.toFloat()
         val maxHourWidth = getMaxHoursWidth(format)
-        val lineHeight = this.lineHeight + strokeWidth
+        val lineHeight = measurements.lineHeight + strokeWidth
 
-        val separatorWithSpacingWidth = separatorWidth + strokeWidth + (2f * spacingPx)
+        val separatorWithSpacingWidth = measurements.separatorWidth + strokeWidth + (2f * spacingPx)
         val hoursWidth = maxHourWidth + spacingPx + (2f * strokeWidth)
-        val minutesWidth = maxMinutesWidth + spacingPx + (2f * strokeWidth)
-        val secondsWidth = secondsGlyphScale * ((maxSecondsWidth + spacingPx) + (2f * strokeWidth))
+        val minutesWidth = measurements.maxMinutesWidth + spacingPx + (2f * strokeWidth)
+        val secondsWidth = secondsGlyphScale * ((measurements.maxSecondsWidth + spacingPx) + (2f * strokeWidth))
         val secondsHeight = secondsGlyphScale * lineHeight
 
         return when (layout) {
@@ -83,7 +85,7 @@ interface ClockFont<P : Paints, G : Glyph<P>> {
                 )
 
                 false -> NativeSize(
-                    maxHourWidth + maxMinutesWidth + (spacingPx * 4f) + separatorWidth,
+                    maxHourWidth + measurements.maxMinutesWidth + (spacingPx * 4f) + measurements.separatorWidth,
                     lineHeight
                 )
             }
@@ -94,41 +96,42 @@ interface ClockFont<P : Paints, G : Glyph<P>> {
     private fun getMaxHoursWidth(format: TimeFormat): Float = when (format.isZeroPadded) {
         true -> {
             when (format.is24Hour) {
-                true -> maxHours24ZeroPaddedWidth
-                false -> maxHours12ZeroPaddedWidth
+                true -> measurements.maxHours24ZeroPaddedWidth
+                false -> measurements.maxHours12ZeroPaddedWidth
             }
         }
 
         false -> {
             when (format.is24Hour) {
-                true -> maxHours24Width
-                false -> maxHours12Width
+                true -> measurements.maxHours24Width
+                false -> measurements.maxHours12Width
             }
         }
     }
 
-    /* Glyph height */
-    val lineHeight: Float
+    data class Measurements(
+        /* Glyph height */
+        val lineHeight: Float,
 
-    /* Separator width */
-    val separatorWidth: Float
+        /* Separator width */
+        val separatorWidth: Float,
 
-    /* Maximum width used to render hours in 24-hour format with zero-padding */
-    val maxHours24ZeroPaddedWidth: Float
+        /* Maximum width used to render hours in 24-hour format with zero-padding */
+        val maxHours24ZeroPaddedWidth: Float,
 
-    /* Maximum width used to render hours in 12-hour format with zero-padding */
-    val maxHours12ZeroPaddedWidth: Float
+        /* Maximum width used to render hours in 12-hour format with zero-padding */
+        val maxHours12ZeroPaddedWidth: Float,
 
-    /* Maximum width used to render hours in 24-hour format without zero-padding */
-    val maxHours24Width: Float
+        /* Maximum width used to render hours in 24-hour format without zero-padding */
+        val maxHours24Width: Float,
 
-    /* Maximum width used to render hours in 12-hour format without zero-padding */
-    val maxHours12Width: Float
+        /* Maximum width used to render hours in 12-hour format without zero-padding */
+        val maxHours12Width: Float,
 
-    /* Maximum width used to render minutes */
-    val maxMinutesWidth: Float
+        /* Maximum width used to render minutes */
+        val maxMinutesWidth: Float,
 
-    /* Maximum width used to render seconds */
-    val maxSecondsWidth: Float
+        /* Maximum width used to render seconds */
+        val maxSecondsWidth: Float,
+    )
 }
-

@@ -1,7 +1,7 @@
 package org.beatonma.gclocks.io16
 
-import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.ClockFont
+import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.core.types.ProgressFloat
@@ -10,10 +10,8 @@ import org.beatonma.gclocks.core.util.debug
 import kotlin.random.Random
 
 
-private val ZeroWidth = Io16GlyphPath.Zero.canonical.width
-
-
 class Io16Font(
+    isAnimated: Boolean = true,
     private val debugGetGlyphAt: ((defaultGlyph: Io16Glyph) -> Io16Glyph)? = null,
 
     /**
@@ -22,16 +20,7 @@ class Io16Font(
      */
     private val randomiseSegmentOffset: Boolean = true,
 ) : ClockFont<Io16Paints, Io16Glyph> {
-    override val lineHeight: Float = Io16Glyph.maxSize.y
-    override val separatorWidth: Float = Io16GlyphPath.Separator.canonical.width
-    override val maxHours24ZeroPaddedWidth: Float = ZeroWidth * 2f // 00:xx
-    override val maxHours12ZeroPaddedWidth: Float =
-        ZeroWidth + Io16GlyphPath.Four.canonical.width // 04:xx
-    override val maxHours24Width: Float = Io16GlyphPath.Two.canonical.width + ZeroWidth // 20:xx
-    override val maxHours12Width: Float = Io16GlyphPath.One.canonical.width + ZeroWidth // 10:xx
-    override val maxMinutesWidth: Float = ZeroWidth * 2f // :00:
-    override val maxSecondsWidth: Float = ZeroWidth * 2f // :00
-
+    override val measurements: ClockFont.Measurements = getMeasurements(isAnimated)
     override fun getGlyphAt(index: Int, format: TimeFormat, secondsGlyphScale: Float): Io16Glyph {
         val role = format.roles.getOrNull(index) ?: GlyphRole.Default
         val lock = when (role.isSeparator) {
@@ -58,5 +47,21 @@ class Io16Font(
         }
 
         return Io16Glyph(role, scale, lock, animationOffset())
+    }
+
+    companion object {
+        private val ZeroWidth = Io16GlyphPath.Zero.canonical.width
+
+        /* All widths are at their maximum when progress==0, so static and animated measurements are the same */
+        fun getMeasurements(isAnimated: Boolean) = ClockFont.Measurements(
+            lineHeight = Io16Glyph.maxSize.y,
+            separatorWidth = Io16GlyphPath.Separator.canonical.width,
+            maxHours24ZeroPaddedWidth = ZeroWidth * 2f, // 00:xx
+            maxHours12ZeroPaddedWidth = ZeroWidth + Io16GlyphPath.Four.canonical.width, // 04:xx
+            maxHours24Width = Io16GlyphPath.Two.canonical.width + ZeroWidth, // 20:xx
+            maxHours12Width = Io16GlyphPath.One.canonical.width + ZeroWidth, // 10:xx
+            maxMinutesWidth = ZeroWidth * 2f, // :00:
+            maxSecondsWidth = ZeroWidth * 2f, // :00
+        )
     }
 }

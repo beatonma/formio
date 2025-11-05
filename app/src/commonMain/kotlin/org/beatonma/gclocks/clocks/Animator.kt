@@ -23,6 +23,7 @@ fun createAnimatorFromOptions(
     path: Path,
     allowVariance: Boolean,
     forcedState: GlyphState? = null,
+    enableAnimation: Boolean = true,
     onScheduleNextFrame: (delayMillis: Int) -> Unit,
 ): ClockAnimator<*, *> {
     return whenOptions(
@@ -30,7 +31,7 @@ fun createAnimatorFromOptions(
         form = { formOptions ->
             createAnimator(
                 formOptions,
-                FormFont(),
+                FormFont(isAnimated = enableAnimation),
                 FormClockRenderer(formOptions.paints),
                 onScheduleNextFrame
             )
@@ -39,6 +40,7 @@ fun createAnimatorFromOptions(
             createAnimator(
                 io16Options,
                 Io16Font(
+                    isAnimated = enableAnimation,
                     debugGetGlyphAt = if (forcedState == null) null else ({ glyph ->
                         glyph.apply { setState(forcedState, force = true) }
                     }),
@@ -54,7 +56,7 @@ fun createAnimatorFromOptions(
         io18 = { io18Options ->
             createAnimator(
                 io18Options,
-                Io18Font(path, shuffleColors = allowVariance, offsetColors = true),
+                Io18Font(path, isAnimated = enableAnimation, shuffleColors = allowVariance, offsetColors = true),
                 Io18Renderer(io18Options.paints),
                 onScheduleNextFrame
             )
