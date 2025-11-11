@@ -342,7 +342,7 @@ private fun Paint.withStyle(color: Color, alpha: Float, drawStyle: DrawStyle): P
             strokeJoin = drawStyle.join.toAndroid()
         }
     }
-    this.color = color.withOpacity(alpha).toArgbInt()
+    this.color = color.withOpacity((color.alpha.toFloat() / 255f) * alpha).toArgbInt()
     return this
 }
 
