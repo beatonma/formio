@@ -1,13 +1,11 @@
-import org.beatonma.gclocks.core.Glyph
-import org.beatonma.gclocks.core.GlyphRole
-import org.beatonma.gclocks.core.GlyphState
-import org.beatonma.gclocks.core.GlyphVisibility
+package org.beatonma.gclocks.core.glyph
+
 import org.beatonma.gclocks.core.fixtures.TestGlyph
 import org.beatonma.gclocks.core.fixtures.TestGlyphOptions
 import org.beatonma.gclocks.test.shouldbe
 import kotlin.test.Test
 
-private class TimeProvider : Iterator<Long> {
+private class DesyncTimeProvider : Iterator<Long> {
     private var index = 0
     override fun hasNext(): Boolean = index < 100
 
@@ -19,14 +17,15 @@ private class TimeProvider : Iterator<Long> {
 private val options = TestGlyphOptions(
     activeStateDurationMillis = 100,
     stateChangeDurationMillis = 100,
+    visibilityChangeDurationMillis = 100,
     glyphMorphMillis = 100,
 )
 
-private fun testGlyph(lock: GlyphState? = null): Glyph<*> =
-    TestGlyph(GlyphRole.Default, lock = lock, currentTimeMillis = 0)
+private fun testGlyph(lock: GlyphState? = null) =
+    TestGlyph(TestGlyph.Type.Desynchronized, lock = lock, currentTimeMillis = 0)
 
 
-class GlyphTest {
+class DesyncGlyphTest {
     @Test
     fun `setState is correct`() {
         with(testGlyph()) {
@@ -92,36 +91,36 @@ class GlyphTest {
 
     @Test
     fun `tickState is correct`() {
-        val time = TimeProvider()
+        val time = DesyncTimeProvider()
         with(testGlyph()) {
             state shouldbe GlyphState.Active
 
-            tickState(options, time.next())
+            tick(options, time.next())
             state shouldbe GlyphState.Deactivating
 
-            tickState(options, time.next())
+            tick(options, time.next())
             state shouldbe GlyphState.Inactive
 
-            tickState(options, time.next())
+            tick(options, time.next())
             state shouldbe GlyphState.Inactive // no change
 
             setState(GlyphState.Active, currentTimeMillis = time.next())
             state shouldbe GlyphState.Activating
 
-            tickState(options, time.next())
+            tick(options, time.next())
             state shouldbe GlyphState.Active
         }
     }
 
     @Test
     fun `lock is correct`() {
-        val time = TimeProvider()
+        val time = DesyncTimeProvider()
         with(testGlyph(lock = GlyphState.Active)) {
             state shouldbe GlyphState.Active
 
-            tickState(options, time.next())
+            tick(options, time.next())
             state shouldbe GlyphState.Active
-            tickState(options, time.next())
+            tick(options, time.next())
             state shouldbe GlyphState.Active
 
             setState(GlyphState.Inactive)
@@ -131,9 +130,9 @@ class GlyphTest {
         with(testGlyph(lock = GlyphState.Inactive)) {
             state shouldbe GlyphState.Inactive
 
-            tickState(options, time.next())
+            tick(options, time.next())
             state shouldbe GlyphState.Inactive
-            tickState(options, time.next())
+            tick(options, time.next())
             state shouldbe GlyphState.Inactive
 
             setState(GlyphState.Active)
@@ -144,9 +143,9 @@ class GlyphTest {
         with(testGlyph(lock = GlyphState.Activating)) {
             state shouldbe GlyphState.Activating
 
-            tickState(options, time.next())
+            tick(options, time.next())
             state shouldbe GlyphState.Active
-            tickState(options, time.next())
+            tick(options, time.next())
             state shouldbe GlyphState.Active
 
             setState(GlyphState.Inactive)

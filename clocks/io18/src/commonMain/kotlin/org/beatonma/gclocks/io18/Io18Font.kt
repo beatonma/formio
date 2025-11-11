@@ -1,8 +1,8 @@
 package org.beatonma.gclocks.io18
 
 import org.beatonma.gclocks.core.ClockFont
-import org.beatonma.gclocks.core.GlyphRole
-import org.beatonma.gclocks.core.GlyphState
+import org.beatonma.gclocks.core.glyph.GlyphRole
+import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.options.TimeFormat
 

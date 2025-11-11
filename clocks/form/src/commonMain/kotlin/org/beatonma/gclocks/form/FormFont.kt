@@ -1,7 +1,7 @@
 package org.beatonma.gclocks.form
 
 import org.beatonma.gclocks.core.ClockFont
-import org.beatonma.gclocks.core.GlyphRole
+import org.beatonma.gclocks.core.glyph.GlyphRole
 import org.beatonma.gclocks.core.options.TimeFormat
 
 

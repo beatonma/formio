@@ -2,11 +2,14 @@ package org.beatonma.gclocks.app
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -14,27 +17,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import org.beatonma.gclocks.compose.components.ConstrainedCanvas
 import org.beatonma.gclocks.compose.rememberCanvasHost
-import org.beatonma.gclocks.core.Glyph
-import org.beatonma.gclocks.core.GlyphRenderer
-import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.geometry.ConstrainedLayout
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.geometry.ScaledSize
+import org.beatonma.gclocks.core.glyph.Glyph
+import org.beatonma.gclocks.core.glyph.GlyphRenderer
+import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.graphics.Canvas
+import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Paints
+import org.beatonma.gclocks.core.graphics.Stroke
 import org.beatonma.gclocks.core.options.GlyphOptions
 import org.beatonma.gclocks.core.util.currentTimeMillis
+import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.core.util.getInstant
 import org.beatonma.gclocks.core.util.getTime
 import org.beatonma.gclocks.core.util.progress
 import kotlin.time.Instant
+import androidx.compose.ui.graphics.Color as ComposeColor
 
 
 private const val AnimationDurationSeconds = 2f
@@ -89,11 +95,15 @@ fun <P : Paints, G : Glyph<P>> GlyphPreview(
             flag = !flag // re-render even when time is 'stopped' for io16 segment animation
         }
 
-        Text(
-            glyph.key,
+        Column(
             Modifier.align(Alignment.BottomEnd).background(colorScheme.scrim).padding(2.dp),
-            color = Color.White
-        )
+            horizontalAlignment = Alignment.End
+        ) {
+            CompositionLocalProvider(LocalContentColor provides ComposeColor.White) {
+                Text("'${glyph.key}'")
+                Text(glyph.visibility.name)
+            }
+        }
     }
 }
 
@@ -132,7 +142,7 @@ private class GlyphPreview<P : Paints, G : Glyph<P>>(
 
     fun tick(instant: Instant = getInstant()) {
         val millis = instant.currentTimeMillis
-        glyph.tickState(options, millis)
+        glyph.tick(options, millis)
         renderer?.update(millis)
     }
 
@@ -145,6 +155,17 @@ private class GlyphPreview<P : Paints, G : Glyph<P>>(
             glyph.draw(canvas, glyphProgress, paints, renderer?.let { renderer ->
                 { renderer.draw(glyph, canvas, paints) }
             })
+
+            debug(false) {
+                drawRect(
+                    Color.Red,
+                    0f,
+                    0f,
+                    glyph.getWidthAtProgress(glyphProgress),
+                    glyph.maxSize.height,
+                    Stroke.Default
+                )
+            }
         }
     }
 }

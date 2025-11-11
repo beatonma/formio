@@ -1,7 +1,5 @@
 package org.beatonma.gclocks.core.layout
 
-import org.beatonma.gclocks.core.Glyph
-import org.beatonma.gclocks.core.GlyphRole
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.MutableRect
@@ -9,6 +7,8 @@ import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.geometry.Rect
 import org.beatonma.gclocks.core.geometry.ScaledSize
+import org.beatonma.gclocks.core.glyph.Glyph
+import org.beatonma.gclocks.core.glyph.GlyphRole
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.options.LayoutOptions
 import org.beatonma.gclocks.core.util.fastForEach

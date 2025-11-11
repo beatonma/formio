@@ -16,11 +16,13 @@ import org.beatonma.gclocks.android.componentNameOf
 import org.beatonma.gclocks.android.getBroadcastPendingIntent
 import org.beatonma.gclocks.android.widgetManager
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
-import org.beatonma.gclocks.core.GlyphState
+import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.debug
-import org.beatonma.gclocks.core.util.getTime
+import org.beatonma.gclocks.core.util.getInstant
+import org.beatonma.gclocks.core.util.timeOfDay
 import org.beatonma.gclocks.core.util.warn
+import org.beatonma.gclocks.core.util.withTimeOfDay
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import kotlin.reflect.KClass
@@ -111,7 +113,11 @@ interface ClockWidget {
                     width.toFloat(),
                     height.toFloat(),
                     state = GlyphState.Active,
-                    time = getTime().copy(millisecond = 0)
+                    instant = getInstant().run {
+                        withTimeOfDay(
+                            timeOfDay.copy(millisecond = 0)
+                        )
+                    }
                 )
             }
 

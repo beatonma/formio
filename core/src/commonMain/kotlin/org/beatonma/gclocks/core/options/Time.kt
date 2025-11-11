@@ -1,6 +1,6 @@
 package org.beatonma.gclocks.core.options
 
-import org.beatonma.gclocks.core.GlyphRole
+import org.beatonma.gclocks.core.glyph.GlyphRole
 import org.beatonma.gclocks.core.util.TimeOfDay
 
 enum class TimeResolution {

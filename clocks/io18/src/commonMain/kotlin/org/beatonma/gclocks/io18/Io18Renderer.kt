@@ -1,7 +1,7 @@
 package org.beatonma.gclocks.io18
 
 import org.beatonma.gclocks.core.ClockRenderer
-import org.beatonma.gclocks.core.GlyphRenderer
+import org.beatonma.gclocks.core.glyph.GlyphRenderer
 
 class Io18Renderer(
     override val paints: Io18Paints,

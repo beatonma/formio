@@ -7,7 +7,7 @@ import android.view.MotionEvent
 import android.view.View
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.ClockAnimator
-import org.beatonma.gclocks.core.GlyphState
+import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.debug

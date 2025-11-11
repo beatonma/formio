@@ -1,16 +1,16 @@
 package org.beatonma.gclocks.core.layout
 
 import org.beatonma.gclocks.core.ClockFont
-import org.beatonma.gclocks.core.ClockGlyph
-import org.beatonma.gclocks.core.GlyphState
-import org.beatonma.gclocks.core.GlyphVisibility
 import org.beatonma.gclocks.core.geometry.ConstrainedLayout
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.geometry.ScaledSize
+import org.beatonma.gclocks.core.glyph.ClockGlyph
+import org.beatonma.gclocks.core.glyph.GlyphState
+import org.beatonma.gclocks.core.glyph.GlyphVisibility
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.options.Options
-import org.beatonma.gclocks.core.util.TimeOfDay
+import kotlin.time.Instant
 
 
 class ClockLayout<P : Paints, G : ClockGlyph<P>>(
@@ -52,7 +52,7 @@ class ClockLayout<P : Paints, G : ClockGlyph<P>>(
         glyphs = Glyphs(font, value)
     }
 
-    fun update(time: TimeOfDay) {
+    fun update(time: Instant) {
         glyphs.update(time)
     }
 

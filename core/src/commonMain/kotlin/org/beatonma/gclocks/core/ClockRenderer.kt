@@ -3,6 +3,10 @@ package org.beatonma.gclocks.core
 import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.geometry.Rect
 import org.beatonma.gclocks.core.geometry.Size
+import org.beatonma.gclocks.core.glyph.ClockGlyph
+import org.beatonma.gclocks.core.glyph.GlyphRenderer
+import org.beatonma.gclocks.core.glyph.GlyphState
+import org.beatonma.gclocks.core.glyph.GlyphVisibility
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Paints
@@ -31,9 +35,14 @@ interface ClockRenderer<P : Paints, G : ClockGlyph<P>> {
             canvas.withTranslationAndScale(x, y, scale) {
                 layout.layoutPass { glyph, glyphAnimationProgress, rect ->
                     if (rect.isEmpty) return@layoutPass
+                    if (glyph.visibility == GlyphVisibility.Hidden) return@layoutPass
 
                     withTranslationAndScale(rect.left, rect.top, glyph.scale) {
                         drawGlyph(glyph, canvas, glyphAnimationProgress, paints)
+
+                        debug(false) {
+                            canvas.drawText(glyph.key)
+                        }
                     }
 
                     debug(false) {

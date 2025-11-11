@@ -1,7 +1,6 @@
 package org.beatonma.gclocks.app
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,10 +49,13 @@ import org.beatonma.gclocks.compose.ComposePath
 import org.beatonma.gclocks.compose.VerticalBottomContentPadding
 import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.plus
-import org.beatonma.gclocks.core.ClockGlyph
-import org.beatonma.gclocks.core.GlyphRole
-import org.beatonma.gclocks.core.GlyphState
+import org.beatonma.gclocks.core.geometry.VerticalAlignment
+import org.beatonma.gclocks.core.glyph.ClockGlyph
+import org.beatonma.gclocks.core.glyph.GlyphRole
+import org.beatonma.gclocks.core.glyph.GlyphState
+import org.beatonma.gclocks.core.glyph.GlyphVisibility
 import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.core.types.ProgressFloat
 import org.beatonma.gclocks.core.util.TimeOfDay
 import org.beatonma.gclocks.core.util.getInstant
@@ -62,6 +64,8 @@ import org.beatonma.gclocks.core.util.nextSecond
 import org.beatonma.gclocks.core.util.timeOfDay
 import org.beatonma.gclocks.core.util.withTimeOfDay
 import org.beatonma.gclocks.form.FormGlyph
+import org.beatonma.gclocks.form.FormLayoutOptions
+import org.beatonma.gclocks.form.FormOptions
 import org.beatonma.gclocks.form.FormPaints
 import org.beatonma.gclocks.io16.Io16Glyph
 import org.beatonma.gclocks.io16.Io16GlyphRenderer
@@ -74,13 +78,13 @@ import kotlin.math.roundToInt
 import kotlin.time.Instant
 
 
-private val ItemModifier = Modifier.border(1.dp, Color.Black.copy(alpha = 0.33f))
+private val ItemModifier = Modifier.background(Color.Black)
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DebugApp() {
-    val keys = remember { ClockGlyph.Key.entries.map { it.key } }
+    val keys = remember { ClockGlyph.Key.entries.map { it.key } }.filter { it.length > 1 }
     var animationPosition by remember { mutableStateOf<Float?>(null) }
     var customTimeStr by remember { mutableStateOf("") }
     val timeFunc: () -> Instant by remember {
@@ -92,6 +96,7 @@ fun DebugApp() {
         })
     }
     var state: GlyphState? by remember { mutableStateOf(null) }
+    var visibility: GlyphVisibility? by remember { mutableStateOf(GlyphVisibility.Visible) }
 
     MaterialTheme {
         Box(Modifier.background(Color.LightGray)) {
@@ -99,34 +104,36 @@ fun DebugApp() {
                 GridCells.Adaptive(220.dp),
                 modifier = Modifier.fillMaxSize()
                     .background(Color.DarkGray),
-                contentPadding = WindowInsets.systemBars.asPaddingValues() + VerticalBottomContentPadding
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = WindowInsets.systemBars.asPaddingValues() + VerticalBottomContentPadding,
             ) {
-//                clockPreview(
-//                    FormOptions(
-//                        layout = FormLayoutOptions(
-//                            format = TimeFormat.hh_MM_SS_12,
-//                            verticalAlignment = VerticalAlignment.Bottom
-//                        )
-//                    ), timeFunc, state
-//                )
+                clockPreview(
+                    FormOptions(
+                        layout = FormLayoutOptions(
+                            format = TimeFormat.hh_MM_SS_12,
+                            verticalAlignment = VerticalAlignment.Bottom
+                        )
+                    ), timeFunc, state, visibility
+                )
 //                clockPreview(
 //                    Io16Options(
 //                        layout = Io16LayoutOptions(
 //                            format = TimeFormat.hh_MM_SS_12
 //                        )
-//                    ), timeFunc, state
+//                    ), timeFunc, state, visibility
 //                )
 //                clockPreview(
 //                    Io18Options(
 //                        layout = Io18LayoutOptions(
 //                            format = TimeFormat.hh_MM_SS_12
 //                        )
-//                    ), timeFunc, state
+//                    ), timeFunc, state, visibility
 //                )
 
-                FormGlyphs(keys, animationPosition, state)
-                Io16Glyphs(keys, animationPosition, state)
-                Io18Glyphs(keys, animationPosition, state)
+//                FormGlyphs(keys, animationPosition, state, visibility)
+//                Io16Glyphs(keys, animationPosition, state)
+//                Io18Glyphs(keys, animationPosition, state)
             }
 
             Column(
@@ -137,6 +144,7 @@ fun DebugApp() {
             ) {
                 // Dev tools
                 StateDropdown(state, { state = it })
+                VisibilityDropdown(visibility, { visibility = it })
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -187,7 +195,8 @@ fun DebugApp() {
 private fun <O : Options<*>> LazyGridScope.clockPreview(
     options: O,
     timeFunc: () -> Instant,
-    forcedState: GlyphState? = null,
+    forcedState: GlyphState?,
+    forcedVisibility: GlyphVisibility?,
 ) {
     item(span = { GridItemSpan(maxLineSpan) }) {
         Clock(
@@ -195,6 +204,7 @@ private fun <O : Options<*>> LazyGridScope.clockPreview(
             ItemModifier.fillMaxSize(),
             getInstant = timeFunc,
             forcedState = forcedState,
+            visibility = forcedVisibility,
         )
     }
 }
@@ -204,15 +214,17 @@ private fun LazyGridScope.FormGlyphs(
     keys: List<String>,
     animationPosition: Float?,
     state: GlyphState?,
+    visibility: GlyphVisibility?
 ) {
     items(
         keys,
         key = { key -> "form_$key" },
     ) { key ->
         GlyphPreview(
-            remember(state) {
+            remember(state, visibility) {
                 FormGlyph(GlyphRole.Hour, lock = state).apply {
-                    this.key = key
+                    visibility?.let { setState(it, force = true) }
+                    setKey(key)
                 }
             },
             remember { FormPaints() },
@@ -226,6 +238,7 @@ private fun LazyGridScope.Io16Glyphs(
     keys: List<String>,
     animationPosition: Float?,
     state: GlyphState?,
+    visibility: GlyphVisibility?
 ) {
     items(
         keys,
@@ -234,7 +247,8 @@ private fun LazyGridScope.Io16Glyphs(
         GlyphPreview(
             remember(state) {
                 Io16Glyph(GlyphRole.Hour, animationOffset = ProgressFloat.Zero, lock = state).apply {
-                    this.key = key
+                    visibility?.let { setState(it, force = true) }
+                    setKey(key)
                 }
             },
             remember { Io16Paints() },
@@ -257,6 +271,7 @@ private fun LazyGridScope.Io18Glyphs(
     keys: List<String>,
     animationPosition: Float?,
     state: GlyphState?,
+    visibility: GlyphVisibility?
 ) {
     items(
         keys,
@@ -266,7 +281,8 @@ private fun LazyGridScope.Io18Glyphs(
         GlyphPreview(
             remember(state) {
                 Io18Glyph(io18Animations, GlyphRole.Default, lock = state).apply {
-                    this.key = key
+                    visibility?.let { setState(it, force = true) }
+                    setKey(key)
                 }
             },
             remember { Io18Paints() },
@@ -317,6 +333,26 @@ private fun StateDropdown(
         DropdownMenu(isDropdownExtended, { isDropdownExtended = false }) {
             DropdownMenuItem({ Text("Reset") }, onClick = { onSelect(null) })
             GlyphState.entries.forEach {
+                DropdownMenuItem({ Text(it.name) }, onClick = { onSelect(it) })
+            }
+        }
+    }
+}
+
+@Composable
+private fun VisibilityDropdown(
+    selected: GlyphVisibility?,
+    onSelect: (GlyphVisibility?) -> Unit,
+) {
+    var isDropdownExtended by remember { mutableStateOf(false) }
+
+    Box {
+        TextButton(onClick = { isDropdownExtended = !isDropdownExtended }) {
+            Text(selected?.name ?: "Visibility override")
+        }
+        DropdownMenu(isDropdownExtended, { isDropdownExtended = false }) {
+            DropdownMenuItem({ Text("Reset") }, onClick = { onSelect(null) })
+            GlyphVisibility.entries.forEach {
                 DropdownMenuItem({ Text(it.name) }, onClick = { onSelect(it) })
             }
         }

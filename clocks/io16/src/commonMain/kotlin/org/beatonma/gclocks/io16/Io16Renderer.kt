@@ -1,10 +1,10 @@
 package org.beatonma.gclocks.io16
 
 import org.beatonma.gclocks.core.ClockRenderer
-import org.beatonma.gclocks.core.Glyph
-import org.beatonma.gclocks.core.GlyphRenderer
-import org.beatonma.gclocks.core.GlyphState
-import org.beatonma.gclocks.core.GlyphVisibility
+import org.beatonma.gclocks.core.glyph.Glyph
+import org.beatonma.gclocks.core.glyph.GlyphRenderer
+import org.beatonma.gclocks.core.glyph.GlyphState
+import org.beatonma.gclocks.core.glyph.GlyphVisibility
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Path

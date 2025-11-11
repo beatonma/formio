@@ -191,7 +191,6 @@ interface Canvas : Path {
         beginPath()
         block()
         drawPath(color, style, alpha)
-//        closePath()
     }
 
     fun drawPoint(

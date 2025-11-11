@@ -27,8 +27,8 @@ import org.beatonma.gclocks.app.data.settings.DisplayMetrics
 import org.beatonma.gclocks.app.data.settingsRepository
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.ClockAnimator
-import org.beatonma.gclocks.core.GlyphState
-import org.beatonma.gclocks.core.GlyphVisibility
+import org.beatonma.gclocks.core.glyph.GlyphState
+import org.beatonma.gclocks.core.glyph.GlyphVisibility
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.RectF
 import org.beatonma.gclocks.core.graphics.Color

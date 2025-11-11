@@ -1,7 +1,7 @@
 package org.beatonma.gclocks.core.fixtures
 
 import org.beatonma.gclocks.core.ClockFont
-import org.beatonma.gclocks.core.GlyphRole
+import org.beatonma.gclocks.core.glyph.GlyphRole
 import org.beatonma.gclocks.core.options.TimeFormat
 
 class TestFont(
@@ -17,7 +17,7 @@ class TestFont(
             GlyphRole.Second -> secondsGlyphScale
             else -> 1f
         }
-        return TestGlyph(role, scale, measurements.separatorWidth)
+        return TestGlyph(TestGlyph.Type.Desynchronized, role, scale, measurements.separatorWidth)
     }
 
     companion object {

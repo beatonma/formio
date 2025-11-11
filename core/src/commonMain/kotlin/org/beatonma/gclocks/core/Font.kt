@@ -1,6 +1,7 @@
 package org.beatonma.gclocks.core
 
 import org.beatonma.gclocks.core.geometry.NativeSize
+import org.beatonma.gclocks.core.glyph.Glyph
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.Options

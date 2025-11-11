@@ -8,6 +8,8 @@ import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
 import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.core.util.TimeOfDay
+import org.beatonma.gclocks.core.util.getInstant
+import org.beatonma.gclocks.core.util.withTimeOfDay
 import org.beatonma.gclocks.test.shouldbe
 import kotlin.test.Test
 import org.beatonma.gclocks.core.options.Layout as LayoutOption
@@ -83,7 +85,7 @@ abstract class LayoutMeasureTest(val config: LayoutConfig) {
                 )
             ),
         ).apply {
-            update(TimeOfDay(12, 0, 0))
+            update(getInstant().withTimeOfDay(TimeOfDay(12, 0, 0)))
         }
 
         with(layout, block)

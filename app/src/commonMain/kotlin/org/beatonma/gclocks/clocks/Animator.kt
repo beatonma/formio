@@ -2,8 +2,8 @@ package org.beatonma.gclocks.clocks
 
 
 import org.beatonma.gclocks.core.ClockAnimator
-import org.beatonma.gclocks.core.GlyphState
 import org.beatonma.gclocks.core.createAnimator
+import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.form.FormClockRenderer
