@@ -20,8 +20,9 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults.rememberPlainTooltipPositionProvider
+import androidx.compose.material3.TooltipDefaults.rememberTooltipPositionProvider
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
@@ -192,7 +193,7 @@ private fun TooltipLayout(
 ) {
     text?.let {
         TooltipBox(
-            rememberPlainTooltipPositionProvider(0.dp),
+            rememberTooltipPositionProvider(TooltipAnchorPosition.Above, 0.dp),
             { Tooltip(text) },
             rememberTooltipState(isPersistent = true),
             modifier,
