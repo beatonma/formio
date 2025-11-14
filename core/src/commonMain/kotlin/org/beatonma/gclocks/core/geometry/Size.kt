@@ -1,6 +1,6 @@
 package org.beatonma.gclocks.core.geometry
 
-import androidx.annotation.FloatRange
+import org.beatonma.gclocks.core.util.debug
 import kotlin.jvm.JvmInline
 
 interface Size<T : Number> : Vector2<T> {
@@ -43,9 +43,16 @@ interface SizeF : Size<Float>, FloatVector2 {
 @JvmInline
 value class FloatSize private constructor(val packedValue: Long) : SizeF {
     constructor(
-        @FloatRange(from = 0.0) x: Float = 0f,
-        @FloatRange(from = 0.0) y: Float = 0f,
+        x: Float = 0f,
+        y: Float = 0f,
     ) : this(packFloats(x, y))
+
+    init {
+        debug {
+            require(x >= 0f || x.isNaN()) { "FloatSize width must be >= 0, got $x" }
+            require(y >= 0f || y.isNaN()) { "FloatSize height must be >= 0, got $y" }
+        }
+    }
 
     @Suppress("OVERRIDE_BY_INLINE")
     override val x: Float inline get() = unpackX(packedValue)
@@ -78,9 +85,16 @@ value class FloatSize private constructor(val packedValue: Long) : SizeF {
 @JvmInline
 value class NativeSize private constructor(val packedValue: Long) : SizeF {
     constructor(
-        @FloatRange(from = 0.0) x: Float = 0f,
-        @FloatRange(from = 0.0) y: Float = 0f,
+        x: Float = 0f,
+        y: Float = 0f,
     ) : this(packFloats(x, y))
+
+    init {
+        debug {
+            require(x >= 0f || x.isNaN()) { "NativeSize width must be >= 0, got $x" }
+            require(y >= 0f || y.isNaN()) { "NativeSize height must be >= 0, got $y" }
+        }
+    }
 
     @Suppress("OVERRIDE_BY_INLINE")
     override val x: Float inline get() = unpackX(packedValue)
@@ -112,9 +126,16 @@ value class NativeSize private constructor(val packedValue: Long) : SizeF {
 @JvmInline
 value class ScaledSize private constructor(val packedValue: Long) : SizeF {
     constructor(
-        @FloatRange(from = 0.0) x: Float = 0f,
-        @FloatRange(from = 0.0) y: Float = 0f,
+        x: Float = 0f,
+        y: Float = 0f,
     ) : this(packFloats(x, y))
+
+    init {
+        debug {
+            require(y >= 0f || y.isNaN()) { "ScaledSize width must be >= 0, got $x" }
+            require(y >= 0f || y.isNaN()) { "ScaledSize height must be >= 0, got $y" }
+        }
+    }
 
     @Suppress("OVERRIDE_BY_INLINE")
     override val x: Float inline get() = unpackX(packedValue)
