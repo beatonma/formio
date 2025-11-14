@@ -3,8 +3,8 @@ package org.beatonma.gclocks.io18.characters
 import org.beatonma.gclocks.core.geometry.FloatSize
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Color
-import org.beatonma.gclocks.core.graphics.PathDefinition
 import org.beatonma.gclocks.core.graphics.StrokeCap
+import org.beatonma.gclocks.core.graphics.paths.PathDefinition
 import org.beatonma.gclocks.io18.animation.ConcentricCircles
 import org.beatonma.gclocks.io18.animation.Tube
 import org.beatonma.gclocks.io18.animation.drawEnter

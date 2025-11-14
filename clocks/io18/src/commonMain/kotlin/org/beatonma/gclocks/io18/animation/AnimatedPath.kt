@@ -2,7 +2,7 @@ package org.beatonma.gclocks.io18.animation
 
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Color
-import org.beatonma.gclocks.core.graphics.PathDefinition
+import org.beatonma.gclocks.core.graphics.paths.PathDefinition
 import org.beatonma.gclocks.core.types.ProgressFloat
 import org.beatonma.gclocks.core.types.pf
 import org.beatonma.gclocks.io18.Io18Paints

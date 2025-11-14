@@ -2,7 +2,6 @@ package org.beatonma.gclocks.core.graphics
 
 import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.geometry.Rect
-import org.beatonma.gclocks.core.geometry.getPointOnCircle
 
 private const val DefaultAlpha = 1f
 
@@ -159,10 +158,7 @@ interface Canvas : Path {
         alpha: Float = DefaultAlpha,
     ) {
         drawPath(color, style, alpha) {
-            moveTo(centerX, centerY)
-            lineTo(getPointOnCircle(centerX, centerY, radius, startAngle))
-            boundedArc(centerX, centerY, radius, startAngle, sweepAngle)
-            lineTo(centerX, centerY)
+            sector(centerX, centerY, radius, startAngle, sweepAngle)
         }
     }
 

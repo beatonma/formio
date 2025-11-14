@@ -1,189 +1,15 @@
-package org.beatonma.gclocks.core.graphics
+package org.beatonma.gclocks.core.graphics.paths
 
 import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.geometry.Position
 import org.beatonma.gclocks.core.geometry.degrees
 import org.beatonma.gclocks.core.geometry.getPointOnEllipse
+import org.beatonma.gclocks.core.graphics.Canvas
+import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.util.fastForEach
-import org.beatonma.gclocks.core.util.interpolate
 
 typealias RenderCallback = () -> Unit
-
-sealed interface PathCommand {
-    fun plot(canvas: Canvas)
-    fun plotInterpolated(canvas: Canvas, other: PathCommand, progress: Float)
-}
-
-object BeginPath : PathCommand {
-    override fun plot(canvas: Canvas) {
-        canvas.beginPath()
-    }
-
-    override fun plotInterpolated(canvas: Canvas, other: PathCommand, progress: Float) {
-        canvas.beginPath()
-    }
-
-    override fun toString(): String = "BeginPath"
-}
-
-object ClosePath : PathCommand {
-    override fun plot(canvas: Canvas) {
-        canvas.closePath()
-    }
-
-    override fun plotInterpolated(canvas: Canvas, other: PathCommand, progress: Float) {
-        canvas.closePath()
-    }
-
-    override fun toString(): String = "Z"
-}
-
-data class MoveTo(private val x: Float, private val y: Float) : PathCommand {
-    override fun plot(canvas: Canvas) {
-        canvas.moveTo(x, y)
-    }
-
-    override fun plotInterpolated(canvas: Canvas, other: PathCommand, progress: Float) {
-        other as MoveTo
-        canvas.moveTo(
-            interpolate(progress, x, other.x),
-            interpolate(progress, y, other.y),
-        )
-    }
-
-    override fun toString(): String {
-        return "M $x,$y"
-    }
-}
-
-data class LineTo(private val x: Float, private val y: Float) : PathCommand {
-    override fun plot(canvas: Canvas) {
-        canvas.lineTo(x, y)
-    }
-
-    override fun plotInterpolated(canvas: Canvas, other: PathCommand, progress: Float) {
-        other as LineTo
-        canvas.lineTo(
-            interpolate(progress, x, other.x),
-            interpolate(progress, y, other.y),
-        )
-    }
-
-    override fun toString(): String {
-        return "L $x,$y"
-    }
-}
-
-data class CubicTo(
-    private val x1: Float,
-    private val y1: Float,
-    private val x2: Float,
-    private val y2: Float,
-    private val x3: Float,
-    private val y3: Float,
-) : PathCommand {
-    override fun plot(canvas: Canvas) {
-        canvas.cubicTo(x1, y1, x2, y2, x3, y3)
-    }
-
-    override fun plotInterpolated(canvas: Canvas, other: PathCommand, progress: Float) {
-        other as CubicTo
-        canvas.cubicTo(
-            interpolate(progress, x1, other.x1),
-            interpolate(progress, y1, other.y1),
-            interpolate(progress, x2, other.x2),
-            interpolate(progress, y2, other.y2),
-            interpolate(progress, x3, other.x3),
-            interpolate(progress, y3, other.y3),
-        )
-    }
-
-    override fun toString(): String {
-        return "C $x1,$y1 $x2,$y2 $x3,$y3"
-    }
-}
-
-data class Circle(
-    private val centerX: Float,
-    private val centerY: Float,
-    private val radius: Float,
-    private val direction: Path.Direction,
-) : PathCommand {
-    override fun plot(canvas: Canvas) {
-        canvas.circle(centerX, centerY, radius, direction)
-    }
-
-    override fun plotInterpolated(canvas: Canvas, other: PathCommand, progress: Float) {
-        other as Circle
-        canvas.circle(
-            interpolate(progress, centerX, other.centerX),
-            interpolate(progress, centerY, other.centerY),
-            interpolate(progress, radius, other.radius),
-            direction,
-        )
-    }
-}
-
-data class Rect(
-    private val left: Float,
-    private val top: Float,
-    private val right: Float,
-    private val bottom: Float,
-    private val direction: Path.Direction,
-) : PathCommand {
-    override fun plot(canvas: Canvas) {
-        canvas.rect(left, top, right, bottom, direction)
-    }
-
-    override fun plotInterpolated(
-        canvas: Canvas,
-        other: PathCommand,
-        progress: Float,
-    ) {
-        other as Rect
-        canvas.rect(
-            interpolate(progress, left, other.left),
-            interpolate(progress, top, other.top),
-            interpolate(progress, right, other.right),
-            interpolate(progress, bottom, other.bottom),
-            direction
-        )
-    }
-}
-
-data class BoundedArc(
-    private val left: Float,
-    private val top: Float,
-    private val right: Float,
-    private val bottom: Float,
-    private val startAngle: Angle,
-    private val sweepAngle: Angle,
-) : PathCommand {
-    override fun plot(canvas: Canvas) {
-        canvas.boundedArc(left, top, right, bottom, startAngle, sweepAngle)
-    }
-
-    override fun plotInterpolated(
-        canvas: Canvas,
-        other: PathCommand,
-        progress: Float,
-    ) {
-        other as BoundedArc
-        canvas.boundedArc(
-            interpolate(progress, left, other.left),
-            interpolate(progress, top, other.top),
-            interpolate(progress, right, other.right),
-            interpolate(progress, bottom, other.bottom),
-            interpolate(progress, startAngle.asDegrees, other.startAngle.asDegrees).degrees,
-            interpolate(progress, sweepAngle.asDegrees, other.sweepAngle.asDegrees).degrees,
-        )
-    }
-
-    fun endPosition(): Position {
-        return getPointOnEllipse(left, top, right, bottom, startAngle + sweepAngle)
-    }
-}
 
 
 /**
@@ -224,7 +50,7 @@ class PathDefinition(
 
     private fun maybeRender(command: PathCommand, render: RenderCallback?) {
         when (command) {
-            is ClosePath, is Circle -> render?.invoke()
+            is ClosePath, is Circle, is Rect -> render?.invoke()
             else -> {}
         }
     }

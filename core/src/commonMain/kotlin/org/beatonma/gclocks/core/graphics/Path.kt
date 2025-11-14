@@ -26,16 +26,16 @@ interface Path {
         top: Float,
         right: Float,
         bottom: Float,
-        startAngle: Angle = (-90f).degrees,
-        sweepAngle: Angle = 180f.degrees,
+        startAngle: Angle = Angle.TwoSeventy,
+        sweepAngle: Angle = Angle.OneEighty,
     )
 
     fun boundedArc(
         centerX: Float,
         centerY: Float,
         radius: Float,
-        startAngle: Angle = (-90f).degrees,
-        sweepAngle: Angle = 180f.degrees,
+        startAngle: Angle = Angle.TwoSeventy,
+        sweepAngle: Angle = Angle.OneEighty,
     ) {
         boundedArc(
             left = centerX - radius,
@@ -45,6 +45,19 @@ interface Path {
             startAngle = startAngle,
             sweepAngle = sweepAngle
         )
+            sweepAngle = sweepAngle,
+
+    fun sector(
+        centerX: Float,
+        centerY: Float,
+        radius: Float,
+        startAngle: Angle = Angle.TwoSeventy,
+        sweepAngle: Angle = Angle.OneEighty,
+    ) {
+        moveTo(centerX, centerY)
+        lineTo(getPointOnCircle(centerX, centerY, radius, startAngle))
+        arcTo(centerX, centerY, radius, startAngle, sweepAngle, false)
+        closePath()
     }
 
     fun circle(
@@ -55,6 +68,7 @@ interface Path {
     )
 
     fun rect(left: Float, top: Float, right: Float, bottom: Float, direction: Direction)
+    fun rect(left: Float, top: Float, right: Float, bottom: Float, direction: Direction = Direction.Clockwise)
 
     fun beginPath()
     fun closePath()

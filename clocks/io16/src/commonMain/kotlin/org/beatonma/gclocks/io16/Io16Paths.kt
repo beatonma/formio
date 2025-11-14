@@ -3,7 +3,7 @@ package org.beatonma.gclocks.io16
 import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Path
-import org.beatonma.gclocks.core.graphics.PathDefinition
+import org.beatonma.gclocks.core.graphics.paths.PathDefinition
 
 
 private const val Io16Height = 118f
