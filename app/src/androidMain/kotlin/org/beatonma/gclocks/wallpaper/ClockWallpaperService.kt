@@ -27,10 +27,10 @@ import org.beatonma.gclocks.app.data.settings.DisplayMetrics
 import org.beatonma.gclocks.app.data.settingsRepository
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.ClockAnimator
-import org.beatonma.gclocks.core.glyph.GlyphState
-import org.beatonma.gclocks.core.glyph.GlyphVisibility
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.RectF
+import org.beatonma.gclocks.core.glyph.GlyphState
+import org.beatonma.gclocks.core.glyph.GlyphVisibility
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.debug
@@ -90,7 +90,8 @@ class ClockWallpaperService : WallpaperService() {
             val scope = requireEngineScope()
             scope.launch {
                 settings.collectLatest { settings ->
-                    val wallpaperOptions = settings.displayOptions as DisplayContext.Options.Wallpaper
+                    val wallpaperOptions =
+                        settings.displayOptions as DisplayContext.Options.Wallpaper
 
                     backgroundColor = wallpaperOptions.backgroundColor
                     relativeBounds = RectF(wallpaperOptions.position)
@@ -203,7 +204,14 @@ class ClockWallpaperService : WallpaperService() {
             xPixelOffset: Int,
             yPixelOffset: Int,
         ) {
-            super.onOffsetsChanged(xOffset, yOffset, xOffsetStep, yOffsetStep, xPixelOffset, yPixelOffset)
+            super.onOffsetsChanged(
+                xOffset,
+                yOffset,
+                xOffsetStep,
+                yOffsetStep,
+                xPixelOffset,
+                yPixelOffset
+            )
             if (xOffsetStep == 0f) {
                 return
             }

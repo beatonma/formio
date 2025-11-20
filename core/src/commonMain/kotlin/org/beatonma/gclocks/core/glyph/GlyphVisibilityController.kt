@@ -14,29 +14,8 @@ sealed interface GlyphVisibilityController : SecondChangedObserver {
 
     fun tick(options: GlyphOptions, currentTimeMillis: Long): GlyphVisibility?
 
-    fun appear(currentTimeMillis: Long) {
-        when (visibility) {
-            GlyphVisibility.Hidden, GlyphVisibility.Disappearing -> {
-                setState(GlyphVisibility.Appearing, force = true, currentTimeMillis = currentTimeMillis)
-            }
-
-            else -> debug(false) {
-                debug("appear() has no effect when visibility == $visibility")
-            }
-        }
-    }
-
-    fun disappear(currentTimeMillis: Long) {
-        when (visibility) {
-            GlyphVisibility.Visible, GlyphVisibility.Appearing -> {
-                setState(GlyphVisibility.Disappearing, force = true, currentTimeMillis = currentTimeMillis)
-            }
-
-            else -> debug(false) {
-                debug("disappear() has no effect when visibility == $visibility")
-            }
-        }
-    }
+    fun appear(currentTimeMillis: Long)
+    fun disappear(currentTimeMillis: Long)
 }
 
 abstract class BaseGlyphVisibilityController(
@@ -73,6 +52,14 @@ class SynchronizedVisibilityController(
         }
     }
 
+    override fun tick(
+        options: GlyphOptions,
+        currentTimeMillis: Long
+    ): GlyphVisibility? {
+        // no-op - time changes handled by onSecondChange()
+        return null
+    }
+
     override fun setState(
         newVisibility: GlyphVisibility,
         force: Boolean,
@@ -90,11 +77,54 @@ class SynchronizedVisibilityController(
         }
     }
 
-    override fun tick(
-        options: GlyphOptions,
-        currentTimeMillis: Long
-    ): GlyphVisibility? {
-        return null
+    override fun appear(currentTimeMillis: Long) {
+        when (visibility) {
+            GlyphVisibility.Visible -> cancelPending()
+            GlyphVisibility.Hidden, GlyphVisibility.Disappearing -> {
+                setState(
+                    GlyphVisibility.Appearing,
+                    force = true,
+                    currentTimeMillis = currentTimeMillis
+                )
+            }
+
+            GlyphVisibility.Appearing -> {
+                setState(
+                    GlyphVisibility.Visible,
+                    force = true,
+                    currentTimeMillis = currentTimeMillis
+                )
+            }
+        }
+    }
+
+    override fun disappear(currentTimeMillis: Long) {
+        when (visibility) {
+            GlyphVisibility.Hidden -> cancelPending()
+            GlyphVisibility.Visible, GlyphVisibility.Appearing -> {
+                setState(
+                    GlyphVisibility.Disappearing,
+                    force = true,
+                    currentTimeMillis = currentTimeMillis
+                )
+            }
+
+            GlyphVisibility.Disappearing -> {
+                setState(
+                    GlyphVisibility.Hidden,
+                    force = true,
+                    currentTimeMillis = currentTimeMillis
+                )
+            }
+
+            else -> debug(false) {
+                debug("disappear() has no effect when visibility == $visibility")
+            }
+        }
+    }
+
+    private fun cancelPending() {
+        pendingVisibility = null
     }
 }
 
@@ -106,7 +136,11 @@ class DesynchronizedGlyphVisibilityController(
     var visibilityChangedAt: Long = currentTimeMillis
     var visibilityChangedProgress: Float = 0f
 
-    override fun setState(newVisibility: GlyphVisibility, force: Boolean, currentTimeMillis: Long) {
+    override fun setState(
+        newVisibility: GlyphVisibility,
+        force: Boolean,
+        currentTimeMillis: Long
+    ) {
         if (force) {
             if (newVisibility != visibility) {
                 visibilityChangedAt = currentTimeMillis
@@ -122,13 +156,22 @@ class DesynchronizedGlyphVisibilityController(
         }
     }
 
+    override fun onSecondChange(currentTimeMillis: Long) {
+        // no-op - time changes handled by tick()
+    }
+
     override fun tick(options: GlyphOptions, currentTimeMillis: Long): GlyphVisibility? {
         val millisSinceVisibilityChange = currentTimeMillis - visibilityChangedAt
         val visibilityChangeDurationMillis = options.visibilityChangeDurationMillis
         visibilityChangedProgress =
-            progress(millisSinceVisibilityChange.toFloat(), 0f, visibilityChangeDurationMillis.toFloat())
+            progress(
+                millisSinceVisibilityChange.toFloat(),
+                0f,
+                visibilityChangeDurationMillis.toFloat()
+            )
 
-        val isVisibilityTransitionExpired: Boolean = millisSinceVisibilityChange > visibilityChangeDurationMillis
+        val isVisibilityTransitionExpired: Boolean =
+            millisSinceVisibilityChange > visibilityChangeDurationMillis
 
         if (isVisibilityTransitionExpired) {
             if (visibility == GlyphVisibility.Appearing) return GlyphVisibility.Visible
@@ -137,7 +180,35 @@ class DesynchronizedGlyphVisibilityController(
         return null
     }
 
-    override fun onSecondChange(currentTimeMillis: Long) {
-        // no-op
+    override fun appear(currentTimeMillis: Long) {
+        when (visibility) {
+            GlyphVisibility.Hidden, GlyphVisibility.Disappearing -> {
+                setState(
+                    GlyphVisibility.Appearing,
+                    force = true,
+                    currentTimeMillis = currentTimeMillis
+                )
+            }
+
+            else -> debug(false) {
+                debug("appear() has no effect when visibility == $visibility")
+            }
+        }
+    }
+
+    override fun disappear(currentTimeMillis: Long) {
+        when (visibility) {
+            GlyphVisibility.Visible, GlyphVisibility.Appearing -> {
+                setState(
+                    GlyphVisibility.Disappearing,
+                    force = true,
+                    currentTimeMillis = currentTimeMillis
+                )
+            }
+
+            else -> debug(false) {
+                debug("disappear() has no effect when visibility == $visibility")
+            }
+        }
     }
 }
