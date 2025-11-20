@@ -1,7 +1,6 @@
 package org.beatonma.gclocks.core.graphics.paths
 
 import org.beatonma.gclocks.core.geometry.Angle
-import org.beatonma.gclocks.core.geometry.MutableRectF
 import org.beatonma.gclocks.core.graphics.Matrix
 import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.util.fastForEach
@@ -13,10 +12,10 @@ typealias RenderCallback = () -> Unit
  * A container for a set of Path commands which can be accessed post-definition.
  * Main selling-point: Enables relatively simple interpolation between states.
  */
-class PathDefinition(
+class PathDefinition private constructor(
     val width: Float,
     val height: Float,
-    val commands: List<PathCommand>,
+    internal val commands: List<PathCommand>,
 ) {
     fun plot(path: Path, render: RenderCallback? = null) {
         commands.fastForEach { command ->
@@ -83,11 +82,18 @@ class PathDefinition(
         private val height: Float?,
     ) : Path {
         private val _commands: MutableList<PathCommand> = mutableListOf()
-        private val bounds = MutableRectF(0f, 0f, 0f, 0f)
 
         // Track current endpoint of the path so we can easily add 'filler' via [zeroCubic] and [zeroLine].
         private var x: Float? = null
         private var y: Float? = null
+
+        private fun addCommand(command: PathCommand) {
+            _commands.add(command)
+            command.endPoint?.let {
+                x = it.x
+                y = it.y
+            }
+        }
 
         private val previousX: Float
             get() = x
@@ -97,17 +103,11 @@ class PathDefinition(
                 ?: throw IllegalStateException("PathDefinition.Builder tried to use a relative path command without a recorded previous position.")
 
         override fun moveTo(x: Float, y: Float) {
-            _commands.add(MoveTo(x, y))
-            this.x = x
-            this.y = y
-            bounds.include(x, y)
+            addCommand(MoveTo(x, y))
         }
 
         override fun lineTo(x: Float, y: Float) {
-            _commands.add(LineTo(x, y))
-            this.x = x
-            this.y = y
-            bounds.include(x, y)
+            addCommand(LineTo(x, y))
         }
 
         override fun cubicTo(
@@ -118,10 +118,7 @@ class PathDefinition(
             x3: Float,
             y3: Float,
         ) {
-            _commands.add(CubicTo(x1, y1, x2, y2, x3, y3))
-            this.x = x3
-            this.y = y3
-            bounds.include(x3, y3)
+            addCommand(CubicTo(x1, y1, x2, y2, x3, y3))
         }
 
         override fun arcTo(
@@ -133,21 +130,7 @@ class PathDefinition(
             sweepAngle: Angle,
             forceMoveTo: Boolean
         ) {
-            _commands.add(
-                ArcTo(
-                    left,
-                    top,
-                    right,
-                    bottom,
-                    startAngle,
-                    sweepAngle,
-                    forceMoveTo
-                ).also {
-                    val (x, y) = it.getEndPosition()
-                    this.x = x
-                    this.y = y
-                    bounds.include(x, y)
-                })
+            addCommand(ArcTo(left, top, right, bottom, startAngle, sweepAngle, forceMoveTo))
         }
 
         override fun boundedArc(
@@ -158,14 +141,7 @@ class PathDefinition(
             startAngle: Angle,
             sweepAngle: Angle,
         ) {
-            _commands.add(
-                BoundedArc(left, top, right, bottom, startAngle, sweepAngle).also {
-                    val (x, y) = it.getEndPosition()
-                    this.x = x
-                    this.y = y
-                    bounds.include(x, y)
-                }
-            )
+            addCommand(BoundedArc(left, top, right, bottom, startAngle, sweepAngle))
         }
 
         fun boundedArc(
@@ -177,13 +153,8 @@ class PathDefinition(
             sweepAngle: Angle = Angle.OneEighty,
             close: Boolean,
         ) {
-            _commands.add(
-                BoundedArc(left, top, right, bottom, startAngle, sweepAngle, close).also {
-                    val (x, y) = it.getEndPosition()
-                    this.x = x
-                    this.y = y
-                    bounds.include(x, y)
-                }
+            addCommand(
+                BoundedArc(left, top, right, bottom, startAngle, sweepAngle, close)
             )
         }
 
@@ -214,7 +185,7 @@ class PathDefinition(
             startAngle: Angle,
             sweepAngle: Angle
         ) {
-            _commands.add(Sector(centerX, centerY, radius, startAngle, sweepAngle))
+            addCommand(Sector(centerX, centerY, radius, startAngle, sweepAngle))
         }
 
         override fun circle(
@@ -223,9 +194,7 @@ class PathDefinition(
             radius: Float,
             direction: Path.Direction,
         ) {
-            _commands.add(Circle(centerX, centerY, radius, direction))
-            bounds.include(centerX - radius, centerY - radius)
-            bounds.include(centerX + radius, centerY + radius)
+            addCommand(Circle(centerX, centerY, radius, direction))
         }
 
         override fun rect(
@@ -235,17 +204,15 @@ class PathDefinition(
             bottom: Float,
             direction: Path.Direction,
         ) {
-            _commands.add(Rect(left, top, right, bottom, direction))
-            bounds.include(left, top)
-            bounds.include(right, bottom)
+            addCommand(Rect(left, top, right, bottom, direction))
         }
 
         override fun beginPath() {
-            _commands.add(BeginPath)
+            addCommand(BeginPath)
         }
 
         override fun closePath() {
-            _commands.add(ClosePath)
+            addCommand(ClosePath)
         }
 
         override fun transform(matrix: Matrix) {
@@ -261,49 +228,49 @@ class PathDefinition(
             pivotX: Float,
             pivotY: Float,
         ) {
-            _commands.add(
+            addCommand(
                 Transform(rotation, translateX, translateY, scaleX, scaleY, pivotX, pivotY)
             )
         }
 
         override fun rotate(angle: Angle) {
-            _commands.add(
+            addCommand(
                 Transform(rotation = angle)
             )
         }
 
         override fun rotate(angle: Angle, pivotX: Float, pivotY: Float) {
-            _commands.add(
+            addCommand(
                 Transform(rotation = angle, pivotX = pivotX, pivotY = pivotY)
             )
         }
 
         override fun scale(scale: Float) {
-            _commands.add(
+            addCommand(
                 Transform(scaleX = scale, scaleY = scale)
             )
         }
 
         override fun scale(x: Float, y: Float) {
-            _commands.add(
+            addCommand(
                 Transform(scaleX = x, scaleY = y)
             )
         }
 
         override fun scale(scale: Float, pivotX: Float, pivotY: Float) {
-            _commands.add(
+            addCommand(
                 Transform(scaleX = scale, scaleY = scale, pivotX = pivotX, pivotY = pivotY)
             )
         }
 
         override fun scale(x: Float, y: Float, pivotX: Float, pivotY: Float) {
-            _commands.add(
+            addCommand(
                 Transform(scaleX = x, scaleY = y, pivotX = pivotX, pivotY = pivotY)
             )
         }
 
         override fun translate(x: Float, y: Float) {
-            _commands.add(Transform(translateX = x, translateY = y))
+            addCommand(Transform(translateX = x, translateY = y))
         }
 
         /**
@@ -369,8 +336,8 @@ class PathDefinition(
                 _commands.add(0, BeginPath)
             }
             return PathDefinition(
-                width ?: bounds.width,
-                height ?: bounds.height,
+                width ?: Float.NaN,
+                height ?: Float.NaN,
                 _commands
             )
         }

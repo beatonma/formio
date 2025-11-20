@@ -1,7 +1,7 @@
 package org.beatonma.gclocks.core.graphics.paths
 
 import org.beatonma.gclocks.core.geometry.Angle
-import org.beatonma.gclocks.core.geometry.Position
+import org.beatonma.gclocks.core.geometry.FloatPoint
 import org.beatonma.gclocks.core.geometry.degrees
 import org.beatonma.gclocks.core.geometry.getPointOnCircle
 import org.beatonma.gclocks.core.geometry.getPointOnEllipse
@@ -9,18 +9,33 @@ import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.util.lerp
 
 
-sealed interface PathCommand {
+internal sealed interface PathCommand {
+    /** The position of the end of the path after this command has been applied. */
+    val endPoint: FloatPoint?
+
     fun plot(path: Path)
     fun plotInterpolated(path: Path, other: PathCommand, progress: Float)
 }
 
-sealed interface PathTransform : PathCommand
+private sealed interface BoundedEllipse : PathCommand {
+    val left: Float
+    val top: Float
+    val right: Float
+    val bottom: Float
+    val startAngle: Angle
+    val sweepAngle: Angle
 
-sealed interface Arc {
-    fun getEndPosition(): Position
+    val endAngle get() = startAngle + sweepAngle
+
+    override val endPoint: FloatPoint? get() = getPointOnEllipse(left, top, right, bottom, endAngle)
 }
 
-object BeginPath : PathCommand {
+internal sealed interface PathTransform : PathCommand
+
+
+internal object BeginPath : PathCommand {
+    override val endPoint = null
+
     override fun plot(path: Path) {
         path.beginPath()
     }
@@ -32,7 +47,9 @@ object BeginPath : PathCommand {
     override fun toString(): String = "BeginPath"
 }
 
-object ClosePath : PathCommand {
+internal object ClosePath : PathCommand {
+    override val endPoint = null
+
     override fun plot(path: Path) {
         path.closePath()
     }
@@ -44,7 +61,9 @@ object ClosePath : PathCommand {
     override fun toString(): String = "Z"
 }
 
-data class MoveTo(private val x: Float, private val y: Float) : PathCommand {
+internal data class MoveTo(private val x: Float, private val y: Float) : PathCommand {
+    override val endPoint = FloatPoint(x, y)
+
     override fun plot(path: Path) {
         path.moveTo(x, y)
     }
@@ -62,7 +81,9 @@ data class MoveTo(private val x: Float, private val y: Float) : PathCommand {
     }
 }
 
-data class LineTo(private val x: Float, private val y: Float) : PathCommand {
+internal data class LineTo(private val x: Float, private val y: Float) : PathCommand {
+    override val endPoint = FloatPoint(x, y)
+
     override fun plot(path: Path) {
         path.lineTo(x, y)
     }
@@ -80,7 +101,7 @@ data class LineTo(private val x: Float, private val y: Float) : PathCommand {
     }
 }
 
-data class CubicTo(
+internal data class CubicTo(
     private val x1: Float,
     private val y1: Float,
     private val x2: Float,
@@ -88,6 +109,8 @@ data class CubicTo(
     private val x3: Float,
     private val y3: Float,
 ) : PathCommand {
+    override val endPoint = FloatPoint(x3, y3)
+
     override fun plot(path: Path) {
         path.cubicTo(x1, y1, x2, y2, x3, y3)
     }
@@ -109,15 +132,15 @@ data class CubicTo(
     }
 }
 
-data class ArcTo(
-    private val left: Float,
-    private val top: Float,
-    private val right: Float,
-    private val bottom: Float,
-    private val startAngle: Angle,
-    private val sweepAngle: Angle,
+internal data class ArcTo(
+    override val left: Float,
+    override val top: Float,
+    override val right: Float,
+    override val bottom: Float,
+    override val startAngle: Angle,
+    override val sweepAngle: Angle,
     private val forceMoveTo: Boolean
-) : PathCommand, Arc {
+) : BoundedEllipse, PathCommand {
     override fun plot(path: Path) {
         path.arcTo(left, top, right, bottom, startAngle, sweepAngle, forceMoveTo)
     }
@@ -134,18 +157,16 @@ data class ArcTo(
             forceMoveTo || other.forceMoveTo
         )
     }
-
-    override fun getEndPosition(): Position {
-        return getPointOnEllipse(left, top, right, bottom, startAngle + sweepAngle)
-    }
 }
 
-data class Circle(
+internal data class Circle(
     private val centerX: Float,
     private val centerY: Float,
     private val radius: Float,
     private val direction: Path.Direction,
 ) : PathCommand {
+    override val endPoint = null
+
     override fun plot(path: Path) {
         path.circle(centerX, centerY, radius, direction)
     }
@@ -161,13 +182,15 @@ data class Circle(
     }
 }
 
-data class Rect(
+internal data class Rect(
     private val left: Float,
     private val top: Float,
     private val right: Float,
     private val bottom: Float,
     private val direction: Path.Direction,
 ) : PathCommand {
+    override val endPoint = null
+
     override fun plot(path: Path) {
         path.rect(left, top, right, bottom, direction)
     }
@@ -189,18 +212,26 @@ data class Rect(
 }
 
 
-data class BoundedArc(
-    private val left: Float,
-    private val top: Float,
-    private val right: Float,
-    private val bottom: Float,
-    private val startAngle: Angle,
-    private val sweepAngle: Angle,
+internal data class BoundedArc(
+    override val left: Float,
+    override val top: Float,
+    override val right: Float,
+    override val bottom: Float,
+    override val startAngle: Angle,
+    override val sweepAngle: Angle,
     private val close: Boolean = false,
-) : PathCommand, Arc {
+) : BoundedEllipse, PathCommand {
+    override val endPoint = if (close) {
+        null
+    } else {
+        getPointOnEllipse(left, top, right, bottom, endAngle)
+    }
+
     override fun plot(path: Path) {
         path.boundedArc(left, top, right, bottom, startAngle, sweepAngle)
-        if (close) path.closePath()
+        if (close) {
+            path.closePath()
+        }
     }
 
     override fun plotInterpolated(
@@ -221,19 +252,18 @@ data class BoundedArc(
             path.closePath()
         }
     }
-
-    override fun getEndPosition(): Position {
-        return getPointOnEllipse(left, top, right, bottom, startAngle + sweepAngle)
-    }
 }
 
-data class Sector(
+internal data class Sector(
     private val centerX: Float,
     private val centerY: Float,
     private val radius: Float,
     private val startAngle: Angle = Angle.TwoSeventy,
     private val sweepAngle: Angle = Angle.OneEighty,
-) : PathCommand, Arc {
+) : PathCommand {
+    private val endAngle = startAngle + sweepAngle
+    override val endPoint = getPointOnCircle(centerX, centerY, radius, endAngle)
+
     override fun plot(path: Path) {
         path.sector(centerX, centerY, radius, startAngle, sweepAngle)
     }
@@ -252,13 +282,9 @@ data class Sector(
             progress.lerp(sweepAngle.degrees, other.sweepAngle.degrees).degrees
         )
     }
-
-    override fun getEndPosition(): Position {
-        return getPointOnCircle(centerX, centerY, radius, startAngle + sweepAngle)
-    }
 }
 
-data class Transform(
+internal data class Transform(
     val rotation: Angle = Angle.Zero,
     val translateX: Float = 0f,
     val translateY: Float = 0f,
@@ -267,6 +293,7 @@ data class Transform(
     val pivotX: Float = 0f,
     val pivotY: Float = 0f,
 ) : PathTransform {
+    override val endPoint = null
     private val isNoOp
         get() = rotation == Angle.Zero
                 && translateX == 0f

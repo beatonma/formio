@@ -180,6 +180,7 @@ data class MutableRectF(
     }
 
     override fun include(x: Float, y: Float): Boolean {
+        if (x.isNaN() || y.isNaN()) return false
         if (!isValid) {
             set(x, y, x, y)
         }

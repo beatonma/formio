@@ -143,26 +143,6 @@ internal enum class Io16GlyphPath {
             start.plotInterpolated(canvas, end, glyphProgress, render)
         }
     }
-
-    companion object {
-        init {
-            // Check that all entries with [start] and [end] states are able to interpolate correctly.
-            Io16GlyphPath.entries.forEach { glyphPath ->
-                if (glyphPath.start != null && glyphPath.end != null) {
-                    check(glyphPath.start.commands.size == glyphPath.end.commands.size) {
-                        "${glyphPath.name}: Invalid transition: Command length ${glyphPath.start.commands.size} != ${glyphPath.end.commands.size}"
-                    }
-                    glyphPath.start.commands.zip(glyphPath.end.commands).map { (a, b) ->
-                        check(a::class == b::class) {
-                            "${glyphPath.name}: Incompatible commands: ${a::class} != ${b::class}"
-                        }
-                    }
-                } else if ((glyphPath.start == null || glyphPath.end == null) && (glyphPath.start != glyphPath.end)) {
-                    throw IllegalStateException("${glyphPath.name}: [start], [end] must either both be null, or both be defined.")
-                }
-            }
-        }
-    }
 }
 
 /*
