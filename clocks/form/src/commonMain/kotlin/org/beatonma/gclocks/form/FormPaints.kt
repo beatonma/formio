@@ -36,6 +36,9 @@ data class FormPaints(
         other as FormPaints
 
         if (strokeWidth != other.strokeWidth) return false
+        if (strokeCap != other.strokeCap) return false
+        if (strokeJoin != other.strokeJoin) return false
+
         if (!colors.contentEquals(other.colors)) return false
 
         return true
@@ -43,6 +46,8 @@ data class FormPaints(
 
     override fun hashCode(): Int {
         var result = strokeWidth.hashCode()
+        result = 31 * result + strokeCap.hashCode()
+        result = 31 * result + strokeJoin.hashCode()
         result = 31 * result + colors.contentHashCode()
         return result
     }

@@ -25,9 +25,13 @@ value class Angle(val degrees: Float) {
 
     companion object {
         val Zero = 0f.degrees
+        val FortyFive = 45f.degrees
         val Ninety = 90f.degrees
+        val OneThreeFive = 135f.degrees
         val OneEighty = 180f.degrees
+        val TwoTwoFive = 225f.degrees
         val TwoSeventy = 270f.degrees
+        val ThreeFifteen = 315f.degrees
         val ThreeSixty = 360f.degrees
     }
 }

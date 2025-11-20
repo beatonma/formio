@@ -12,6 +12,7 @@ import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.DrawStyle
 import org.beatonma.gclocks.core.graphics.Fill
+import org.beatonma.gclocks.core.graphics.Matrix
 import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.graphics.PathMeasure
 import org.beatonma.gclocks.core.graphics.PathMeasureScope
@@ -19,6 +20,7 @@ import org.beatonma.gclocks.core.graphics.Stroke
 import org.beatonma.gclocks.core.graphics.StrokeCap
 import org.beatonma.gclocks.core.graphics.StrokeJoin
 import android.graphics.Canvas as PlatformCanvas
+import android.graphics.Matrix as AndroidMatrix
 import android.graphics.Path as PlatformPath
 import android.graphics.PathMeasure as PlatformPathMeasure
 
@@ -53,7 +55,7 @@ class AndroidPath : Path {
         startAngle: Angle,
         sweepAngle: Angle,
     ) {
-        path.arcTo(
+        path.addArc(
             rectF.apply { set(left, top, right, bottom) },
             startAngle.degrees,
             sweepAngle.degrees.run {
@@ -65,6 +67,31 @@ class AndroidPath : Path {
                 if (this == 360f) this - 0.0001f
                 else this
             }
+        )
+    }
+
+    override fun arcTo(
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        startAngle: Angle,
+        sweepAngle: Angle,
+        forceMoveTo: Boolean
+    ) {
+        path.arcTo(
+            rectF.apply { set(left, top, right, bottom) },
+            startAngle.degrees,
+            sweepAngle.degrees.run {
+                /*
+                 * Android canvas uses (value % 360f) so if the requested sweep angle
+                 * is a full loop then reduce the value slightly below that threshold.
+                 * Otherwise the arc will have an effective length of zero.
+                 */
+                if (this == 360f) this - 0.0001f
+                else this
+            },
+            forceMoveTo
         )
     }
 
@@ -88,6 +115,10 @@ class AndroidPath : Path {
             rectF.apply { set(left, top, right, bottom) },
             direction.toAndroid()
         )
+    }
+
+    override fun transform(matrix: Matrix) {
+        path.transform(matrix.toAndroid())
     }
 
     override fun beginPath() {
@@ -356,4 +387,21 @@ private fun StrokeJoin.toAndroid(): Paint.Join = when (this) {
     StrokeJoin.Round -> Paint.Join.ROUND
     StrokeJoin.Miter -> Paint.Join.MITER
     StrokeJoin.Bevel -> Paint.Join.BEVEL
+}
+
+private val androidMatrix = AndroidMatrix()
+private fun Matrix.toAndroid() = androidMatrix.apply {
+    setValues(
+        floatArrayOf(
+            values[Matrix.ScaleX],
+            values[Matrix.SkewX],
+            values[Matrix.TranslateX],
+            values[Matrix.SkewY],
+            values[Matrix.ScaleY],
+            values[Matrix.TranslateY],
+            values[Matrix.Perspective0],
+            values[Matrix.Perspective1],
+            values[Matrix.Perspective2],
+        )
+    )
 }

@@ -1,8 +1,6 @@
 package org.beatonma.gclocks.form
 
-import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.geometry.NativeSize
-import org.beatonma.gclocks.core.geometry.degrees
 import org.beatonma.gclocks.core.glyph.ClockGlyph
 import org.beatonma.gclocks.core.glyph.ClockGlyphSynchronizedVisibility
 import org.beatonma.gclocks.core.glyph.GlyphCompanion
@@ -11,14 +9,60 @@ import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.glyph.RenderGlyph
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.util.decelerate5
-import org.beatonma.gclocks.core.util.interpolate
-import org.beatonma.gclocks.core.util.progress
+import org.beatonma.gclocks.core.util.lerp
+import org.beatonma.gclocks.core.util.progressIn
+import org.beatonma.gclocks.form.characters.canonical.EightWidth
+import org.beatonma.gclocks.form.characters.canonical.FiveWidth
+import org.beatonma.gclocks.form.characters.canonical.FourWidth
+import org.beatonma.gclocks.form.characters.canonical.NineWidth
+import org.beatonma.gclocks.form.characters.canonical.OneWidth
+import org.beatonma.gclocks.form.characters.canonical.Separator
+import org.beatonma.gclocks.form.characters.canonical.SevenWidth
+import org.beatonma.gclocks.form.characters.canonical.SixWidth
+import org.beatonma.gclocks.form.characters.canonical.ThreeWidth
+import org.beatonma.gclocks.form.characters.canonical.TwoWidth
+import org.beatonma.gclocks.form.characters.canonical.ZeroWidth
+import org.beatonma.gclocks.form.characters.transitional.EightEmpty
+import org.beatonma.gclocks.form.characters.transitional.EightNine
+import org.beatonma.gclocks.form.characters.transitional.EmptyEight
+import org.beatonma.gclocks.form.characters.transitional.EmptyFive
+import org.beatonma.gclocks.form.characters.transitional.EmptyFour
+import org.beatonma.gclocks.form.characters.transitional.EmptyNine
+import org.beatonma.gclocks.form.characters.transitional.EmptyOne
+import org.beatonma.gclocks.form.characters.transitional.EmptySeparator
+import org.beatonma.gclocks.form.characters.transitional.EmptySeven
+import org.beatonma.gclocks.form.characters.transitional.EmptySix
+import org.beatonma.gclocks.form.characters.transitional.EmptyThree
+import org.beatonma.gclocks.form.characters.transitional.EmptyTwo
+import org.beatonma.gclocks.form.characters.transitional.EmptyZero
+import org.beatonma.gclocks.form.characters.transitional.FiveEmpty
+import org.beatonma.gclocks.form.characters.transitional.FiveSix
+import org.beatonma.gclocks.form.characters.transitional.FiveZero
+import org.beatonma.gclocks.form.characters.transitional.FourEmpty
+import org.beatonma.gclocks.form.characters.transitional.FourFive
+import org.beatonma.gclocks.form.characters.transitional.NineEmpty
+import org.beatonma.gclocks.form.characters.transitional.NineZero
+import org.beatonma.gclocks.form.characters.transitional.OneEmpty
+import org.beatonma.gclocks.form.characters.transitional.OneTwo
+import org.beatonma.gclocks.form.characters.transitional.OneZero
+import org.beatonma.gclocks.form.characters.transitional.SeparatorEmpty
+import org.beatonma.gclocks.form.characters.transitional.SevenEight
+import org.beatonma.gclocks.form.characters.transitional.SevenEmpty
+import org.beatonma.gclocks.form.characters.transitional.SixEmpty
+import org.beatonma.gclocks.form.characters.transitional.SixSeven
+import org.beatonma.gclocks.form.characters.transitional.ThreeEmpty
+import org.beatonma.gclocks.form.characters.transitional.ThreeFour
+import org.beatonma.gclocks.form.characters.transitional.ThreeZero
+import org.beatonma.gclocks.form.characters.transitional.TwoEmpty
+import org.beatonma.gclocks.form.characters.transitional.TwoOne
+import org.beatonma.gclocks.form.characters.transitional.TwoThree
+import org.beatonma.gclocks.form.characters.transitional.TwoZero
+import org.beatonma.gclocks.form.characters.transitional.ZeroEmpty
+import org.beatonma.gclocks.form.characters.transitional.ZeroOne
 
-
-private const val TwoThirds = 2f / 3f
 
 private fun ease(f: Float) = decelerate5(f)
-private fun easeProgress(value: Float, min: Float, max: Float) = ease(progress(value, min, max))
+private fun easeProgress(value: Float, min: Float, max: Float) = ease(value.progressIn(min, max))
 
 class FormGlyph(
     role: GlyphRole,
@@ -33,1333 +77,292 @@ class FormGlyph(
     }
 
     override val companion: GlyphCompanion = FormGlyph
-
     override fun Canvas.drawZeroOne(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph?,
+        renderGlyph: RenderGlyph?
     ) {
-        val (_, color2, color3) = paints.colors
-        val d1 = easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        // 0
-        withTranslation(
-            interpolate(d1, interpolate(d1, 0f, 24f), interpolate(d2, 24f, 0f)),
-            0f
-        ) {
-            withScale(interpolate(d1, 1f, TwoThirds), 72f, 144f) {
-                withScale(interpolate(d2, 1f, 0.7f), 72f, 96f) {
-                    withRotation(interpolate(d1, 45f, 0f).degrees, 72f, 72f) {
-                        val stretchX = interpolate(d1, 0f, interpolate(d2, 72f, -36f))
-                        drawPath(color2) {
-                            moveTo(72f - stretchX, 144f)
-                            boundedArc(
-                                -stretchX,
-                                0f,
-                                144f - stretchX,
-                                144f,
-                                Angle.Ninety,
-                            )
-                            lineTo(72f + stretchX, 0f)
-                            lineTo(72f + stretchX, 144f)
-                            lineTo(72f - stretchX, 144f)
-                        }
-
-                        drawBoundedArc(
-                            color3,
-                            stretchX,
-                            0f,
-                            144f + stretchX,
-                            144f,
-                        )
-                    }
-                }
-            }
-        }
-
-        // 1
-        if (d2 > 0f) {
-            drawRect(
-                color2,
-                interpolate(d2, 28f, 0f),
-                interpolate(d2, 72f, 0f),
-                100f,
-                interpolate(d2, 144f, 48f)
-            )
-            drawRect(color3, 28f, interpolate(d2, 144f, 48f), 100f, 144f)
-        }
+        ZeroOne.plot(this, glyphProgress, { drawPath(paints[it]) })
     }
 
     override fun Canvas.drawOneTwo(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph?,
+        renderGlyph: RenderGlyph?
     ) {
-        val (color1, color2, color3) = paints.colors
-        val d = 1f - easeProgress(glyphProgress, 0f, 0.5f)
-        val d1 = easeProgress(glyphProgress, 0.3f, 0.8f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1.0f)
-
-        // 2
-        if (d1 > 0f) {
-            withTranslation(interpolate(d2, 72f, 0f), 0f) {
-                drawPath(color3) {
-                    moveTo(0f, 144f)
-                    lineTo(72f, 72f)
-                    lineTo(72f, 144f)
-                    lineTo(0f, 144f)
-                }
-            }
-
-            withTranslation(108f, interpolate(d1, 72f, 0f)) {
-                drawBoundedArc(color1, -36f, 0f, 36f, 72f)
-            }
-
-            withTranslation(0f, interpolate(d1, 72f, 0f)) {
-                drawRect(color1, interpolate(d2, 72f, 8f), 0f, interpolate(d2, 144f, 108f), 72f)
-            }
-
-            drawRect(color2, 72f, 72f, 144f, 144f)
-        }
-
-        // 1
-        if (d > 0f) {
-            withTranslation(interpolate(d, 44f, 0f), 0f) {
-                drawRect(
-                    color2,
-                    interpolate(d, 28f, 0f),
-                    interpolate(d, 72f, 0f),
-                    100f,
-                    interpolate(d, 144f, 48f)
-                )
-                drawRect(color3, 28f, interpolate(d, 144f, 48f), 100f, 144f)
-            }
-        }
+        OneTwo.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
     override fun Canvas.drawTwoThree(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph?,
+        renderGlyph: RenderGlyph?
     ) {
-        val (color1, color2, color3) = paints.colors
-        val d1 = easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1.0f)
-
-        // 2
-        if (d1 < 1f) {
-            withTranslation(interpolate(d1, 0f, -16f), 0f) {
-                withTranslation(interpolate(d1, 0f, 72f), 0f) {
-                    drawPath(color3) {
-                        moveTo(0f, 144f)
-                        lineTo(72f, 72f)
-                        lineTo(72f, 144f)
-                        lineTo(0f, 144f)
-                    }
-                }
-
-                if (d1 == 0f) {
-                    drawPath(color1) {
-                        moveTo(8f, 0f)
-                        lineTo(108f, 0f)
-                        boundedArc(108f - 36f, 0f, 108f + 36f, 72f)
-                        lineTo(108f, 72f)
-                        lineTo(8f, 72f)
-                        lineTo(8f, 0f)
-                    }
-                } else {
-                    drawBoundedArc(
-                        color1,
-                        108f - 36f,
-                        interpolate(d1, 0f, 72f),
-                        108f + 36f,
-                        72f + interpolate(d1, 0f, 72f)
-                    )
-
-                    drawRect(
-                        color1,
-                        interpolate(d1, 8f, 72f),
-                        interpolate(d1, 0f, 72f),
-                        interpolate(d1, 108f, 144f),
-                        interpolate(d1, 72f, 144f),
-                    )
-                }
-                drawRect(color2, 72f, 72f, 144f, 144f)
-            }
-        } else {
-            // 3
-            // half-circle
-            withScale(interpolate(d2, 0.7f, 1f), 128f, 144f) {
-                drawBoundedArc(color3, 32f, 48f, 128f, 144f)
-            }
-
-            // bottom rectangle
-            drawRect(
-                color1,
-                interpolate(d2, 56f, 0f),
-                interpolate(d2, 72f, 96f),
-                interpolate(d2, 128f, 80f),
-                interpolate(d2, 144f, 144f),
-            )
-
-            // top part with triangle
-            withTranslation(0f, interpolate(d2, 72f, 0f)) {
-                drawPath(color3) {
-                    moveTo(128f, 0f)
-                    lineTo(80f, 48f)
-                    lineTo(80f, 0f)
-                }
-                drawRect(
-                    color3,
-                    interpolate(d2, 56f, 0f),
-                    0f,
-                    interpolate(d2, 128f, 80f),
-                    interpolate(d2, 72f, 48f),
-                )
-            }
-
-            // middle rectangle
-            drawRect(
-                color2,
-                interpolate(d2, 56f, 32f),
-                interpolate(d2, 72f, 48f),
-                interpolate(d2, 128f, 80f),
-                interpolate(d2, 144f, 96f),
-            )
-        }
+        TwoThree.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
     override fun Canvas.drawThreeFour(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph?,
+        renderGlyph: RenderGlyph?
     ) {
-        val (color1, color2, color3) = paints.colors
-        val d1 = 1f - easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        // 3
-        if (d1 > 0f) {
-            withTranslation(interpolate(d1, 16f, 0f), 0f) {
-                // middle rectangle
-                drawRect(
-                    color2,
-                    interpolate(d1, 56f, 32f),
-                    interpolate(d1, 72f, 48f),
-                    interpolate(d1, 128f, 80f),
-                    interpolate(d1, 144f, 96f),
-                )
-
-                // half-circle
-                withScale(
-                    interpolate(d1, 0.7f, 1f),
-                    128f,
-                    144f,
-                ) {
-                    drawBoundedArc(color3, 32f, 48f, 128f, 144f)
-                }
-
-                // bottom rectangle
-                drawRect(
-                    color1,
-                    interpolate(d1, 56f, 0f),
-                    interpolate(d1, 72f, 96f),
-                    interpolate(d1, 128f, 80f),
-                    interpolate(d1, 144f, 144f),
-                )
-
-                // top part with triangle
-                withTranslation(0f, interpolate(d1, 72f, 0f)) {
-                    drawPath(color3) {
-                        moveTo(80f, 0f)
-                        lineTo(128f, 0f)
-                        lineTo(80f, 48f)
-
-                        if (d1 == 1f) {
-                            lineTo(0f, 48f)
-                            lineTo(0f, 0f)
-                            lineTo(80f, 0f)
-                        }
-                    }
-                    if (d1 != 1f) {
-                        drawRect(
-                            color3,
-                            interpolate(d1, 56f, 0f),
-                            0f,
-                            interpolate(d1, 128f, 80f),
-                            interpolate(d1, 72f, 48f),
-                        )
-                    }
-                }
-            }
-        } else {
-            // 4
-            // bottom rectangle
-            drawRect(color2, 72f, interpolate(d2, 144f, 108f), 144f, 144f)
-
-            // middle rectangle
-            drawRect(
-                color1,
-                interpolate(d2, 72f, 0f),
-                interpolate(d2, 144f, 72f),
-                144f,
-                interpolate(d2, 144f, 108f),
-            )
-
-            // triangle
-            withScale(d2, 144f, 144f) {
-                drawPath(color2) {
-                    moveTo(72f, 72f)
-                    lineTo(72f, 0f)
-                    lineTo(0f, 72f)
-                    lineTo(72f, 72f)
-                }
-            }
-
-            // top rectangle
-            drawRect(
-                color3,
-                72f,
-                interpolate(d2, 72f, 0f),
-                144f,
-                interpolate(d2, 144f, 72f),
-            )
-        }
+        ThreeFour.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
     override fun Canvas.drawFourFive(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph?,
+        renderGlyph: RenderGlyph?
     ) {
-        val (color1, color2, color3) = paints.colors
-        val d = easeProgress(glyphProgress, 0f, 0.5f)
-        val d1 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        // 4
-        if (d < 1f) {
-            // bottom rectangle
-            drawRect(
-                color2,
-                interpolate(d, 72f, 0f),
-                108f,
-                interpolate(d, 144f, 72f),
-                144f,
-            )
-
-            // top rectangle
-            drawRect(
-                color3,
-                interpolate(d, 72f, 0f),
-                interpolate(d, 0f, 72f),
-                interpolate(d, 144f, 72f),
-                interpolate(d, 72f, 144f),
-            )
-
-            // triangle
-            withScale(1f - d, 0f, 144f) {
-                drawPath(color2) {
-                    moveTo(72f, 72f)
-                    lineTo(72f, 0f)
-                    lineTo(0f, 72f)
-                    lineTo(72f, 72f)
-                }
-            }
-
-            // middle rectangle
-            drawRect(
-                color1,
-                0f,
-                72f,
-                interpolate(d, 144f, 72f),
-                interpolate(d, 108f, 144f),
-            )
-        } else {
-            // 5
-            // wing rectangle
-            drawRect(
-                color2,
-                80f,
-                interpolate(d1, 72f, 0f),
-                interpolate(d1, 80f, 128f),
-                interpolate(d1, 144f, 48f),
-            )
-
-            // half-circle
-            withScale(interpolate(d1, 0.75f, 1f), 0f, 144f) {
-                withTranslation(interpolate(d1, -48f, 0f), 0f) {
-                    drawBoundedArc(color3, 32f, 48f, 128f, 144f)
-                }
-            }
-
-            // bottom rectangle
-            drawRect(color2, 0f, 96f, 80f, 144f)
-
-            // middle rectangle
-            drawRect(
-                color1,
-                0f,
-                interpolate(d1, 72f, 0f),
-                80f,
-                interpolate(d1, 144f, 96f),
-            )
-        }
+        FourFive.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
     override fun Canvas.drawFiveSix(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph?,
+        renderGlyph: RenderGlyph?
     ) {
-        val (color1, color2, color3) = paints.colors
-        val d = easeProgress(glyphProgress, 0f, 0.7f)
-        val d1 = easeProgress(glyphProgress, 0.1f, 1f)
-
-        // 5 (except half-circle)
-        if (d < 1f) {
-            withScale(interpolate(d, 1f, 0.25f), 108f, 96f) {
-                // wing rectangle
-                drawRect(color2, 80f, 0f, 128f, 48f)
-
-                // bottom rectangle
-                drawRect(color2, 0f, 96f, 80f, 144f)
-
-                // middle rectangle
-                drawRect(color1, 0f, 0f, 80f, 96f)
-            }
-        }
-
-        // half-circle
-        withRotation(interpolate(d1, 0f, 90f).degrees, 72f, 72f) {
-            if (d1 == 0f) {
-                drawBoundedArc(color3, 32f, 48f, 128f, 144f)
-            } else {
-                withScale(
-                    interpolate(d1, TwoThirds, 1f),
-                    80f,
-                    144f,
-                ) {
-                    withTranslation(interpolate(d1, 8f, 0f), 0f) {
-                        drawBoundedArc(color3, 0f, 0f, 144f, 144f)
-                        // 6 (just the parallelogram)
-                        withRotation(Angle.TwoSeventy, 72f, 72f) {
-                            if (d1 > 0f) {
-                                drawPath(color2) {
-                                    moveTo(0f, 72f)
-                                    lineTo(interpolate(d1, 0f, 36f), interpolate(d1, 72f, 0f))
-                                    lineTo(interpolate(d1, 72f, 108f), interpolate(d1, 72f, 0f))
-                                    lineTo(72f, 72f)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-        }
+        FiveSix.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
     override fun Canvas.drawSixSeven(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph?,
+        renderGlyph: RenderGlyph?
     ) {
-        val (_, color2, color3) = paints.colors
-        val d = ease(glyphProgress)
-
-        // 7 rectangle
-        drawRect(color3, interpolate(d, 72f, 0f), 0f, 72f, 72f)
-
-        // 6 circle
-        withTranslation(interpolate(d, 0f, 36f), 0f) {
-            if (d < 1f) {
-                drawBoundedArc(
-                    color3,
-                    0f, 0f, 144f, 144f,
-                    interpolate(d, 180f, -64f).degrees, (-180f).degrees
-                )
-            }
-
-            // parallelogram
-            drawPath(color2) {
-                moveTo(36f, 0f)
-                lineTo(108f, 0f)
-                lineTo(interpolate(d, 72f, 36f), interpolate(d, 72f, 144f))
-                lineTo(interpolate(d, 0f, -36f), interpolate(d, 72f, 144f))
-            }
-        }
+        SixSeven.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
     override fun Canvas.drawSevenEight(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph?,
+        renderGlyph: RenderGlyph?
     ) {
-        val (color1, color2, color3) = paints.colors
-        val d1 = easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.2f, 0.5f)
-        val d3 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        if (d1 == 0f) {
-            // 7 'rectangle', drawn as a path to avoid unnecessary overlapping
-            // (because overlapping looks weird with transparent colors)
-            drawPath(color3) {
-                moveTo(0f, 0f)
-                lineTo(72f, 0f)
-                lineTo(36f, 72f)
-                lineTo(0f, 72f)
-            }
-
-            // 7 parallelogram
-            drawPath(color2) {
-                moveTo(interpolate(d1, 72f, 48f), interpolate(d1, 0f, 96f))
-                lineTo(interpolate(d1, 144f, 96f), interpolate(d1, 0f, 96f))
-                lineTo(interpolate(d1, 72f, 96f), 144f)
-                lineTo(interpolate(d1, 0f, 48f), 144f)
-            }
-        } else {
-            // 8
-            if (d2 > 0f) {
-                if (d3 > 0f) {
-                    // top
-                    withTranslation(0f, interpolate(d3, 96f, 0f)) {
-                        drawRoundRect(color3, 24f, 0f, 120f, 48f, 24f)
-                    }
-                }
-
-                // left bottom
-                withTranslation(interpolate(d2, 24f, 0f), 0f) {
-                    withScale(
-                        interpolate(d3, 0.5f, 1f),
-                        48f,
-                        144f,
-                    ) {
-                        drawBoundedArc(color1, 0f, 48f, 96f, 144f, Angle.Ninety)
-                    }
-                }
-
-                // right bottom
-                withTranslation(interpolate(d2, -24f, 0f), 0f) {
-                    withScale(
-                        interpolate(d3, 0.5f, 1f),
-                        96f,
-                        144f,
-                    ) {
-                        drawBoundedArc(color2, 48f, 48f, 144f, 144f)
-                    }
-                }
-
-                // bottom middle
-                withScale(interpolate(d2, 0f, 1f), 1f, 72f, 0f) {
-                    drawRect(
-                        color1,
-                        48f,
-                        interpolate(d3, 96f, 48f),
-                        96f,
-                        144f,
-                    )
-                    drawRect(
-                        color2,
-                        interpolate(d3, 48f, 96f),
-                        interpolate(d3, 96f, 48f),
-                        96f,
-                        144f,
-                    )
-                }
-            }
-
-            if (d1 < 1f) {
-                // 7 rectangle
-                drawRect(
-                    color3,
-                    interpolate(d1, 0f, 48f),
-                    interpolate(d1, 0f, 96f),
-                    interpolate(d1, 72f, 96f),
-                    interpolate(d1, 72f, 144f),
-                )
-
-                // 7 parallelogram
-                drawPath(color2) {
-                    moveTo(
-                        interpolate(d1, 72f, 48f),
-                        interpolate(d1, 0f, 96f),
-                    )
-                    lineTo(
-                        interpolate(d1, 144f, 96f),
-                        interpolate(d1, 0f, 96f),
-                    )
-                    lineTo(interpolate(d1, 72f, 96f), 144f)
-                    lineTo(interpolate(d1, 0f, 48f), 144f)
-                }
-            }
-        }
+        SevenEight.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
     override fun Canvas.drawEightNine(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph?,
+        renderGlyph: RenderGlyph?
     ) {
-        val (color1, color2, color3) = paints.colors
-        val d1 = easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        if (d1 < 1f) {
-            // top
-            withTranslation(0f, interpolate(d1, 0f, 48f)) {
-                drawRoundRect(color3, 24f, 0f, 120f, 48f, 24f)
-            }
-
-            if (d1 == 0f) {
-                // left + middle bottom
-                drawPath(color1) {
-                    moveTo(48f, 48f)
-                    lineTo(96f, 48f)
-                    lineTo(96f, 144f)
-                    lineTo(48f, 144f)
-                    boundedArc(0f, 48f, 96f, 144f, Angle.Ninety)
-                }
-
-                // right bottom
-                drawBoundedArc(color2, 48f, 48f, 144f, 144f)
-            } else {
-                // bottom middle
-                drawRect(
-                    color1,
-                    interpolate(d1, 48f, 72f) - 2f,
-                    interpolate(d1, 48f, 0f),
-                    interpolate(d1, 96f, 72f) + 2f,
-                    144f
-                )
-
-                // left bottom
-                withScale(interpolate(d1, TwoThirds, 1f), 0f, 144f) {
-                    drawBoundedArc(color1, 0f, 0f, 144f, 144f, Angle.Ninety)
-                }
-
-                // right bottom
-                withScale(interpolate(d1, TwoThirds, 1f), 144f, 144f) {
-                    drawBoundedArc(color2, 0f, 0f, 144f, 144f)
-                }
-            }
-        } else {
-            // 9
-            withRotation(interpolate(d2, -90f, -180f).degrees, 72f, 72f) {
-                drawPath(color3) {
-                    moveTo(0f, 72f)
-                    lineTo(
-                        interpolate(d2, 0f, 36f),
-                        interpolate(d2, 72f, 0f),
-                    )
-                    lineTo(
-                        interpolate(d2, 72f, 108f),
-                        interpolate(d2, 72f, 0f),
-                    )
-                    lineTo(72f, 72f)
-                    lineTo(0f, 72f)
-                }
-
-                // vanishing arc
-                drawBoundedArc(
-                    color1,
-                    0f,
-                    0f,
-                    144f,
-                    144f,
-                    interpolate(d2, 180f, 0f).degrees,
-                )
-
-                // primary arc
-                drawBoundedArc(color2, 0f, 0f, 144f, 144f, Angle.Zero)
-            }
-        }
+        EightNine.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
     override fun Canvas.drawNineZero(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph?,
+        renderGlyph: RenderGlyph?
     ) {
-        val (_, color2, color3) = paints.colors
-        val d = ease(glyphProgress)
-
-        // 9
-        withRotation(interpolate(d, -180f, -225f).degrees, 72f, 72f) {
-            // parallelogram
-            drawPath(color3) {
-                moveTo(0f, 72f)
-                lineTo(interpolate(d, 36f, 0f), interpolate(d, 0f, 72f))
-                lineTo(interpolate(d, 108f, 72f), interpolate(d, 0f, 72f))
-                lineTo(72f, 72f)
-                lineTo(0f, 72f)
-            }
-
-            drawBoundedArc(
-                color3,
-                0f,
-                0f,
-                144f,
-                144f,
-                interpolate(d, 180f, 0f).degrees,
-                (-180f).degrees
-            )
-            drawBoundedArc(color2, 0f, 0f, 144f, 144f, Angle.Zero)
-        }
+        NineZero.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
     override fun Canvas.drawOneZero(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph?,
+        renderGlyph: RenderGlyph?
     ) {
-        drawZeroOne(1f - glyphProgress, paints, renderGlyph)
+        OneZero.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
     override fun Canvas.drawTwoZero(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph?,
+        renderGlyph: RenderGlyph?
     ) {
-        val (color1, color2, color3) = paints.colors
-        val d1 = easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        // 2
-        if (d2 == 0f) {
-            withTranslation(interpolate(d1, 0f, -36f), 0f) {
-                withTranslation(interpolate(d1, 0f, 72f), 0f) {
-                    drawPath(color3) {
-                        moveTo(0f, 144f)
-                        lineTo(72f, 72f)
-                        lineTo(72f, 144f)
-                        lineTo(0f, 144f)
-                    }
-                }
-
-                if (d1 == 0f) {
-                    drawPath(color1) {
-                        moveTo(8f, 0f)
-                        lineTo(108f, 0f)
-                        boundedArc(72f, 0f, 144f, 72f)
-                        lineTo(108f, 72f)
-                        lineTo(8f, 72f)
-                        lineTo(8f, 0f)
-                    }
-                } else {
-                    drawBoundedArc(
-                        color1,
-                        108f - 36f,
-                        interpolate(d1, 0f, 72f),
-                        108f + 36f,
-                        72f + interpolate(d1, 0f, 72f)
-                    )
-
-                    drawRect(
-                        color1,
-                        interpolate(d1, 8f, 72f),
-                        interpolate(d1, 0f, 72f),
-                        interpolate(d1, 108f, 144f),
-                        interpolate(d1, 72f, 144f),
-                    )
-                }
-                drawBoundedArc(
-                    color3,
-                    108f, 72f, 180f, 144f,
-                    interpolate(progress(glyphProgress, 0.2f, 0.5f), 90f, 270f).degrees
-                )
-                drawRect(color2, 72f, 72f, 144f, 144f)
-            }
-        }
-
-        // 0
-        // half-circles
-        if (d2 > 0f) {
-            withRotation(interpolate(d2, 0f, 45f).degrees, 72f, 72f) {
-                withTranslation(interpolate(d2, -36f, 0f), 0f) {
-                    drawRect(
-                        color2,
-                        72f,
-                        72f,
-                        interpolate(d2, 144f, 72f),
-                        144f
-                    )
-                    drawBoundedArc(
-                        color2,
-                        interpolate(d2, 108f, 0f),
-                        interpolate(d2, 72f, 0f),
-                        interpolate(d2, 180f, 144f),
-                        144f,
-                        interpolate(d2, -90f, 90f).degrees,
-                    )
-                    drawBoundedArc(
-                        color3,
-                        interpolate(d2, 108f, 0f),
-                        interpolate(d2, 72f, 0f),
-                        interpolate(d2, 180f, 144f),
-                        144f
-                    )
-                }
-            }
-        }
+        TwoZero.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
     override fun Canvas.drawTwoOne(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph?,
+        renderGlyph: RenderGlyph?
     ) {
-        drawOneTwo(1f - glyphProgress, paints, renderGlyph)
+        TwoOne.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
     override fun Canvas.drawThreeZero(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph?,
+        renderGlyph: RenderGlyph?
     ) {
-        val (color1, color2, color3) = paints.colors
-        val d1 = 1f - easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        withRotation(interpolate(d2, 0f, 45f).degrees, 72f, 72f) {
-            withTranslation(interpolate(d1, interpolate(d2, 16f, -8f), 0f), 0f) {
-                if (d1 > 0f) {
-                    // top part of 3 with triangle
-                    withTranslation(0f, interpolate(d1, 48f, 0f)) {
-                        drawPath(color3) {
-                            val x = interpolate(d1, 48f, 0f)
-                            moveTo(128f - x, 0f)
-                            lineTo(80f - x, 48f)
-                            lineTo(80f - x, 0f)
-                        }
-                        drawRect(color3, interpolate(d1, 32f, 0f), 0f, 80f, 48f)
-                    }
-                }
-
-                // bottom rectangle in 3
-                drawRect(
-                    color1,
-                    interpolate(d1, interpolate(d2, 32f, 80f), 0f),
-                    96f,
-                    80f,
-                    144f,
-                )
-
-                // middle rectangle
-                drawRect(color2, interpolate(d2, 32f, 80f), 48f, 80f, 96f)
-
-                // 0
-                // half-circles
-                withScale(interpolate(d2, TwoThirds, 1f), 80f, 144f) {
-                    withTranslation(8f, 0f) {
-                        if (d2 > 0f) {
-                            withRotation(interpolate(d2, -180f, 0f).degrees, 72f, 72f) {
-                                drawBoundedArc(
-                                    color2,
-                                    0f,
-                                    0f,
-                                    144f,
-                                    144f,
-                                    Angle.Ninety,
-                                )
-                            }
-                        }
-
-                        drawBoundedArc(color3, 0f, 0f, 144f, 144f)
-                    }
-                }
-            }
-        }
+        ThreeZero.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
     override fun Canvas.drawFiveZero(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph?,
+        renderGlyph: RenderGlyph?
     ) {
-        val (color1, color2, color3) = paints.colors
-        val d = easeProgress(glyphProgress, 0f, 0.5f)
-        val d1 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        withRotation(interpolate(d1, 0f, 45f).degrees, 72f, 72f) {
-            // 5f (except half-circle)
-            if (d < 1f) {
-                // wing rectangle
-                drawRect(
-                    color2,
-                    80f,
-                    interpolate(d, 0f, 48f),
-                    interpolate(d, 128f, 80f),
-                    interpolate(d, 48f, 144f),
-                )
-
-                // bottom rectangle
-                drawRect(color2, 0f, 96f, 80f, 144f)
-            }
-
-            // middle rectangle
-            drawRect(
-                color1,
-                interpolate(d1, 0f, 80f),
-                interpolate(d, 0f, interpolate(d1, 48f, 0f)),
-                80f,
-                interpolate(d, 96f, 144f),
-            )
-
-
-            withScale(interpolate(d1, TwoThirds, 1f), 80f, 144f) {
-                // half-circles
-                if (d1 > 0f) {
-                    withRotation(interpolate(d1, -180f, 0f).degrees, 72f, 72f) {
-                        drawBoundedArc(color2, 0f, 0f, 144f, 144f, Angle.Ninety)
-                    }
-                }
-
-                withTranslation(interpolate(d1, 8f, 0f), 0f) {
-                    drawBoundedArc(color3, 0f, 0f, 144f, 144f)
-                }
-            }
-        }
+        FiveZero.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-//    override fun Canvas.drawEmptyOne(
-//        glyphProgress: Float,
-//        paints: FormPaints,
-//        renderGlyph: RenderGlyph?,
-//    ) {
-//        val (_, color2, color3) = paints.colors
-//        val d1 = easeProgress(glyphProgress, 0f, 0.5f)
-//        val d2 = easeProgress(glyphProgress, 0.5f, 1f)
-//
-//        // 1f
-//        withScale(interpolate(d1, 0f, 1f), 0f, 144f) {
-//            drawRect(
-//                color2,
-//                interpolate(d2, 28f, 0f),
-//                interpolate(d2, 72f, 0f),
-//                100f,
-//                interpolate(d2, 144f, 48f),
-//            )
-//
-//            if (d2 > 0f) {
-//                drawRect(color3, 28f, interpolate(d2, 144f, 48f), 100f, 144f)
-//            }
-//        }
-//    }
-
-    override fun Canvas.drawZeroEmpty(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        val (_, color2, color3) = paints.colors
-
-        val d1 = easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        withScale(interpolate(d2, 1f, 0f), 0f, 144f) {
-            withRotation(interpolate(d2, 45f, 0f).degrees, 72f, 72f) {
-                drawSector(
-                    color2, 72f, 72f, 72f,
-                    startAngle = 90f.degrees,
-                    sweepAngle = 180f.degrees,
-                )
-                drawSector(
-                    color3, 72f, 72f, 72f,
-                    startAngle = (-90f).degrees,
-                    sweepAngle = interpolate(d1, 180f, 360f).degrees,
-                )
-            }
-        }
+    override fun Canvas.drawZeroEmpty(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        ZeroEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawOneEmpty(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        val (_, color2, color3) = paints.colors
-        val d1 = easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1f)
-        withScale(interpolate(d2, 1f, 0f), 0f, 144f) {
-            drawRect(
-                color2,
-                interpolate(d1, 0f, 28f),
-                interpolate(d1, 0f, 72f),
-                100f,
-                interpolate(d1, 48f, 144f),
-            )
-            if (d1 < 1f) {
-                drawRect(color3, 28f, interpolate(d1, 48f, 144f), 100f, 144f)
-            }
-        }
+    override fun Canvas.drawOneEmpty(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        OneEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawTwoEmpty(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        val (color1, color2, color3) = paints.colors
-        val d = easeProgress(glyphProgress, 0f, 0.5f)
-        val d1 = easeProgress(glyphProgress, 0.5f, 1.0f)
-// 2f
-        withTranslation(interpolate(d, 0f, -72f), 0f) {
-            if (d < 1f) {
-                withTranslation(interpolate(d, 0f, 72f), 0f) {
-                    drawPath(color3) {
-                        beginPath()
-                        moveTo(0f, 144f)
-                        lineTo(72f, 72f)
-                        lineTo(72f, 144f)
-                        lineTo(0f, 144f)
-                    }
-                }
-                withTranslation(108f, interpolate(d, 0f, 72f)) {
-                    drawBoundedArc(color1, -36f, 0f, 36f, 72f)
-                }
-                drawRect(
-                    color1,
-                    interpolate(d, 8f, 72f),
-                    interpolate(d, 0f, 72f),
-                    interpolate(d, 108f, 144f),
-                    interpolate(d, 72f, 144f),
-                )
-            }
-            withScale(interpolate(d1, 1f, 0f), 72f, 144f) {
-                drawRect(color2, 72f, 72f, 144f, 144f)
-            }
-        }
+    override fun Canvas.drawTwoEmpty(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        TwoEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawThreeEmpty(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        val (color1, color2, color3) = paints.colors
-        val d1 = 1f - easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        // 3
-        if (d1 > 0f) {
-            // middle rectangle
-            drawRect(
-                color2,
-                interpolate(d1, 56f, 32f),
-                interpolate(d1, 72f, 48f),
-                interpolate(d1, 128f, 80f),
-                interpolate(d1, 144f, 96f),
-            )
-
-            // half-circle
-            withScale(
-                interpolate(d1, 0.7f, 1f),
-                128f,
-                144f,
-            ) {
-                drawBoundedArc(color3, 32f, 48f, 128f, 144f)
-            }
-
-            // bottom rectangle
-            drawRect(
-                color1,
-                interpolate(d1, 56f, 0f),
-                interpolate(d1, 72f, 96f),
-                interpolate(d1, 128f, 80f),
-                interpolate(d1, 144f, 144f),
-            )
-
-            // top part with triangle
-            withTranslation(0f, interpolate(d1, 72f, 0f)) {
-                drawPath(color3) {
-                    moveTo(80f, 0f)
-                    lineTo(128f, 0f)
-                    lineTo(80f, 48f)
-
-                    if (d1 == 1f) {
-                        lineTo(0f, 48f)
-                        lineTo(0f, 0f)
-                        lineTo(80f, 0f)
-                    }
-                }
-                if (d1 != 1f) {
-                    drawRect(
-                        color3,
-                        interpolate(d1, 56f, 0f),
-                        0f,
-                        interpolate(d1, 128f, 80f),
-                        interpolate(d1, 72f, 48f),
-                    )
-                }
-            }
-        } else {
-            withScale(interpolate(d2, 1f, 0f), 0f, 144f) {
-                drawRect(color3, 56f, 72f, 128f, 144f)
-            }
-        }
+    override fun Canvas.drawThreeEmpty(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        ThreeEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawFourEmpty(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        val (color1, color2, color3) = paints.colors
-        val d1 = easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        // 4
-        if (d1 < 1f) {
-            // bottom rectangle
-            drawRect(
-                color2,
-                interpolate(d1, 72f, 0f),
-                108f,
-                interpolate(d1, 144f, 72f),
-                144f,
-            )
-
-            // top rectangle
-            drawRect(
-                color3,
-                interpolate(d1, 72f, 0f),
-                interpolate(d1, 0f, 72f),
-                interpolate(d1, 144f, 72f),
-                interpolate(d1, 72f, 144f),
-            )
-
-            // triangle
-            withScale(1f - d1, 0f, 144f) {
-                drawPath(color2) {
-                    moveTo(72f, 72f)
-                    lineTo(72f, 0f)
-                    lineTo(0f, 72f)
-                    lineTo(72f, 72f)
-                }
-            }
-
-            // middle rectangle
-            drawRect(
-                color1,
-                0f,
-                72f,
-                interpolate(d1, 144f, 72f),
-                interpolate(d1, 108f, 144f),
-            )
-        } else {
-            withScale(interpolate(d2, 1f, 0f), 0f, 144f) {
-                drawRect(color1, 0f, 72f, 72f, 144f)
-            }
-        }
+    override fun Canvas.drawFourEmpty(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        FourEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawFiveEmpty(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        val (color1, color2, color3) = paints.colors
-        val d1 = easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0f, 0.15f)
-        val d3 = easeProgress(glyphProgress, 0.15f, 0.5f)
-        val d4 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        // 5 (except half-circle)
-        if (d1 < 1f) {
-            // wing rectangle
-            drawRect(color2, 80f, 0f, interpolate(d2, 128f, 80f), 48f)
-
-            // middle rectangle
-            drawRect(color1, 0f, interpolate(d3, 0f, 72f), 80f, 96f)
-
-            drawSector(
-                color3,
-                interpolate(d1, 80f, 72f),
-                96f,
-                48f,
-                startAngle = interpolate(d1, -90f, 90f).degrees,
-                sweepAngle = interpolate(d1, 180f, 0f).degrees
-            )
-        }
-
-        // bottom rectangle
-        withScale(interpolate(d4, 1f, 0f), 0f, 144f) {
-            drawRect(
-                color2,
-                0f,
-                interpolate(d1, 96f, 64f),
-                80f,
-                144f
-            )
-        }
+    override fun Canvas.drawFiveEmpty(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        FiveEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawSixEmpty(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        val (_, color2, color3) = paints.colors
-        val d1 = easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        if (d1 < 1f) {
-            drawSector(color3, 72f, 72f, 72f, interpolate(d1, 0f, 180f).degrees, interpolate(d1, 180f, 0f).degrees)
-
-            // parallelogram
-            drawPath(color2) {
-                moveTo(interpolate(d1, 36f, 0f), interpolate(d1, 0f, 72f))
-                lineTo(interpolate(d1, 108f, 72f), interpolate(d1, 0f, 72f))
-                lineTo(72f, interpolate(d1, 72f, 144f))
-                lineTo(0f, interpolate(d1, 72f, 144f))
-            }
-        } else {
-            withScale(interpolate(d2, 1f, 0f), 0f, 144f) {
-                drawRect(color2, 0f, 72f, 72f, 144f)
-            }
-        }
+    override fun Canvas.drawSixEmpty(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        SixEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawSevenEmpty(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        val (color1, color2, color3) = paints.colors
-        val d1 = easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        if (d2 == 0f) {
-            // 7 'rectangle', drawn as a path to avoid unnecessary overlapping
-            // (because overlapping looks weird with transparent colors)
-            withTranslation(0f, interpolate(d1, 0f, 72f)) {
-                drawPath(color3) {
-                    moveTo(0f, 0f)
-                    lineTo(72f, 0f)
-                    lineTo(36f, 72f)
-                    lineTo(0f, 72f)
-                }
-            }
-
-            // 7 parallelogram
-            drawPath(color2) {
-                moveTo(interpolate(d1, 72f, 0f), interpolate(d1, 0f, 72f))
-                lineTo(interpolate(d1, 144f, 72f), interpolate(d1, 0f, 72f))
-                lineTo(72f, 144f)
-                lineTo(0f, 144f)
-            }
-        } else {
-            withScale(interpolate(d2, 1f, 0f), 0f, 144f) {
-                drawRect(color2, 0f, 72f, 72f, 144f)
-            }
-        }
+    override fun Canvas.drawSevenEmpty(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        SevenEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawEightEmpty(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        val (color1, color2, color3) = paints.colors
-        val d1 = easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        // top
-        withScale(interpolate(d2, 1f, 0f), 0f, 144f) {
-            withTranslation(0f, interpolate(d1, 0f, 48f)) {
-                drawRoundRect(color3, 24f, 0f, 120f, 48f, 24f)
-            }
-
-            if (d1 == 0f) {
-                // left + middle bottom
-                drawPath(color1) {
-                    moveTo(48f, 48f)
-                    lineTo(96f, 48f)
-                    lineTo(96f, 144f)
-                    lineTo(48f, 144f)
-                    boundedArc(0f, 48f, 96f, 144f, Angle.Ninety)
-                }
-
-                // right bottom
-                drawBoundedArc(color2, 48f, 48f, 144f, 144f)
-            } else {
-                // bottom middle
-                drawRect(
-                    color1,
-                    interpolate(d1, 48f, 72f) - 2f,
-                    interpolate(d1, 48f, 0f),
-                    interpolate(d1, 96f, 72f) + 2f,
-                    144f
-                )
-
-                // left bottom
-                withScale(interpolate(d1, TwoThirds, 1f), 0f, 144f) {
-                    drawBoundedArc(color1, 0f, 0f, 144f, 144f, Angle.Ninety)
-                }
-
-                // right bottom
-                withScale(interpolate(d1, TwoThirds, 1f), 144f, 144f) {
-                    drawBoundedArc(color2, 0f, 0f, 144f, 144f)
-                }
-            }
-        }
+    override fun Canvas.drawEightEmpty(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        EightEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawNineEmpty(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        val (_, color2, color3) = paints.colors
-        val d1 = easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        if (d2 == 0f) {
-            drawPath(color3) {
-                moveTo(interpolate(d1, 144f, 72f), 72f)
-                lineTo(interpolate(d1, 108f, 72f), 144f)
-                lineTo(interpolate(d1, 36f, 0f), 144f)
-                lineTo(interpolate(d1, 72f, 0f), 72f)
-            }
-
-            drawSector(
-                color2,
-                interpolate(d1, 72f, 0f),
-                72f,
-                72f,
-                interpolate(d1, -180f, 0f).degrees,
-                sweepAngle = interpolate(d1, 180f, 0f).degrees
-            )
-        } else {
-            withScale(interpolate(d2, 1f, 0f), 0f, 144f) {
-                drawRect(color3, 0f, 72f, 72f, 144f)
-            }
-        }
+    override fun Canvas.drawNineEmpty(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        NineEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawEmptyZero(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        drawZeroEmpty(1f - glyphProgress, paints, renderGlyph)
+    override fun Canvas.drawEmptyZero(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        EmptyZero.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawEmptyOne(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        drawOneEmpty(1f - glyphProgress, paints, renderGlyph)
+    override fun Canvas.drawEmptyOne(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        EmptyOne.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawEmptyTwo(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        drawTwoEmpty(1f - glyphProgress, paints, renderGlyph)
+    override fun Canvas.drawEmptyTwo(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        EmptyTwo.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawEmptyThree(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        drawThreeEmpty(1f - glyphProgress, paints, renderGlyph)
+    override fun Canvas.drawEmptyThree(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        EmptyThree.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawEmptyFour(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        drawFourEmpty(1f - glyphProgress, paints, renderGlyph)
+    override fun Canvas.drawEmptyFour(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        EmptyFour.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawEmptyFive(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        drawFiveEmpty(1f - glyphProgress, paints, renderGlyph)
+    override fun Canvas.drawEmptyFive(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        EmptyFive.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawEmptySix(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        drawSixEmpty(1f - glyphProgress, paints, renderGlyph)
+    override fun Canvas.drawEmptySix(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        EmptySix.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawEmptySeven(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        drawSevenEmpty(1f - glyphProgress, paints, renderGlyph)
+    override fun Canvas.drawEmptySeven(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        EmptySeven.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawEmptyEight(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        drawEightEmpty(1f - glyphProgress, paints, renderGlyph)
+    override fun Canvas.drawEmptyEight(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        EmptyEight.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
-    override fun Canvas.drawEmptyNine(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        drawNineEmpty(1f - glyphProgress, paints, renderGlyph)
+    override fun Canvas.drawEmptyNine(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        EmptyNine.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
     override fun Canvas.drawSeparator(
         glyphProgress: Float,
         paints: FormPaints,
-        renderGlyph: RenderGlyph?,
+        renderGlyph: RenderGlyph?
     ) {
-        val (_, color2, color3) = paints.colors
-        drawCircle(color2, 24f, 24f, 24f)
-        drawCircle(color3, 24f, 120f, 24f)
-    }
-
-    override fun Canvas.drawSeparatorEmpty(glyphProgress: Float, paints: FormPaints, renderGlyph: RenderGlyph?) {
-        val (_, color2, color3) = paints.colors
-
-        val d1 = easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        if (d2 == 0f) {
-            drawCircle(color2, 24f, interpolate(d1, 24f, 120f), 24f)
-            drawCircle(color3, 24f, 120f, 24f)
-        } else {
-            drawCircle(color3, 24f, 120f, interpolate(d2, 24f, 0f))
-        }
+        Separator.plot(this) { drawPath(paints[it]) }
     }
 
     override fun Canvas.drawEmptySeparator(
@@ -1367,17 +370,15 @@ class FormGlyph(
         paints: FormPaints,
         renderGlyph: RenderGlyph?
     ) {
-        val (_, color2, color3) = paints.colors
+        EmptySeparator.plot(this, glyphProgress) { drawPath(paints[it]) }
+    }
 
-        val d1 = easeProgress(glyphProgress, 0f, 0.5f)
-        val d2 = easeProgress(glyphProgress, 0.5f, 1f)
-
-        if (d2 == 0f) {
-            drawCircle(color3, 24f, 120f, interpolate(d1, 0f, 24f))
-        } else {
-            drawCircle(color2, 24f, interpolate(d1, 120f, 24f), 24f)
-            drawCircle(color3, 24f, 120f, 24f)
-        }
+    override fun Canvas.drawSeparatorEmpty(
+        glyphProgress: Float,
+        paints: FormPaints,
+        renderGlyph: RenderGlyph?
+    ) {
+        SeparatorEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
 
     override fun Canvas.drawSpace(
@@ -1393,30 +394,25 @@ class FormGlyph(
         val d2 = easeProgress(glyphProgress, 0.5f, 1f)
 
         return when (clockKey) {
-            ClockGlyph.Key.Zero, ClockGlyph.Key.ZeroOne -> interpolate(
-                d2,
-                interpolate(
-                    easeProgress(glyphProgress, 0f, 0.4f),
-                    ZeroWidth, 192f
-                ),
+            ClockGlyph.Key.Zero, ClockGlyph.Key.ZeroOne -> d2.lerp(
+                easeProgress(glyphProgress, 0f, 0.4f).lerp(ZeroWidth, 192f),
                 OneWidth,
             )
 
             ClockGlyph.Key.One, ClockGlyph.Key.OneTwo ->
-                interpolate(d1, OneWidth, TwoWidth)
+                d1.lerp(OneWidth, TwoWidth)
 
             ClockGlyph.Key.Two, ClockGlyph.Key.TwoThree ->
-                interpolate(d1, TwoWidth, ThreeWidth)
+                d1.lerp(TwoWidth, ThreeWidth)
 
             ClockGlyph.Key.Three, ClockGlyph.Key.ThreeFour ->
-                interpolate(d1, ThreeWidth, FourWidth)
+                d1.lerp(ThreeWidth, FourWidth)
 
             ClockGlyph.Key.Four, ClockGlyph.Key.FourFive ->
-                interpolate(d1, FourWidth, FiveWidth)
+                d1.lerp(FourWidth, FiveWidth)
 
             ClockGlyph.Key.Five, ClockGlyph.Key.FiveSix ->
-                interpolate(
-                    easeProgress(glyphProgress, 0.1f, 1f),
+                easeProgress(glyphProgress, 0.1f, 1f).lerp(
                     FiveWidth, SixWidth
                 )
 
@@ -1426,32 +422,30 @@ class FormGlyph(
                 val maxChange = 31f
                 val d = ease(glyphProgress)
                 if (d < turningPoint) {
-                    baseWidth + interpolate(progress(d, 0f, turningPoint), 0f, maxChange)
+                    baseWidth + d.progressIn(0f, turningPoint).lerp(0f, maxChange)
                 } else {
-                    baseWidth + interpolate(progress(d, turningPoint, 1f), maxChange, 0f)
+                    baseWidth + d.progressIn(turningPoint, 1f).lerp(maxChange, 0f)
                 }
             }
 
-            ClockGlyph.Key.Seven, ClockGlyph.Key.SevenEight -> FullWidth // Both digits are same width
-            ClockGlyph.Key.Eight, ClockGlyph.Key.EightNine -> FullWidth // Both digits are same width
-            ClockGlyph.Key.Nine, ClockGlyph.Key.NineZero -> FullWidth // Both digits are same width
+            ClockGlyph.Key.Seven, ClockGlyph.Key.SevenEight -> SevenWidth // Both digits are same width
+            ClockGlyph.Key.Eight, ClockGlyph.Key.EightNine -> EightWidth // Both digits are same width
+            ClockGlyph.Key.Nine, ClockGlyph.Key.NineZero -> NineWidth // Both digits are same width
 
-            ClockGlyph.Key.OneZero -> interpolate(
-                easeProgress(1f - glyphProgress, 0.5f, 1f),
-                interpolate(
-                    easeProgress(1f - glyphProgress, 0f, 0.4f), ZeroWidth, 192f
-                ),
+            ClockGlyph.Key.OneZero ->
+                easeProgress(1f - glyphProgress, 0.5f, 1f).lerp(
+                    easeProgress(1f - glyphProgress, 0f, 0.4f).lerp(ZeroWidth, 192f),
+                    OneWidth,
+                )
+
+            ClockGlyph.Key.TwoZero -> ZeroWidth // Both digits are same width
+            ClockGlyph.Key.TwoOne -> easeProgress(1f - glyphProgress, 0f, 0.5f).lerp(
                 OneWidth,
+                TwoWidth
             )
 
-            ClockGlyph.Key.TwoZero -> FullWidth // Both digits are same width
-            ClockGlyph.Key.TwoOne -> interpolate(
-                easeProgress(1f - glyphProgress, 0f, 0.5f),
-                OneWidth, TwoWidth
-            )
-
-            ClockGlyph.Key.ThreeZero -> interpolate(d1, ThreeWidth, ZeroWidth)
-            ClockGlyph.Key.FiveZero -> interpolate(d1, FiveWidth, ZeroWidth)
+            ClockGlyph.Key.ThreeZero -> d1.lerp(ThreeWidth, ZeroWidth)
+            ClockGlyph.Key.FiveZero -> d1.lerp(FiveWidth, ZeroWidth)
 
             ClockGlyph.Key.Separator,
             ClockGlyph.Key.SeparatorEmpty,
@@ -1486,17 +480,3 @@ class FormGlyph(
         }
     }
 }
-
-private const val MediumWidth = 128f
-private const val FullWidth = 144f
-
-private const val ZeroWidth = FullWidth
-private const val OneWidth = 100f
-private const val TwoWidth = FullWidth
-private const val ThreeWidth = MediumWidth
-private const val FourWidth = FullWidth
-private const val FiveWidth = MediumWidth
-private const val SixWidth = FullWidth
-private const val SevenWidth = FullWidth
-private const val EightWidth = FullWidth
-private const val NineWidth = FullWidth

@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
@@ -15,7 +16,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.sp
 import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.geometry.FloatPoint
 import org.beatonma.gclocks.core.geometry.Point
@@ -80,6 +80,23 @@ class ComposePath : Path {
         )
     }
 
+    override fun arcTo(
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        startAngle: Angle,
+        sweepAngle: Angle,
+        forceMoveTo: Boolean
+    ) {
+        composePath.arcTo(
+            PlatformRect(left, top, right, bottom),
+            startAngle.asDegrees,
+            sweepAngle.asDegrees,
+            forceMoveTo
+        )
+    }
+
     override fun circle(
         centerX: Float,
         centerY: Float,
@@ -101,9 +118,13 @@ class ComposePath : Path {
         top: Float,
         right: Float,
         bottom: Float,
-        direction: Path.Direction, // Ignored in Compose!
+        direction: Path.Direction,
     ) {
-        composePath.addRect(PlatformRect(left, top, right, bottom))
+        composePath.addRect(PlatformRect(left, top, right, bottom), direction.toCompose())
+    }
+
+    override fun transform(matrix: org.beatonma.gclocks.core.graphics.Matrix) {
+        composePath.transform(matrix.toCompose())
     }
 
     override fun closePath() {
@@ -274,7 +295,6 @@ class ComposeCanvasHost(
                 text,
                 Offset.Zero,
                 style = TextStyle(
-                    fontSize = 10.sp,
                     color = PlatformColor.White,
                     background = PlatformColor.DarkGray.copy(alpha = 0.2f),
                 ),
@@ -399,3 +419,16 @@ private fun StrokeJoin.toCompose(): PlatformStrokeJoin = when (this) {
 }
 
 private fun Offset.toPosition(): Point<Float> = FloatPoint(x, y)
+
+private val composeMatrix = Matrix()
+private fun org.beatonma.gclocks.core.graphics.Matrix.toCompose(): Matrix = composeMatrix.let {
+    for (index in values.indices) {
+        it.values[index] = values[index]
+    }
+    it
+}
+
+private fun Path.Direction.toCompose() = when (this) {
+    Path.Direction.Clockwise -> PlatformPath.Direction.Clockwise
+    Path.Direction.AntiClockwise -> PlatformPath.Direction.CounterClockwise
+}

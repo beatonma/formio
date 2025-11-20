@@ -2,10 +2,7 @@ package org.beatonma.gclocks.core.graphics.paths
 
 import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.geometry.MutableRectF
-import org.beatonma.gclocks.core.geometry.Position
-import org.beatonma.gclocks.core.geometry.degrees
-import org.beatonma.gclocks.core.geometry.getPointOnEllipse
-import org.beatonma.gclocks.core.graphics.Canvas
+import org.beatonma.gclocks.core.graphics.Matrix
 import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.util.fastForEach
 
@@ -14,16 +11,16 @@ typealias RenderCallback = () -> Unit
 
 /**
  * A container for a set of Path commands which can be accessed post-definition.
- * Main selling-point: Allows relatively simple
+ * Main selling-point: Enables relatively simple interpolation between states.
  */
 class PathDefinition(
     val width: Float,
     val height: Float,
     val commands: List<PathCommand>,
 ) {
-    fun plot(canvas: Canvas, render: RenderCallback? = null) {
+    fun plot(path: Path, render: RenderCallback? = null) {
         commands.fastForEach { command ->
-            command.plot(canvas)
+            command.plot(path)
             maybeRender(command, render)
         }
     }
@@ -37,15 +34,23 @@ class PathDefinition(
      *   (i.e. must interpolate from [LineTo] to [LineTo], etc.; not [LineTo] to [CubicTo], etc.)
      */
     fun plotInterpolated(
-        canvas: Canvas,
+        path: Path,
         other: PathDefinition,
         progress: Float,
         render: RenderCallback? = null,
     ) {
         commands.zip(other.commands).fastForEach { (a, b) ->
-            a.plotInterpolated(canvas, b, progress)
+            a.plotInterpolated(path, b, progress)
             maybeRender(a, render)
         }
+    }
+
+    fun canInterpolateWith(other: PathDefinition): Boolean {
+        if (commands.size != other.commands.size) return false
+        for (index in commands.indices) {
+            if (commands[index]::class != other.commands[index]::class) return false
+        }
+        return true
     }
 
     private fun maybeRender(command: PathCommand, render: RenderCallback?) {
@@ -119,6 +124,32 @@ class PathDefinition(
             bounds.include(x3, y3)
         }
 
+        override fun arcTo(
+            left: Float,
+            top: Float,
+            right: Float,
+            bottom: Float,
+            startAngle: Angle,
+            sweepAngle: Angle,
+            forceMoveTo: Boolean
+        ) {
+            _commands.add(
+                ArcTo(
+                    left,
+                    top,
+                    right,
+                    bottom,
+                    startAngle,
+                    sweepAngle,
+                    forceMoveTo
+                ).also {
+                    val (x, y) = it.getEndPosition()
+                    this.x = x
+                    this.y = y
+                    bounds.include(x, y)
+                })
+        }
+
         override fun boundedArc(
             left: Float,
             top: Float,
@@ -129,12 +160,61 @@ class PathDefinition(
         ) {
             _commands.add(
                 BoundedArc(left, top, right, bottom, startAngle, sweepAngle).also {
-                    val (x, y) = it.endPosition()
+                    val (x, y) = it.getEndPosition()
                     this.x = x
                     this.y = y
                     bounds.include(x, y)
                 }
             )
+        }
+
+        fun boundedArc(
+            left: Float,
+            top: Float,
+            right: Float,
+            bottom: Float,
+            startAngle: Angle = Angle.TwoSeventy,
+            sweepAngle: Angle = Angle.OneEighty,
+            close: Boolean,
+        ) {
+            _commands.add(
+                BoundedArc(left, top, right, bottom, startAngle, sweepAngle, close).also {
+                    val (x, y) = it.getEndPosition()
+                    this.x = x
+                    this.y = y
+                    bounds.include(x, y)
+                }
+            )
+        }
+
+        @Suppress("NOTHING_TO_INLINE")
+        inline fun boundedArc(
+            centerX: Float,
+            centerY: Float,
+            radius: Float,
+            startAngle: Angle = Angle.TwoSeventy,
+            sweepAngle: Angle = Angle.OneEighty,
+            close: Boolean,
+        ) {
+            boundedArc(
+                left = centerX - radius,
+                top = centerY - radius,
+                right = centerX + radius,
+                bottom = centerY + radius,
+                startAngle = startAngle,
+                sweepAngle = sweepAngle,
+                close = close,
+            )
+        }
+
+        override fun sector(
+            centerX: Float,
+            centerY: Float,
+            radius: Float,
+            startAngle: Angle,
+            sweepAngle: Angle
+        ) {
+            _commands.add(Sector(centerX, centerY, radius, startAngle, sweepAngle))
         }
 
         override fun circle(
@@ -167,6 +247,96 @@ class PathDefinition(
         override fun closePath() {
             _commands.add(ClosePath)
         }
+
+        override fun transform(matrix: Matrix) {
+            throw Exception("Use rotate(), translate(), and scale() instead of PathDefinition.Builder.transform(matrix).")
+        }
+
+        override fun transform(
+            rotation: Angle,
+            translateX: Float,
+            translateY: Float,
+            scaleX: Float,
+            scaleY: Float,
+            pivotX: Float,
+            pivotY: Float,
+        ) {
+            _commands.add(
+                Transform(rotation, translateX, translateY, scaleX, scaleY, pivotX, pivotY)
+            )
+        }
+
+        override fun rotate(angle: Angle) {
+            _commands.add(
+                Transform(rotation = angle)
+            )
+        }
+
+        override fun rotate(angle: Angle, pivotX: Float, pivotY: Float) {
+            _commands.add(
+                Transform(rotation = angle, pivotX = pivotX, pivotY = pivotY)
+            )
+        }
+
+        override fun scale(scale: Float) {
+            _commands.add(
+                Transform(scaleX = scale, scaleY = scale)
+            )
+        }
+
+        override fun scale(x: Float, y: Float) {
+            _commands.add(
+                Transform(scaleX = x, scaleY = y)
+            )
+        }
+
+        override fun scale(scale: Float, pivotX: Float, pivotY: Float) {
+            _commands.add(
+                Transform(scaleX = scale, scaleY = scale, pivotX = pivotX, pivotY = pivotY)
+            )
+        }
+
+        override fun scale(x: Float, y: Float, pivotX: Float, pivotY: Float) {
+            _commands.add(
+                Transform(scaleX = x, scaleY = y, pivotX = pivotX, pivotY = pivotY)
+            )
+        }
+
+        override fun translate(x: Float, y: Float) {
+            _commands.add(Transform(translateX = x, translateY = y))
+        }
+
+        /**
+         * Placeholder for a `rotate` command, enabling a non-rotated path to
+         * interpolate with a rotated path.
+         *
+         * Path interpolation requires that the start and end states share the
+         * same sequence of operation types, so insert noop commands as necessary
+         * to make those sequences match up correctly.
+         */
+        fun rotateNoop(pivotX: Float = 0f, pivotY: Float = 0f) =
+            rotate(Angle.Zero, pivotX = pivotX, pivotY = pivotY)
+
+        /**
+         * Placeholder for a `scale` command, enabling a non-scaled path to
+         * interpolate with a scaled path.
+         *
+         * Path interpolation requires that the start and end states share the
+         * same sequence of operation types, so insert noop commands as necessary
+         * to make those sequences match up correctly.
+         */
+        fun scaleNoop(pivotX: Float = 0f, pivotY: Float = 0f) =
+            scale(1f, pivotX = pivotX, pivotY = pivotY)
+
+        /**
+         * Placeholder for a `translate` command, enabling a non-translated path to
+         * interpolate with a translated path.
+         *
+         * Path interpolation requires that the start and end states share the
+         * same sequence of operation types, so insert noop commands as necessary
+         * to make those sequences match up correctly.
+         */
+        fun translateNoop() = translate(0f, 0f)
 
         /**
          * Create a cubic curve with zero size - used as filler to help with interpolation between

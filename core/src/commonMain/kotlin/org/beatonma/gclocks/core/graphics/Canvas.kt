@@ -4,6 +4,7 @@ import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.geometry.Rect
 
 private const val DefaultAlpha = 1f
+private val DefaultDrawStyle: DrawStyle = Fill
 
 enum class StrokeCap {
     Square,
@@ -46,7 +47,7 @@ interface Canvas : Path {
         centerX: Float,
         centerY: Float,
         radius: Float,
-        style: DrawStyle = Fill,
+        style: DrawStyle = DefaultDrawStyle,
         alpha: Float = DefaultAlpha,
     )
 
@@ -66,7 +67,7 @@ interface Canvas : Path {
         top: Float,
         right: Float,
         bottom: Float,
-        style: DrawStyle = Fill,
+        style: DrawStyle = DefaultDrawStyle,
         alpha: Float = DefaultAlpha,
     ) {
         beginPath()
@@ -86,7 +87,7 @@ interface Canvas : Path {
     fun drawRect(
         color: Color,
         rect: Rect<Float>,
-        style: DrawStyle = Fill,
+        style: DrawStyle = DefaultDrawStyle,
         alpha: Float = DefaultAlpha,
     ) = drawRect(
         left = rect.left,
@@ -105,7 +106,7 @@ interface Canvas : Path {
         right: Float,
         bottom: Float,
         radius: Float,
-        style: DrawStyle = Fill,
+        style: DrawStyle = DefaultDrawStyle,
         alpha: Float = DefaultAlpha,
     )
 
@@ -117,7 +118,7 @@ interface Canvas : Path {
         bottom: Float,
         startAngle: Angle = Angle.TwoSeventy,
         sweepAngle: Angle = Angle.OneEighty,
-        style: DrawStyle = Fill,
+        style: DrawStyle = DefaultDrawStyle,
         alpha: Float = DefaultAlpha,
     ) {
         drawPath(color, style, alpha) {
@@ -139,7 +140,7 @@ interface Canvas : Path {
         radius: Float,
         startAngle: Angle = Angle.TwoSeventy,
         sweepAngle: Angle = Angle.OneEighty,
-        style: DrawStyle = Fill,
+        style: DrawStyle = DefaultDrawStyle,
         alpha: Float = DefaultAlpha,
     ) {
         drawPath(color, style, alpha) {
@@ -154,7 +155,7 @@ interface Canvas : Path {
         radius: Float,
         startAngle: Angle = Angle.TwoSeventy,
         sweepAngle: Angle = Angle.OneEighty,
-        style: DrawStyle = Fill,
+        style: DrawStyle = DefaultDrawStyle,
         alpha: Float = DefaultAlpha,
     ) {
         drawPath(color, style, alpha) {
@@ -167,20 +168,20 @@ interface Canvas : Path {
      */
     fun drawPath(
         color: Color,
-        style: DrawStyle = Fill,
+        style: DrawStyle = DefaultDrawStyle,
         alpha: Float = DefaultAlpha,
     )
 
     fun drawPath(
         path: Path,
         color: Color,
-        style: DrawStyle = Fill,
+        style: DrawStyle = DefaultDrawStyle,
         alpha: Float = DefaultAlpha,
     )
 
     fun drawPath(
         color: Color,
-        style: DrawStyle = Fill,
+        style: DrawStyle = DefaultDrawStyle,
         alpha: Float = DefaultAlpha,
         block: CanvasAction,
     ) {
@@ -194,7 +195,7 @@ interface Canvas : Path {
         y: Float,
         radius: Float = 2f,
         color: Color = Color.Red,
-        style: DrawStyle = Fill,
+        style: DrawStyle = DefaultDrawStyle,
         alpha: Float = 1f,
     )
 

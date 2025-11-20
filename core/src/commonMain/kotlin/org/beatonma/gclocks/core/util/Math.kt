@@ -47,3 +47,16 @@ fun accelerate5(value: Float) = accelerate(value, 5)
 fun decelerate5(value: Float) = decelerate(value, 5)
 fun decelerate3(value: Float) = decelerate(value, 3)
 fun decelerate2(value: Float) = decelerate(value, 2)
+
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun Float.progressIn(min: Float, max: Float): Float = progress(this, min, max)
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun Int.progressIn(min: Int, max: Int): Float = progress(this, min, max)
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun Long.progressIn(min: Long, max: Long): Float = progress(this, min, max)
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun Float.lerp(start: Float, end: Float) = interpolate(this, start, end)
