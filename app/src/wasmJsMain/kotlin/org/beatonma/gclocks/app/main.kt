@@ -14,7 +14,7 @@ import org.beatonma.gclocks.app.data.ClockSearchParams
 import org.beatonma.gclocks.app.data.WebSettingsRepository
 import org.beatonma.gclocks.app.data.mergeSettings
 import org.beatonma.gclocks.app.data.settings.ClockType
-import org.beatonma.gclocks.app.data.settings.ContextClockOptions
+import org.beatonma.gclocks.app.data.settings.ContextClockOptionsOf
 import org.beatonma.gclocks.app.data.settings.DefaultAppSettings
 import org.beatonma.gclocks.app.ui.App
 import org.beatonma.gclocks.app.ui.screens.FullSizeClock
@@ -51,7 +51,7 @@ private fun Editable() {
 
 @Composable
 private fun ReadOnly(custom: ClockSearchParams?) {
-    val options: ContextClockOptions<*> = remember {
+    val options: ContextClockOptionsOf<*> = remember {
         mergeSettings(
             DefaultAppSettings.copyWithClock(custom?.clock ?: ClockType.entries.random()),
             custom

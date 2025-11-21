@@ -2,14 +2,13 @@ package org.beatonma.gclocks.core
 
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.glyph.Glyph
-import org.beatonma.gclocks.core.graphics.Paints
+import org.beatonma.gclocks.core.options.AnyOptions
 import org.beatonma.gclocks.core.options.Layout
-import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.core.options.TimeResolution
 
 
-interface ClockFont<P : Paints, G : Glyph<P>> {
+interface ClockFont<G : Glyph> {
     val measurements: Measurements
 
     /**
@@ -17,7 +16,7 @@ interface ClockFont<P : Paints, G : Glyph<P>> {
      */
     fun getGlyphAt(index: Int, format: TimeFormat, secondsGlyphScale: Float): G
 
-    fun measure(options: Options<*>) = measure(
+    fun measure(options: AnyOptions) = measure(
         format = options.layout.format,
         layout = options.layout.layout,
         spacingPx = options.layout.spacingPx,
@@ -49,7 +48,8 @@ interface ClockFont<P : Paints, G : Glyph<P>> {
         val separatorWithSpacingWidth = measurements.separatorWidth + strokeWidth + (2f * spacingPx)
         val hoursWidth = maxHourWidth + spacingPx + (2f * strokeWidth)
         val minutesWidth = measurements.maxMinutesWidth + spacingPx + (2f * strokeWidth)
-        val secondsWidth = secondsGlyphScale * ((measurements.maxSecondsWidth + spacingPx) + (2f * strokeWidth))
+        val secondsWidth =
+            secondsGlyphScale * ((measurements.maxSecondsWidth + spacingPx) + (2f * strokeWidth))
         val secondsHeight = secondsGlyphScale * lineHeight
 
         return when (layout) {

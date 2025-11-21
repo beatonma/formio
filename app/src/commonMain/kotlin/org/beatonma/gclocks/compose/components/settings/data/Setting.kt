@@ -21,7 +21,8 @@ data class RichSettings(
 ) {
 
     companion object {
-        fun empty(core: List<Setting>): RichSettings = RichSettings(core, listOf(), listOf(), listOf(), listOf())
+        fun empty(core: List<Setting>): RichSettings =
+            RichSettings(core, listOf(), listOf(), listOf(), listOf())
     }
 
     val all: List<Setting> get() = core + colors + layout + time + sizes

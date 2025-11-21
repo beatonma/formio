@@ -1,5 +1,6 @@
 package org.beatonma.gclocks.app
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
@@ -25,14 +27,15 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,21 +44,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import org.beatonma.gclocks.app.theme.AppTheme
 import org.beatonma.gclocks.compose.ComposePath
 import org.beatonma.gclocks.compose.VerticalBottomContentPadding
+import org.beatonma.gclocks.compose.animation.EnterVertical
+import org.beatonma.gclocks.compose.animation.ExitVertical
 import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.plus
-import org.beatonma.gclocks.core.geometry.VerticalAlignment
 import org.beatonma.gclocks.core.glyph.ClockGlyph
 import org.beatonma.gclocks.core.glyph.GlyphRole
 import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.glyph.GlyphVisibility
-import org.beatonma.gclocks.core.options.Options
-import org.beatonma.gclocks.core.options.TimeFormat
+import org.beatonma.gclocks.core.options.AnyOptions
 import org.beatonma.gclocks.core.types.ProgressFloat
 import org.beatonma.gclocks.core.util.TimeOfDay
 import org.beatonma.gclocks.core.util.getInstant
@@ -64,7 +67,6 @@ import org.beatonma.gclocks.core.util.nextSecond
 import org.beatonma.gclocks.core.util.timeOfDay
 import org.beatonma.gclocks.core.util.withTimeOfDay
 import org.beatonma.gclocks.form.FormGlyph
-import org.beatonma.gclocks.form.FormLayoutOptions
 import org.beatonma.gclocks.form.FormOptions
 import org.beatonma.gclocks.form.FormPaints
 import org.beatonma.gclocks.io16.Io16Glyph
@@ -73,9 +75,12 @@ import org.beatonma.gclocks.io16.Io16Options
 import org.beatonma.gclocks.io16.Io16Paints
 import org.beatonma.gclocks.io18.GlyphAnimations
 import org.beatonma.gclocks.io18.Io18Glyph
+import org.beatonma.gclocks.io18.Io18Options
 import org.beatonma.gclocks.io18.Io18Paints
+import kotlin.enums.enumEntries
 import kotlin.math.roundToInt
 import kotlin.time.Instant
+import androidx.compose.ui.graphics.Color as ComposeColor
 
 
 private val ItemModifier = Modifier.background(Color.Black)
@@ -192,7 +197,7 @@ fun DebugApp() {
 }
 
 
-private fun <O : Options<*>> LazyGridScope.clockPreview(
+private fun <O : AnyOptions> LazyGridScope.clockPreview(
     options: O,
     timeFunc: () -> Instant,
     forcedState: GlyphState?,

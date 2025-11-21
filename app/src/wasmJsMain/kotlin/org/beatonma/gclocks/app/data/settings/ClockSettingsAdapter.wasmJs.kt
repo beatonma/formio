@@ -1,5 +1,7 @@
 package org.beatonma.gclocks.app.data.settings
 
-actual fun buildClockSettingsAdapter(clock: ClockType): ClockSettingsAdapter<*> {
+import org.beatonma.gclocks.core.options.AnyOptions
+
+actual fun <O : AnyOptions> buildClockSettingsAdapter(clock: ClockType): ClockSettingsAdapter<O> {
     return defaultBuildClockSettingsAdapter(clock)
 }

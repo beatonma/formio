@@ -13,7 +13,8 @@ sealed interface GlyphStateController {
     fun tick(options: GlyphOptions, currentTimeMillis: Long): GlyphState?
 }
 
-class DefaultGlyphStateController(lock: GlyphState?, currentTimeMillis: Long) : GlyphStateController {
+class DefaultGlyphStateController(lock: GlyphState?, currentTimeMillis: Long) :
+    GlyphStateController {
     override var state: GlyphState = lock ?: GlyphState.Active
         private set
     override val lock: GlyphState? = when (lock) {
@@ -55,7 +56,11 @@ class DefaultGlyphStateController(lock: GlyphState?, currentTimeMillis: Long) : 
         val millisSinceStateChange = currentTimeMillis - stateChangedAt
 
         stateChangeProgress =
-            progress(millisSinceStateChange.toFloat(), 0f, options.stateChangeDurationMillis.toFloat())
+            progress(
+                millisSinceStateChange.toFloat(),
+                0f,
+                options.stateChangeDurationMillis.toFloat()
+            )
 
         if (state == GlyphState.Active && millisSinceStateChange > options.activeStateDurationMillis) {
             // Active state decays after period of inactivity
@@ -71,7 +76,11 @@ class DefaultGlyphStateController(lock: GlyphState?, currentTimeMillis: Long) : 
 
     private fun setActive(currentTimeMillis: Long) {
         when (state) {
-            GlyphState.Active -> setState(GlyphState.Active, force = true, currentTimeMillis = currentTimeMillis)
+            GlyphState.Active -> setState(
+                GlyphState.Active,
+                force = true,
+                currentTimeMillis = currentTimeMillis
+            )
 
             GlyphState.Inactive, GlyphState.Deactivating -> setState(
                 GlyphState.Activating,

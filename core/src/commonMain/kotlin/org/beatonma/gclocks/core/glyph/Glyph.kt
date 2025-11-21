@@ -45,12 +45,12 @@ interface GlyphCompanion {
 
 typealias RenderGlyph = () -> Unit
 
-interface GlyphRenderer<P : Paints, G : Glyph<P>> {
+interface GlyphRenderer<G : Glyph> {
     fun update(currentTimeMillis: Long) {}
-    fun draw(glyph: G, canvas: Canvas, paints: P)
+    fun draw(glyph: G, canvas: Canvas, paints: Paints)
 }
 
-interface Glyph<P : Paints> {
+interface Glyph {
     val companion: GlyphCompanion
     val maxSize: NativeSize get() = companion.maxSize
     val role: GlyphRole
@@ -71,7 +71,13 @@ interface Glyph<P : Paints> {
      */
     fun setKey(value: String, force: Boolean = false)
 
-    fun draw(canvas: Canvas, glyphProgress: Float, paints: P, renderGlyph: RenderGlyph? = null)
+    fun draw(
+        canvas: Canvas,
+        glyphProgress: Float,
+        paints: Paints,
+        renderGlyph: RenderGlyph? = null
+    )
+
     fun getWidthAtProgress(glyphProgress: Float): Float
     fun setState(
         newState: GlyphState,
@@ -83,7 +89,12 @@ interface Glyph<P : Paints> {
         setState(newVisibility, force, currentTimeMillis)
     }
 
-    fun setState(newState: GlyphState, force: Boolean = false, currentTimeMillis: Long = getCurrentTimeMillis())
+    fun setState(
+        newState: GlyphState,
+        force: Boolean = false,
+        currentTimeMillis: Long = getCurrentTimeMillis()
+    )
+
     fun setState(
         newVisibility: GlyphVisibility,
         force: Boolean = false,
@@ -100,7 +111,7 @@ interface Glyph<P : Paints> {
     }
 }
 
-sealed interface BaseGlyph<P : Paints> : Glyph<P> {
+sealed interface BaseGlyph : Glyph {
     val stateController: GlyphStateController
     val visibilityController: GlyphVisibilityController
 
@@ -126,12 +137,21 @@ sealed interface BaseGlyph<P : Paints> : Glyph<P> {
                 currentTimeMillis = currentTimeMillis
             )
 
-            newState != null -> setState(newState, force = true, currentTimeMillis = currentTimeMillis)
-            newVisibility != null -> setState(newVisibility, force = true, currentTimeMillis = currentTimeMillis)
+            newState != null -> setState(
+                newState,
+                force = true,
+                currentTimeMillis = currentTimeMillis
+            )
+
+            newVisibility != null -> setState(
+                newVisibility,
+                force = true,
+                currentTimeMillis = currentTimeMillis
+            )
         }
     }
 
-    fun Canvas.drawNotImplemented(glyphProgress: Float, paints: P) {
+    fun Canvas.drawNotImplemented(glyphProgress: Float, paints: Paints) {
         val (width, height) = companion.maxSize
         drawLine(Color.Red, 0f, 0f, width, height)
         drawLine(Color.Red, width, 0f, 0f, height)

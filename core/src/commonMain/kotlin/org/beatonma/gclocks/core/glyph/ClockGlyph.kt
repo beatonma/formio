@@ -13,12 +13,12 @@ interface SecondChangedObserver {
 }
 
 
-sealed class BaseClockGlyph<P : Paints>(
+sealed class BaseClockGlyph(
     override val role: GlyphRole,
     override val scale: Float = 1f,
     lock: GlyphState? = null,
     currentTimeMillis: Long = getCurrentTimeMillis(),
-) : BaseGlyph<P>, ClockGlyph<P> {
+) : BaseGlyph, ClockGlyph {
     final override var key: String = " "
         protected set(value) {
             field = value
@@ -34,7 +34,8 @@ sealed class BaseClockGlyph<P : Paints>(
     final override var canonicalEndGlyph: Char = ' '
         protected set
 
-    override val stateController: GlyphStateController = DefaultGlyphStateController(lock, currentTimeMillis)
+    override val stateController: GlyphStateController =
+        DefaultGlyphStateController(lock, currentTimeMillis)
 
     override val lock: GlyphState? get() = stateController.lock
 
@@ -47,17 +48,18 @@ sealed class BaseClockGlyph<P : Paints>(
  * These transitions replace the typical second-to-second animations entirely,
  * and so must be synchronized with the current time to avoid visual jumps.
  */
-abstract class ClockGlyphSynchronizedVisibility<P : Paints>(
+abstract class ClockGlyphSynchronizedVisibility(
     role: GlyphRole,
     scale: Float = 1f,
     lock: GlyphState? = null,
     currentTimeMillis: Long = getCurrentTimeMillis(),
-) : BaseClockGlyph<P>(role, scale, lock, currentTimeMillis) {
-    override val visibilityController: GlyphVisibilityController = SynchronizedVisibilityController { newVisibility ->
-        if (newVisibility == GlyphVisibility.Visible || newVisibility == GlyphVisibility.Appearing) {
-            setState(GlyphState.Active, force = true)
+) : BaseClockGlyph(role, scale, lock, currentTimeMillis) {
+    override val visibilityController: GlyphVisibilityController =
+        SynchronizedVisibilityController { newVisibility ->
+            if (newVisibility == GlyphVisibility.Visible || newVisibility == GlyphVisibility.Appearing) {
+                setState(GlyphState.Active, force = true)
+            }
         }
-    }
 
     override fun setKey(value: String, force: Boolean) {
         key = when {
@@ -77,12 +79,12 @@ abstract class ClockGlyphSynchronizedVisibility<P : Paints>(
  * A [Glyph] which applies [GlyphVisibility] transitions on top of the existing
  * second-to-second animations, instead of replacing those animations entirely.
  */
-abstract class ClockGlyphDesynchronizedVisibility<P : Paints>(
+abstract class ClockGlyphDesynchronizedVisibility(
     role: GlyphRole,
     scale: Float = 1f,
     lock: GlyphState? = null,
     currentTimeMillis: Long = getCurrentTimeMillis(),
-) : BaseClockGlyph<P>(role, scale, lock, currentTimeMillis) {
+) : BaseClockGlyph(role, scale, lock, currentTimeMillis) {
     override val visibilityController = DesynchronizedGlyphVisibilityController { newVisibility ->
         if (newVisibility == GlyphVisibility.Visible || newVisibility == GlyphVisibility.Appearing) {
             setState(GlyphState.Active, force = true)
@@ -100,66 +102,80 @@ abstract class ClockGlyphDesynchronizedVisibility<P : Paints>(
 }
 
 
-interface ClockGlyph<P : Paints> : Glyph<P>, SecondChangedObserver {
+interface ClockGlyph : Glyph, SecondChangedObserver {
     val clockKey: Key
 
     fun resolveClockKey(value: String): Key =
         Key.entries.first { it.key == value }
 
-    override fun draw(canvas: Canvas, glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?) {
+    override fun draw(
+        canvas: Canvas,
+        glyphProgress: Float,
+        paints: Paints,
+        renderGlyph: RenderGlyph?
+    ) {
         if (this.visibility == GlyphVisibility.Hidden) return
 
         canvas.delegateDrawMethod(glyphProgress, paints, renderGlyph)
     }
 
-    fun Canvas.drawZeroOne(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawOneTwo(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawTwoThree(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawThreeFour(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawFourFive(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawFiveSix(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawSixSeven(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawSevenEight(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawEightNine(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawNineZero(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
+    fun Canvas.drawZeroOne(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawOneTwo(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawTwoThree(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawThreeFour(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawFourFive(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawFiveSix(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawSixSeven(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawSevenEight(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawEightNine(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawNineZero(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
 
-    fun Canvas.drawOneZero(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawTwoZero(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawTwoOne(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawThreeZero(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawFiveZero(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
+    fun Canvas.drawOneZero(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawTwoZero(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawTwoOne(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawThreeZero(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawFiveZero(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
 
-    fun Canvas.drawZeroEmpty(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawOneEmpty(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawTwoEmpty(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawThreeEmpty(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawFourEmpty(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawFiveEmpty(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawSixEmpty(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawSevenEmpty(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawEightEmpty(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawNineEmpty(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
+    fun Canvas.drawZeroEmpty(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawOneEmpty(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawTwoEmpty(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawThreeEmpty(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawFourEmpty(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawFiveEmpty(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawSixEmpty(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawSevenEmpty(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawEightEmpty(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawNineEmpty(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
 
-    fun Canvas.drawEmptyZero(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawEmptyOne(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawEmptyTwo(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawEmptyThree(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawEmptyFour(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawEmptyFive(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawEmptySix(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawEmptySeven(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawEmptyEight(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawEmptyNine(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
+    fun Canvas.drawEmptyZero(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawEmptyOne(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawEmptyTwo(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawEmptyThree(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawEmptyFour(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawEmptyFive(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawEmptySix(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawEmptySeven(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawEmptyEight(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawEmptyNine(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
 
-    fun Canvas.drawSeparator(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawEmptySeparator(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
-    fun Canvas.drawSeparatorEmpty(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
+    fun Canvas.drawSeparator(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
+    fun Canvas.drawEmptySeparator(
+        glyphProgress: Float,
+        paints: Paints,
+        renderGlyph: RenderGlyph?
+    )
 
-    fun Canvas.drawSpace(glyphProgress: Float, paints: P, renderGlyph: RenderGlyph?)
+    fun Canvas.drawSeparatorEmpty(
+        glyphProgress: Float,
+        paints: Paints,
+        renderGlyph: RenderGlyph?
+    )
+
+    fun Canvas.drawSpace(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)
 
     fun Canvas.delegateDrawMethod(
         glyphProgress: Float,
-        paints: P,
+        paints: Paints,
         renderGlyph: RenderGlyph?,
     ) {
         when (clockKey) {

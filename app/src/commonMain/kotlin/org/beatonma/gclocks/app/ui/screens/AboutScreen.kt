@@ -27,18 +27,15 @@ import gclocks_multiplatform.app.generated.resources.about_io16_markdown
 import gclocks_multiplatform.app.generated.resources.about_io18_markdown
 import gclocks_multiplatform.app.generated.resources.about_io_markdown
 import org.beatonma.gclocks.app.theme.ClockColorScheme
-import org.beatonma.gclocks.clocks.layoutOptions
 import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.components.MarkdownText
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
+import org.beatonma.gclocks.core.geometry.VerticalAlignment
 import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.LayoutOptions
 import org.beatonma.gclocks.core.options.TimeFormat
-import org.beatonma.gclocks.form.FormLayoutOptions
 import org.beatonma.gclocks.form.FormOptions
-import org.beatonma.gclocks.io16.Io16LayoutOptions
 import org.beatonma.gclocks.io16.Io16Options
-import org.beatonma.gclocks.io18.Io18LayoutOptions
 import org.beatonma.gclocks.io18.Io18Options
 import org.jetbrains.compose.resources.stringResource
 
@@ -86,7 +83,7 @@ private fun AboutForm(modifier: Modifier = Modifier) {
     ) {
         Clock(
             FormOptions(
-                layout = previewLayoutOptions<FormLayoutOptions>()
+                layout = previewLayoutOptions()
             ),
             clockPreviewModifier(ClockColorScheme.Form.backgroundColor)
         )
@@ -109,7 +106,7 @@ private fun AboutIo16(modifier: Modifier = Modifier) {
     ) {
         Clock(
             Io16Options(
-                layout = previewLayoutOptions<Io16LayoutOptions>()
+                layout = previewLayoutOptions()
             ),
             clockPreviewModifier(ClockColorScheme.Io16.backgroundColor)
         )
@@ -125,7 +122,7 @@ private fun AboutIo18(modifier: Modifier = Modifier) {
     ) {
         Clock(
             Io18Options(
-                layout = previewLayoutOptions<Io18LayoutOptions>()
+                layout = previewLayoutOptions()
             ),
             clockPreviewModifier(ClockColorScheme.Io18.backgroundColor)
         )
@@ -147,8 +144,11 @@ private fun AboutCard(
 }
 
 
-private inline fun <reified T : LayoutOptions> previewLayoutOptions() = layoutOptions<T>(
+private fun previewLayoutOptions() = LayoutOptions(
     Layout.Wrapped,
     TimeFormat.build(is24Hour = true, isZeroPadded = false, showSeconds = true),
     horizontalAlignment = HorizontalAlignment.End,
+    verticalAlignment = VerticalAlignment.Top,
+    spacingPx = 8,
+    secondsGlyphScale = 0.5f,
 )

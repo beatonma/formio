@@ -13,7 +13,7 @@ class Io18Font(
     isAnimated: Boolean = true,
     private val shuffleColors: Boolean = true,
     private val offsetColors: Boolean = true,
-) : ClockFont<Io18Paints, Io18Glyph> {
+) : ClockFont<Io18Glyph> {
     override val measurements: ClockFont.Measurements = getMeasurements(isAnimated)
     private val animations = GlyphAnimations(path)
 

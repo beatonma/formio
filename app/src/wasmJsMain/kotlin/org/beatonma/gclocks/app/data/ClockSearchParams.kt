@@ -4,14 +4,12 @@ import org.beatonma.gclocks.app.data.settings.AppSettings
 import org.beatonma.gclocks.app.data.settings.ClockType
 import org.beatonma.gclocks.app.data.settings.ContextClockOptions
 import org.beatonma.gclocks.app.data.settings.DisplayContextDefaults
-import org.beatonma.gclocks.clocks.whenOptions
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.toColor
+import org.beatonma.gclocks.core.options.GlyphOptions
 import org.beatonma.gclocks.core.options.Layout
+import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.options.TimeFormat
-import org.beatonma.gclocks.form.FormOptions
-import org.beatonma.gclocks.io16.Io16Options
-import org.beatonma.gclocks.io18.Io18Options
 
 
 internal data class ClockSearchParams(
@@ -57,7 +55,10 @@ internal data class ClockSearchParams(
     }
 }
 
-internal fun mergeSettings(appSettings: AppSettings, searchParams: ClockSearchParams?): AppSettings {
+internal fun mergeSettings(
+    appSettings: AppSettings,
+    searchParams: ClockSearchParams?
+): AppSettings {
     if (searchParams == null) return appSettings
 
     return appSettings.letNotNull(searchParams.clock) {
@@ -84,75 +85,32 @@ private inline fun <reified E : Enum<E>> enumValueOrNull(key: String): E? =
 external fun decodeURIComponent(uri: String): String
 
 
-private fun mergeOptions(options: ContextClockOptions<*>, custom: ClockSearchParams): ContextClockOptions<*> {
-    return whenOptions(
-        options,
-        form = { formOptions ->
-            formOptions.copy(
-                clockOptions = formOptions.clockOptions.merge(custom),
-                displayOptions = DisplayContextDefaults.WithBackground(
-                    custom.background ?: DisplayContextDefaults.DefaultBackgroundColor,
-                )
-            )
-        },
-        io16 = { io16Options ->
-            io16Options.copy(
-                clockOptions = io16Options.clockOptions.merge(custom),
-                displayOptions = DisplayContextDefaults.WithBackground(
-                    custom.background ?: DisplayContextDefaults.DefaultBackgroundColor,
-                )
-            )
-        },
-        io18 = { io18Options ->
-            io18Options.copy(
-                clockOptions = io18Options.clockOptions.merge(custom),
-                displayOptions = DisplayContextDefaults.WithBackground(
-                    custom.background ?: DisplayContextDefaults.DefaultBackgroundColor,
-                )
-            )
-        }
+private fun <G : GlyphOptions, O : Options<G>> mergeOptions(
+    options: ContextClockOptions<O, G>,
+    custom: ClockSearchParams
+): ContextClockOptions<O, G> {
+    return options.copy(
+        clockOptions = options.clockOptions.merge(custom),
+        displayOptions = DisplayContextDefaults.WithBackground(
+            custom.background ?: DisplayContextDefaults.DefaultBackgroundColor,
+        )
     )
 }
 
+@Suppress("UNCHECKED_CAST")
+private fun <O : Options<G>, G : GlyphOptions> O.merge(custom: ClockSearchParams): O =
+    copy(
+        layout = layout.copy(
+            layout = custom.layout ?: layout.layout,
+            format = custom.format ?: layout.format
+        ),
+        paints = paints.copy(
+            colors = mergeColors(paints.colors, custom.colors)
+        )
+    ) as O
 
-private fun FormOptions.merge(
-    custom: ClockSearchParams?
-): FormOptions = copy(
-    layout = layout.copy(
-        layout = custom?.layout ?: layout.layout,
-        format = custom?.format ?: layout.format
-    ),
-    paints = paints.copy(
-        colors = mergeColors(paints.colors, custom?.colors)
-    )
-)
-
-private fun Io16Options.merge(
-    custom: ClockSearchParams?
-): Io16Options = copy(
-    layout = layout.copy(
-        layout = custom?.layout ?: layout.layout,
-        format = custom?.format ?: layout.format
-    ),
-    paints = paints.copy(
-        colors = mergeColors(paints.colors, custom?.colors)
-    )
-)
-
-private fun Io18Options.merge(
-    custom: ClockSearchParams?
-): Io18Options = copy(
-    layout = layout.copy(
-        layout = custom?.layout ?: layout.layout,
-        format = custom?.format ?: layout.format
-    ),
-    paints = paints.copy(
-        colors = mergeColors(paints.colors, custom?.colors)
-    )
-)
-
-private fun mergeColors(initial: Array<Color>, new: List<Color>?): Array<Color> {
+private fun mergeColors(initial: List<Color>, new: List<Color>?): List<Color> {
     if (new == null) return initial
     if (new.size < initial.size) return initial
-    return new.take(initial.size).toTypedArray()
+    return new.take(initial.size)
 }

@@ -14,7 +14,7 @@ import org.beatonma.gclocks.compose.rememberCanvasHost
 import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.glyph.GlyphVisibility
-import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.options.AnyOptions
 import org.beatonma.gclocks.core.util.getInstant
 import kotlin.time.Duration
 import kotlin.time.Instant
@@ -24,8 +24,8 @@ import kotlin.time.Instant
 expect fun currentFrameDelta(): Duration
 
 @Composable
-fun <Opts : Options<*>> Clock(
-    options: Opts,
+fun Clock(
+    options: AnyOptions,
     modifier: Modifier = Modifier,
     getInstant: () -> Instant = ::getInstant,
     allowVariance: Boolean = true,
@@ -43,7 +43,7 @@ fun <Opts : Options<*>> Clock(
 
 @Composable
 fun Clock(
-    animator: ClockAnimator<*, *>,
+    animator: ClockAnimator<*>,
     modifier: Modifier = Modifier,
     getInstant: () -> Instant = ::getInstant,
 ) {
@@ -101,11 +101,11 @@ fun Clock(
 }
 
 @Composable
-private fun <Opts : Options<*>> rememberClockAnimator(
-    options: Opts,
+private fun rememberClockAnimator(
+    options: AnyOptions,
     allowVariance: Boolean,
     forcedState: GlyphState?,
-): ClockAnimator<*, *> {
+): ClockAnimator<*> {
     return remember(options, forcedState) {
         createAnimatorFromOptions(
             options,

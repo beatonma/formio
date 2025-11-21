@@ -38,20 +38,20 @@ internal typealias OnMeasure = OnMeasureScope.(
 ) -> Unit
 
 
-fun <P : Paints, G : Glyph<P>> getLayout(
+fun <G : Glyph> getLayout(
     options: LayoutOptions,
-    paints: P,
+    paints: Paints,
     nativeSize: NativeSize,
-): Layout<P, G> = when (options.layout) {
+): Layout<G> = when (options.layout) {
     LayoutOption.Horizontal -> HorizontalLayout(options, paints, nativeSize)
     LayoutOption.Vertical -> VerticalLayout(options, paints, nativeSize)
     LayoutOption.Wrapped -> WrappedLayout(options, paints, nativeSize)
 }
 
 
-sealed class Layout<P : Paints, G : Glyph<P>>(
+sealed class Layout<G : Glyph>(
     protected val options: LayoutOptions,
-    paints: P,
+    paints: Paints,
     final override val nativeSize: NativeSize,
 ) : OnMeasureScope {
     /* Size of each row in the current frame */
@@ -247,24 +247,24 @@ sealed class Layout<P : Paints, G : Glyph<P>>(
     }
 }
 
-private class HorizontalLayout<P : Paints, G : Glyph<P>>(
-    options: LayoutOptions, paints: P,
+private class HorizontalLayout<G : Glyph>(
+    options: LayoutOptions, paints: Paints,
     nativeSize: NativeSize,
-) : Layout<P, G>(options, paints, nativeSize) {
+) : Layout<G>(options, paints, nativeSize) {
     override fun isLineBreak(glyph: G): Boolean = false
 }
 
-private class VerticalLayout<P : Paints, G : Glyph<P>>(
-    options: LayoutOptions, paints: P,
+private class VerticalLayout<G : Glyph>(
+    options: LayoutOptions, paints: Paints,
     nativeSize: NativeSize,
-) : Layout<P, G>(options, paints, nativeSize) {
+) : Layout<G>(options, paints, nativeSize) {
     override fun isLineBreak(glyph: G): Boolean = glyph.role.isSeparator
 }
 
-private class WrappedLayout<P : Paints, G : Glyph<P>>(
-    options: LayoutOptions, paints: P,
+private class WrappedLayout<G : Glyph>(
+    options: LayoutOptions, paints: Paints,
     nativeSize: NativeSize,
-) : Layout<P, G>(options, paints, nativeSize) {
+) : Layout<G>(options, paints, nativeSize) {
     override fun isLineBreak(glyph: G): Boolean =
         glyph.role == GlyphRole.SeparatorMinutesSeconds
 }

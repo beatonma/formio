@@ -3,8 +3,8 @@ package org.beatonma.gclocks.core
 import org.beatonma.gclocks.core.fixtures.TestFont
 import org.beatonma.gclocks.core.fixtures.TestGlyph
 import org.beatonma.gclocks.core.fixtures.TestLayoutOptions
-import org.beatonma.gclocks.core.fixtures.TestOptions
 import org.beatonma.gclocks.core.fixtures.TestPaints
+import org.beatonma.gclocks.core.fixtures.createTestOptions
 import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.test.shouldbe
@@ -27,7 +27,7 @@ private fun options(
     format: TimeFormat,
     layout: Layout,
     spacingPx: Int,
-) = TestOptions(
+) = createTestOptions(
     layout = TestLayoutOptions(
         format = format,
         layout = layout,

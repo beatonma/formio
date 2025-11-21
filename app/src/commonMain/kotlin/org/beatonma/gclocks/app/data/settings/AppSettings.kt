@@ -2,10 +2,19 @@ package org.beatonma.gclocks.app.data.settings
 
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
+import org.beatonma.gclocks.core.graphics.Color
+import org.beatonma.gclocks.core.options.AnyOptions
+import org.beatonma.gclocks.core.options.GlyphOptions
 import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.form.FormGlyphOptions
 import org.beatonma.gclocks.form.FormOptions
+import org.beatonma.gclocks.form.FormPaints
+import org.beatonma.gclocks.io16.Io16GlyphOptions
 import org.beatonma.gclocks.io16.Io16Options
+import org.beatonma.gclocks.io16.Io16Paints
+import org.beatonma.gclocks.io18.Io18GlyphOptions
 import org.beatonma.gclocks.io18.Io18Options
+import org.beatonma.gclocks.io18.Io18Paints
 
 
 /** Per-context set of options for each clock type. */
@@ -16,23 +25,23 @@ data class ContextSettings(
     val clock: ClockType = ClockType.Default,
 
     /* Options for each type of clock. */
-    val form: ContextClockOptions<FormOptions> = ContextClockOptions(
+    val form: FormContextClockOptions = ContextClockOptions(
         context,
         FormOptions(),
         context.defaultOptions(),
     ),
-    val io16: ContextClockOptions<Io16Options> = ContextClockOptions(
+    val io16: Io16ContextClockOptions = ContextClockOptions(
         context,
         Io16Options(),
         context.defaultOptions(),
     ),
-    val io18: ContextClockOptions<Io18Options> = ContextClockOptions(
+    val io18: Io18ContextClockOptions = ContextClockOptions(
         context,
         Io18Options(),
         context.defaultOptions(),
     ),
 ) {
-    fun getContextOptions(clock: ClockType = this.clock): ContextClockOptions<*> =
+    fun getContextOptions(clock: ClockType = this.clock): ContextClockOptions<*, *> =
         when (clock) {
             ClockType.Form -> this.form
             ClockType.Io16 -> this.io16
@@ -42,11 +51,15 @@ data class ContextSettings(
 
 @Serializable
 @Immutable
-data class ContextClockOptions<O : Options<*>>(
+data class ContextClockOptions<O : Options<G>, G : GlyphOptions>(
     val displayContext: DisplayContext,
     val clockOptions: O,
     val displayOptions: DisplayContext.Options,
 )
+typealias FormContextClockOptions = ContextClockOptions<FormOptions, FormGlyphOptions>
+typealias Io16ContextClockOptions = ContextClockOptions<Io16Options, Io16GlyphOptions>
+typealias Io18ContextClockOptions = ContextClockOptions<Io18Options, Io18GlyphOptions>
+typealias ContextClockOptionsOf<O> = ContextClockOptions<O, *>
 
 @Serializable
 @Immutable
@@ -62,9 +75,9 @@ data class AppSettings(
     val settings: Map<DisplayContext, ContextSettings>,
 ) {
     val contextSettings: ContextSettings get() = getContextSettings(state.displayContext)
-    val contextOptions: ContextClockOptions<*> get() = getContextOptions(state.displayContext)
+    val contextOptions: ContextClockOptions<*, *> get() = getContextOptions(state.displayContext)
 
-    fun getContextOptions(context: DisplayContext): ContextClockOptions<*> {
+    fun getContextOptions(context: DisplayContext): ContextClockOptions<*, *> {
         return getContextSettings(context).getContextOptions()
     }
 
@@ -81,7 +94,10 @@ data class AppSettings(
         return copy(settings = updatedSettings)
     }
 
-    fun copyWithOptions(clockOptions: Options<*>?, displayOptions: DisplayContext.Options?): AppSettings {
+    fun copyWithOptions(
+        clockOptions: AnyOptions?,
+        displayOptions: DisplayContext.Options?
+    ): AppSettings {
         return copyWithOptions(
             clockOptions?.resolveClockType() ?: contextSettings.clock,
             clockOptions,
@@ -91,7 +107,7 @@ data class AppSettings(
 
     fun copyWithOptions(
         clock: ClockType,
-        clockOptions: Options<*>?,
+        clockOptions: AnyOptions?,
         displayOptions: DisplayContext.Options?,
     ): AppSettings {
         val previous = settings[state.displayContext] ?: ContextSettings(state.displayContext)
@@ -102,7 +118,8 @@ data class AppSettings(
                     ClockType.Form -> previous.copy(
                         clock = ClockType.Form,
                         form = previous.form.copy(
-                            clockOptions = clockOptions as FormOptions? ?: previous.form.clockOptions,
+                            clockOptions = clockOptions as FormOptions?
+                                ?: previous.form.clockOptions,
                             displayOptions = displayOptions ?: previous.form.displayOptions
                         )
                     )
@@ -110,7 +127,8 @@ data class AppSettings(
                     ClockType.Io16 -> previous.copy(
                         clock = ClockType.Io16,
                         io16 = previous.io16.copy(
-                            clockOptions = clockOptions as Io16Options? ?: previous.io16.clockOptions,
+                            clockOptions = clockOptions as Io16Options?
+                                ?: previous.io16.clockOptions,
                             displayOptions = displayOptions ?: previous.io16.displayOptions
                         )
                     )
@@ -118,7 +136,8 @@ data class AppSettings(
                     ClockType.Io18 -> previous.copy(
                         clock = ClockType.Io18,
                         io18 = previous.io18.copy(
-                            clockOptions = clockOptions as Io18Options? ?: previous.io18.clockOptions,
+                            clockOptions = clockOptions as Io18Options?
+                                ?: previous.io18.clockOptions,
                             displayOptions = displayOptions ?: previous.io18.displayOptions
                         )
                     )

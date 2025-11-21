@@ -7,6 +7,7 @@ import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.glyph.GlyphVisibility
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Color
+import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.graphics.PathMeasureScope
 import org.beatonma.gclocks.core.graphics.Stroke
@@ -20,8 +21,8 @@ import org.beatonma.gclocks.core.util.progress
 
 class Io16ClockRenderer<P : Path>(
     override val renderer: Io16GlyphRenderer<P>,
-    override var paints: Io16Paints,
-) : ClockRenderer<Io16Paints, Io16Glyph> {
+    override var paints: Paints,
+) : ClockRenderer<Io16Glyph> {
     override fun update(currentTimeMillis: Long) {
         renderer.update(currentTimeMillis)
     }
@@ -32,7 +33,7 @@ class Io16GlyphRenderer<P : Path>(
     segmentPath: P,
     options: Io16Options,
     initTimeMillis: Long = getCurrentTimeMillis()
-) : GlyphRenderer<Io16Paints, Io16Glyph> {
+) : GlyphRenderer<Io16Glyph> {
     private val options: Io16GlyphOptions = options.glyph
     private var previousNow: Long = initTimeMillis
     internal var now: Long = initTimeMillis
@@ -70,14 +71,16 @@ class Io16GlyphRenderer<P : Path>(
         now = currentTimeMillis
     }
 
-    override fun draw(glyph: Io16Glyph, canvas: Canvas, paints: Io16Paints) {
-        val disappearedSegmentSize = getDisappearedSegmentLength(glyph, ease(glyph.visibilityChangedProgress).pf)
+    override fun draw(glyph: Io16Glyph, canvas: Canvas, paints: Paints) {
+        val disappearedSegmentSize =
+            getDisappearedSegmentLength(glyph, ease(glyph.visibilityChangedProgress).pf)
         if (disappearedSegmentSize.isOne) {
             // Nothing to render
             return
         }
 
-        val inactiveSegmentSize = getInactiveSegmentLength(glyph, ease(glyph.stateChangeProgress).pf)
+        val inactiveSegmentSize =
+            getInactiveSegmentLength(glyph, ease(glyph.stateChangeProgress).pf)
 
         // If fully inactive, only one color is needed so just render the full path and return.
         if (disappearedSegmentSize.isZero && inactiveSegmentSize.isOne) {
@@ -104,7 +107,7 @@ class Io16GlyphRenderer<P : Path>(
 
     /** Portion of the total path length consumed by 'inactive' color. */
     private fun getInactiveSegmentLength(
-        glyph: Glyph<*>,
+        glyph: Glyph,
         transitionProgress: ProgressFloat,
     ): ProgressFloat {
         if (glyph.lock == GlyphState.Inactive) return ProgressFloat.One
@@ -119,7 +122,7 @@ class Io16GlyphRenderer<P : Path>(
 
     /** Portion of the total path length that is not visible. */
     private fun getDisappearedSegmentLength(
-        glyph: Glyph<*>,
+        glyph: Glyph,
         transitionProgress: ProgressFloat,
     ): ProgressFloat =
         when (glyph.visibility) {
@@ -146,7 +149,7 @@ class Io16PathRenderer(
 
     fun drawSegments(
         canvas: Canvas,
-        paints: Io16Paints,
+        paints: Paints,
         offset: Float,
         invisible: ProgressFloat,
         inactive: ProgressFloat,
@@ -184,8 +187,9 @@ class Io16PathRenderer(
             }
 
             // Split the remaining length between the 'active' colors.
-            val segmentSize: ProgressFloat = activeLength / paints.active.size
-            paints.active.forEachIndexed { index, color ->
+            val activePaints = paints.active
+            val segmentSize: ProgressFloat = activeLength / activePaints.size
+            activePaints.forEachIndexed { index, color ->
                 drawSegment(
                     pm,
                     canvas,
@@ -235,3 +239,6 @@ class Io16PathRenderer(
         }
     }
 }
+
+private val Paints.active: List<Color> get() = colors.subList(0, 4)
+private val Paints.inactive: Color get() = colors.last()

@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 import org.beatonma.gclocks.android.AndroidCanvasHost
 import org.beatonma.gclocks.android.AndroidPath
 import org.beatonma.gclocks.app.data.loadDisplayMetrics
-import org.beatonma.gclocks.app.data.settings.ContextClockOptions
+import org.beatonma.gclocks.app.data.settings.ContextClockOptionsOf
 import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.data.settings.DisplayMetrics
 import org.beatonma.gclocks.app.data.settingsRepository
@@ -32,7 +32,7 @@ import org.beatonma.gclocks.core.geometry.RectF
 import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.glyph.GlyphVisibility
 import org.beatonma.gclocks.core.graphics.Color
-import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.options.AnyOptions
 import org.beatonma.gclocks.core.util.debug
 import kotlin.math.roundToInt
 
@@ -57,7 +57,7 @@ class ClockWallpaperService : WallpaperService() {
 
     private inner class ClockEngine : Engine() {
         @OptIn(ExperimentalCoroutinesApi::class)
-        private val settings: Flow<ContextClockOptions<*>> = settingsRepository
+        private val settings: Flow<ContextClockOptionsOf<*>> = settingsRepository
             .loadAppSettings()
             .mapLatest { it.getContextOptions(DisplayContext.LiveWallpaper) }
 
@@ -65,14 +65,14 @@ class ClockWallpaperService : WallpaperService() {
 
         private val canvasHost: AndroidCanvasHost = AndroidCanvasHost()
         private val path: AndroidPath = AndroidPath()
-        private var animator: ClockAnimator<*, *>? = null
+        private var animator: ClockAnimator<*>? = null
         private var backgroundColor: Color = Color(0xff000000.toInt())
         private var relativeBounds: RectF = RectF(0f, 0f, 1f, 1f)
         private var absoluteBounds: RectF = RectF(0f, 0f, 0f, 0f)
         private var width: Int = 0
         private var height: Int = 0
         private var frameDelayMillis: Long = (1000f / 60f).toLong()
-        private var previousClockOptions: Options<*>? = null
+        private var previousClockOptions: AnyOptions? = null
 
         private val visibilityManager = VisibilityManager()
 
@@ -228,7 +228,7 @@ class ClockWallpaperService : WallpaperService() {
             super.onTouchEvent(event)
         }
 
-        private fun createAnimator(options: Options<*>): ClockAnimator<*, *> {
+        private fun createAnimator(options: AnyOptions): ClockAnimator<*> {
             val constraints = updateConstraints()
 
             if (options == previousClockOptions) {

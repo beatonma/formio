@@ -1,7 +1,7 @@
 package org.beatonma.gclocks.core.layout
 
 import org.beatonma.gclocks.core.fixtures.TestLayoutOptions
-import org.beatonma.gclocks.core.fixtures.TestOptions
+import org.beatonma.gclocks.core.fixtures.createTestOptions
 import org.beatonma.gclocks.core.fixtures.getTestLayout
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
@@ -71,10 +71,10 @@ abstract class LayoutMeasureTest(val config: LayoutConfig) {
         horizontalAlignment: HorizontalAlignment,
         verticalAlignment: VerticalAlignment,
         format: TimeFormat = TimeFormat.HH_MM_SS_24,
-        block: ClockLayout<*, *>.() -> Unit,
+        block: ClockLayout<*>.() -> Unit,
     ) {
         val layout = getTestLayout(
-            TestOptions(
+            createTestOptions(
                 layout = TestLayoutOptions(
                     layout = config.layout,
                     horizontalAlignment = horizontalAlignment,

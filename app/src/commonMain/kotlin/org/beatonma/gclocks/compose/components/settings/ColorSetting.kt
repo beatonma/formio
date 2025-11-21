@@ -86,7 +86,7 @@ import org.beatonma.gclocks.core.graphics.withHue
 import org.beatonma.gclocks.core.graphics.withLightness
 import org.beatonma.gclocks.core.graphics.withRed
 import org.beatonma.gclocks.core.graphics.withSaturation
-import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.options.AnyOptions
 import org.beatonma.gclocks.core.util.fastForEach
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.graphics.Color as ComposeColor
@@ -101,14 +101,19 @@ data class ClockColors(
 )
 
 private fun ClockColors.unpack(): List<Color> = (listOf(background) + colors.toList()).filterNotNull()
+private fun ClockColors.unpack(): List<Color> =
+    (listOf(background) + colors.toList()).filterNotNull()
+
 private fun List<Color>.pack(hasBackgroundColor: Boolean): ClockColors =
     ClockColors(
         background = this.background(hasBackgroundColor),
-        colors = this.colors(hasBackgroundColor)
+        colors = this.colors(hasBackgroundColor),
     )
 
 
-private fun List<Color>.background(hasBackgroundColor: Boolean): Color? = if (hasBackgroundColor) this[0] else null
+private fun List<Color>.background(hasBackgroundColor: Boolean): Color? =
+    if (hasBackgroundColor) this[0] else null
+
 private fun List<Color>.colors(hasBackgroundColor: Boolean): List<Color> =
     if (hasBackgroundColor) this.subList(1, size) else this
 
@@ -151,7 +156,11 @@ fun ClockColorsSetting(
                 Box(
                     Modifier
                         .size(24.dp)
-                        .border(Dp.Hairline, LocalContentColor.current.copy(alpha = 0.2f), shapes.small)
+                        .border(
+                            Dp.Hairline,
+                            LocalContentColor.current.copy(alpha = 0.2f),
+                            shapes.small
+                        )
                         .background(color.toCompose(), shapes.small)
                         .aspectRatio(1f)
                 ) {}
@@ -172,28 +181,36 @@ fun ClockColorsSetting(
             editingIndex = null
         }
 
-        val clockPreviewOptions = clockPreview.options.copyWithColors(editableColors.colors(hasBackgroundColor))
+        val clockPreviewOptions =
+            clockPreview.options.copyWithColors(editableColors.colors(hasBackgroundColor))
+        val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+        val editorContent: @Composable (Modifier) -> Unit = { editorContentModifier ->
+            EditorContent(
+                clockPreviewOptions,
+                windowSizeClass,
+                editingIndex,
+                { editingIndex = it },
+                editableColors,
+                { editableColors = it },
+                editorContentModifier
+            )
+        }
 
         Box(
             Modifier
-                .background(editableColors.background(hasBackgroundColor)?.toCompose() ?: colorScheme.background)
+                .background(
+                    editableColors.background(hasBackgroundColor)?.toCompose()
+                        ?: colorScheme.background
+                )
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing)
         ) {
-            val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
             if (windowSizeClass.isHeightAtLeastMedium()) {
                 Column(
                     Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    EditorContent(
-                        clockPreviewOptions,
-                        windowSizeClass,
-                        editingIndex,
-                        { editingIndex = it },
-                        editableColors,
-                        { editableColors = it },
-                    )
+                    editorContent(Modifier)
                 }
             } else {
                 Row(
@@ -201,15 +218,7 @@ fun ClockColorsSetting(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    EditorContent(
-                        clockPreviewOptions,
-                        windowSizeClass,
-                        editingIndex,
-                        { editingIndex = it },
-                        editableColors,
-                        { editableColors = it },
-                        Modifier.weight(1f, fill = false)
-                    )
+                    editorContent(Modifier.weight(1f, fill = false))
                 }
             }
 
@@ -225,7 +234,7 @@ fun ClockColorsSetting(
 
 @Composable
 private fun EditorContent(
-    clockOptions: Options<*>,
+    clockOptions: AnyOptions,
     windowSizeClass: WindowSizeClass,
     editingIndex: Int?,
     setEditingIndex: (Int?) -> Unit,

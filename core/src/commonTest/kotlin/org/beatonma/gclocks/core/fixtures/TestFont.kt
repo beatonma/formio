@@ -6,7 +6,7 @@ import org.beatonma.gclocks.core.options.TimeFormat
 
 class TestFont(
     override val measurements: ClockFont.Measurements = DefaultMeasurements
-) : ClockFont<TestPaints, TestGlyph> {
+) : ClockFont<TestGlyph> {
     override fun getGlyphAt(
         index: Int,
         format: TimeFormat,

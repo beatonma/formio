@@ -17,7 +17,7 @@ import org.beatonma.gclocks.android.getBroadcastPendingIntent
 import org.beatonma.gclocks.android.widgetManager
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.glyph.GlyphState
-import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.options.AnyOptions
 import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.core.util.getInstant
 import org.beatonma.gclocks.core.util.timeOfDay
@@ -95,7 +95,7 @@ interface ClockWidget {
     }
 
     companion object {
-        fun createBitmap(options: Options<*>, width: Int, height: Int): Bitmap {
+        fun createBitmap(options: AnyOptions, width: Int, height: Int): Bitmap {
             val animator = createAnimatorFromOptions(
                 options,
                 AndroidPath(),

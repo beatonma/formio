@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.flow
 import org.beatonma.gclocks.app.data.settings.AppSettings
 import org.beatonma.gclocks.app.data.settings.DefaultAppSettings
 import org.beatonma.gclocks.app.data.settings.DisplayContext
+import org.beatonma.gclocks.core.util.debug
 import org.w3c.dom.get
 import org.w3c.dom.set
 import kotlin.enums.enumEntries
@@ -25,6 +26,7 @@ class WebSettingsRepository : AppSettingsRepository {
                         }
                     )
                 } catch (e: Exception) {
+                    debug("Failed to load preferences: $e")
                     DefaultAppSettings
                 }
             )

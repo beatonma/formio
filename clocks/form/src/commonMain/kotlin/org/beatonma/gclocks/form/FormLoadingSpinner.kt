@@ -5,6 +5,7 @@ import org.beatonma.gclocks.core.geometry.Angle
 import org.beatonma.gclocks.core.geometry.degrees
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Color
+import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.util.decelerate5
 import org.beatonma.gclocks.core.util.progress
 
@@ -12,8 +13,8 @@ private const val OneThird = 1f / 3f
 private const val TwoThirds = 2f / 3f
 
 class FormLoadingSpinner(
-    override val paints: FormPaints = FormPaints()
-) : LoadingSpinner<FormPaints> {
+    override val paints: Paints = FormPaints()
+) : LoadingSpinner {
     override val size: Float = 100f
     private val center: Float = size / 2f
     private val rotationDuration = 16_000
@@ -88,7 +89,7 @@ class FormLoadingSpinner(
         }
     }
 
-    private inline fun Canvas.drawSector(color: Color, startAngle: Angle, sweepAngle: Angle) {
+    private fun Canvas.drawSector(color: Color, startAngle: Angle, sweepAngle: Angle) {
         drawSector(color, center, center, center, startAngle, sweepAngle)
     }
 }

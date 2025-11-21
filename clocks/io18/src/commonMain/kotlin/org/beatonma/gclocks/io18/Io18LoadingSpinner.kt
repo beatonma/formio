@@ -4,6 +4,7 @@ import org.beatonma.gclocks.core.LoadingSpinner
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
 import org.beatonma.gclocks.core.graphics.Canvas
+import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.graphics.Stroke
 import org.beatonma.gclocks.core.util.interpolate
 import org.beatonma.gclocks.core.util.progress
@@ -15,8 +16,8 @@ import org.beatonma.gclocks.io18.animation.SquareGrid
 
 
 class Io18LoadingSpinner(
-    override val paints: Io18Paints = Io18Paints()
-) : LoadingSpinner<Io18Paints> {
+    override val paints: Paints = Io18Paints()
+) : LoadingSpinner {
     override val size: Float = 100f
     private val lines = DiagonalLines.fill(
         0f, 0f, size, size,

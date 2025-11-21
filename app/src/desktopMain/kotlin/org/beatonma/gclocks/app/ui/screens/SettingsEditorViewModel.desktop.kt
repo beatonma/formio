@@ -9,4 +9,16 @@ actual fun addDisplaySettings(
     update: (DisplayContext.Options) -> Unit
 ): RichSettings {
     return defaultAddDisplaySettings(settings, options, update)
+actual object DisplaySettingsProvider {
+    actual fun addDisplaySettings(
+        settings: RichSettings,
+        displayContextOptions: DisplayContext.Options,
+        updateDisplayContextOptions: (DisplayContext.Options) -> Unit,
+    ): RichSettings {
+        return defaultAddDisplaySettings(
+            settings,
+            displayContextOptions,
+            updateDisplayContextOptions,
+        )
+    }
 }

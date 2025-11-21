@@ -1,29 +1,30 @@
 package org.beatonma.gclocks.app.data.settings
 
-import org.beatonma.gclocks.app.data.settings.clocks.FormClockSettingsAdapter
-import org.beatonma.gclocks.app.data.settings.clocks.Io16ClockSettingsAdapter
-import org.beatonma.gclocks.app.data.settings.clocks.Io18ClockSettingsAdapter
-import org.beatonma.gclocks.app.data.settings.clocks.SettingKey
 import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import org.beatonma.gclocks.compose.components.settings.data.RichSettings
+import org.beatonma.gclocks.core.options.AnyOptions
 import org.beatonma.gclocks.core.options.Layout
-import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.form.FormOptions
 import org.beatonma.gclocks.io16.Io16Options
 import org.beatonma.gclocks.io18.Io18Options
 
 
-actual fun buildClockSettingsAdapter(clock: ClockType): ClockSettingsAdapter<*> {
+actual fun <O : AnyOptions> buildClockSettingsAdapter(clock: ClockType): ClockSettingsAdapter<O> {
+    @Suppress("UNCHECKED_CAST")
     return when (clock) {
-        ClockType.Form -> object : AndroidClockSettingsAdapter<FormOptions>, FormClockSettingsAdapter {}
+        ClockType.Form -> object : AndroidClockSettingsAdapter<FormOptions>,
+            FormClockSettingsAdapter {}
 
-        ClockType.Io16 -> object : AndroidClockSettingsAdapter<Io16Options>, Io16ClockSettingsAdapter {}
+        ClockType.Io16 -> object : AndroidClockSettingsAdapter<Io16Options>,
+            Io16ClockSettingsAdapter {}
 
-        ClockType.Io18 -> object : AndroidClockSettingsAdapter<Io18Options>, Io18ClockSettingsAdapter {}
-    }
+        ClockType.Io18 -> object : AndroidClockSettingsAdapter<Io18Options>,
+            Io18ClockSettingsAdapter {}
+    } as ClockSettingsAdapter<O>
 }
 
-private interface AndroidClockSettingsAdapter<O : Options<*>> : ClockSettingsAdapter<O> {
+private interface AndroidClockSettingsAdapter<O : AnyOptions> :
+    ClockSettingsAdapter<O> {
     override fun filterRichSettings(
         richSettings: RichSettings,
         options: O,

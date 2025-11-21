@@ -46,11 +46,11 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 private const val AnimationDurationSeconds = 2f
 
 @Composable
-fun <P : Paints, G : Glyph<P>> GlyphPreview(
+fun <G : Glyph> GlyphPreview(
     glyph: G,
-    paints: P,
+    paints: Paints,
     modifier: Modifier = Modifier,
-    renderer: GlyphRenderer<P, G>? = null,
+    renderer: GlyphRenderer<G>? = null,
     animPosition: Float? = null,
 ) {
     val preview = remember(glyph, renderer, paints) { GlyphPreview(glyph, renderer, paints) }
@@ -108,10 +108,10 @@ fun <P : Paints, G : Glyph<P>> GlyphPreview(
 }
 
 
-private class GlyphPreview<P : Paints, G : Glyph<P>>(
+private class GlyphPreview<G : Glyph>(
     val glyph: G,
-    val renderer: GlyphRenderer<P, G>?,
-    private val paints: P,
+    val renderer: GlyphRenderer<G>?,
+    private val paints: Paints,
     private val options: GlyphOptions = object : GlyphOptions {
         override val activeStateDurationMillis: Int = 2000
         override val stateChangeDurationMillis: Int = 1200
@@ -146,7 +146,7 @@ private class GlyphPreview<P : Paints, G : Glyph<P>>(
         renderer?.update(millis)
     }
 
-    fun draw(canvas: Canvas, glyphProgress: Float, paints: P) {
+    fun draw(canvas: Canvas, glyphProgress: Float, paints: Paints) {
         canvas.withTranslationAndScale(
             paints.strokeWidth * drawScale / 2f,
             paints.strokeWidth * drawScale / 2f,

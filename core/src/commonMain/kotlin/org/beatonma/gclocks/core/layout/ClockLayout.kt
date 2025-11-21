@@ -8,23 +8,22 @@ import org.beatonma.gclocks.core.geometry.ScaledSize
 import org.beatonma.gclocks.core.glyph.ClockGlyph
 import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.glyph.GlyphVisibility
-import org.beatonma.gclocks.core.graphics.Paints
-import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.options.AnyOptions
 import kotlin.time.Instant
 
 
-class ClockLayout<P : Paints, G : ClockGlyph<P>>(
-    private val font: ClockFont<P, G>,
-    options: Options<P>,
+class ClockLayout<G : ClockGlyph>(
+    private val font: ClockFont<G>,
+    options: AnyOptions,
 ) : ConstrainedLayout {
-    var options: Options<P> = options
+    var options: AnyOptions = options
         set(value) {
             field = value
             onOptionsChange(value)
         }
 
-    private lateinit var layout: Layout<P, G> // Initialized in onOptionsChange
-    private lateinit var glyphs: Glyphs<P, G> // Initialized in onOptionsChange
+    private lateinit var layout: Layout<G> // Initialized in onOptionsChange
+    private lateinit var glyphs: Glyphs<G> // Initialized in onOptionsChange
 
     /**
      * The maximum size the clock can be with 1x scaling.
@@ -43,7 +42,7 @@ class ClockLayout<P : Paints, G : ClockGlyph<P>>(
     var isDrawable: Boolean = false
         private set
 
-    private fun onOptionsChange(value: Options<P>) {
+    private fun onOptionsChange(value: AnyOptions) {
         layout = getLayout(
             value.layout,
             value.paints,

@@ -58,7 +58,7 @@ import androidx.window.core.layout.WindowSizeClass
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.cd_fullscreen_open
 import gclocks_multiplatform.app.generated.resources.setting_save_changes_fab
-import org.beatonma.gclocks.app.data.settings.ContextClockOptions
+import org.beatonma.gclocks.app.data.settings.ContextClockOptionsOf
 import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.theme.rememberContentColor
 import org.beatonma.gclocks.app.ui.AppNavigation
@@ -79,7 +79,7 @@ import org.beatonma.gclocks.compose.onlyIf
 import org.beatonma.gclocks.compose.plus
 import org.beatonma.gclocks.compose.toCompose
 import org.beatonma.gclocks.compose.vertical
-import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.options.AnyOptions
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.graphics.Color as ComposeColor
 
@@ -101,7 +101,7 @@ private fun Modifier.horizontalMarginModifier() = composed {
  */
 @Immutable
 data class ClockPreview(
-    val options: Options<*>,
+    val options: AnyOptions,
     val background: ComposeColor,
 )
 
@@ -128,9 +128,10 @@ fun SettingsEditorScreen(
         ?: return LoadingSpinner(Modifier.fillMaxSize(), settings.contextSettings.clock)
 
     val hasUnsavedChanges by viewModel.hasUnsavedChanges.collectAsStateWithLifecycle()
-    val onClickPreview: () -> Unit = remember(navigation.onNavigateClockPreview, settings.contextOptions) {
-        { navigation.onNavigateClockPreview(settings.contextOptions) }
-    }
+    val onClickPreview: () -> Unit =
+        remember(navigation.onNavigateClockPreview, settings.contextOptions) {
+            { navigation.onNavigateClockPreview(settings.contextOptions) }
+        }
 
     val adapter = remember(navigation, snackbarHostState, toolbar, onClickPreview) {
         SettingsEditorAdapter(
@@ -160,7 +161,7 @@ fun SettingsEditorScreen(
 private fun ClockSettingsScaffold(
     modifier: Modifier = Modifier,
     key: Any,
-    options: ContextClockOptions<*>,
+    options: ContextClockOptionsOf<*>,
     richSettings: RichSettings,
     hasUnsavedChanges: Boolean,
     onSave: () -> Unit,
@@ -216,7 +217,7 @@ private fun ClockSettingsScaffold(
 
 @Composable
 private fun ClockPreview(
-    options: Options<*>,
+    options: AnyOptions,
     toolbar: @Composable (RowScope.() -> Unit)?,
     modifier: Modifier,
     clockModifier: Modifier,
@@ -241,10 +242,18 @@ private fun WideAndTall(
 ) {
     val (left, right) = richSettings.groups(2)
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
         clockPreview(Modifier)
 
-        Row(horizontalArrangement = Arrangement.spacedBy(ColumnSpacing, Alignment.CenterHorizontally)) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(
+                ColumnSpacing,
+                Alignment.CenterHorizontally
+            )
+        ) {
             val columnModifier = Modifier.widthIn(max = ColumnMaxWidth).weight(1f, fill = false)
             ClockSettingsColumn(
                 key,

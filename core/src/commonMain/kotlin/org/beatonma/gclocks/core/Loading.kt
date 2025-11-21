@@ -8,8 +8,8 @@ import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 /**
  * Indeterminate loading animation that renders within a square of [size].
  */
-interface LoadingSpinner<P : Paints> {
-    val paints: P
+interface LoadingSpinner {
+    val paints: Paints
     val size: Float
 
     fun draw(canvas: Canvas, currentTimeMillis: Long = getCurrentTimeMillis())

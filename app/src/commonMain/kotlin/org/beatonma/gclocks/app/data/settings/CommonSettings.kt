@@ -1,4 +1,4 @@
-package org.beatonma.gclocks.app.data.settings.clocks
+package org.beatonma.gclocks.app.data.settings
 
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.setting_alignment_horizontal
@@ -14,7 +14,6 @@ import gclocks_multiplatform.app.generated.resources.setting_second_scale
 import gclocks_multiplatform.app.generated.resources.setting_time_is_24_hour
 import gclocks_multiplatform.app.generated.resources.setting_time_is_zero_padded
 import gclocks_multiplatform.app.generated.resources.setting_time_show_seconds
-import org.beatonma.gclocks.app.data.settings.ClockType
 import org.beatonma.gclocks.compose.components.settings.ClockColors
 import org.beatonma.gclocks.compose.components.settings.data.Key
 import org.beatonma.gclocks.compose.components.settings.data.RichSetting
@@ -41,18 +40,20 @@ object SettingKey {
     val clockTimeFormatShowSeconds = Key.Bool("clock_show_seconds")
     val clockColors = Key.ClockColors("clock_colors")
     val clockColorsWithBackground = Key.ClockColors("clock_colors_with_background")
+    val clockStrokeWidthKey = Key.Float("stroke_width")
 }
-
 
 internal fun chooseClockColors(
     paints: Paints,
     onValueChange: (value: List<Color>) -> Unit,
+    onUpdatePaints: (value: List<Color>) -> Unit,
 ) = RichSetting.ClockColors(
     key = SettingKey.clockColors,
     localized = Res.string.setting_colors,
     helpText = null,
     value = ClockColors(null, paints.colors.toList()),
     onValueChange = { onValueChange(it.colors) },
+    onValueChange = { onUpdatePaints(it.colors) },
 )
 
 internal fun chooseClockColors(
@@ -176,16 +177,18 @@ internal fun chooseSecondScale(value: Float, onUpdate: (Float) -> Unit) =
         onValueChange = onUpdate
     )
 
-internal fun chooseClockPosition(value: RectF, onUpdate: (RectF) -> Unit) = RichSetting.ClockPosition(
-    key = SettingKey.clockPosition,
-    localized = Res.string.setting_clock_position,
-    value = value,
-    onValueChange = onUpdate,
-)
+internal fun chooseClockPosition(value: RectF, onUpdate: (RectF) -> Unit) =
+    RichSetting.ClockPosition(
+        key = SettingKey.clockPosition,
+        localized = Res.string.setting_clock_position,
+        value = value,
+        onValueChange = onUpdate,
+    )
 
-internal fun chooseClockType(value: ClockType, onUpdate: (ClockType) -> Unit) = RichSetting.ClockType(
-    key = SettingKey.clockType,
-    localized = Res.string.setting_choose_clock_style,
-    value = value,
-    onValueChange = onUpdate,
-)
+internal fun chooseClockType(value: ClockType, onUpdate: (ClockType) -> Unit) =
+    RichSetting.ClockType(
+        key = SettingKey.clockType,
+        localized = Res.string.setting_choose_clock_style,
+        value = value,
+        onValueChange = onUpdate,
+    )

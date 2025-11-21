@@ -23,7 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.beatonma.gclocks.app.data.settings.ContextClockOptions
+import org.beatonma.gclocks.app.data.settings.ContextClockOptionsOf
 import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.data.settings.DisplayContextDefaults
 import org.beatonma.gclocks.app.theme.DesignSpec.floatingActionButton
@@ -33,13 +33,13 @@ import org.beatonma.gclocks.compose.animation.EnterFade
 import org.beatonma.gclocks.compose.animation.ExitFade
 import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.toCompose
-import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.options.AnyOptions
 import org.jetbrains.compose.resources.stringResource
 
 
 @Composable
 fun FullSizeClock(
-    options: ContextClockOptions<*>,
+    options: ContextClockOptionsOf<*>,
     modifier: Modifier = Modifier,
 ) {
     EdgeToEdgeClock(options, modifier) {
@@ -50,7 +50,7 @@ fun FullSizeClock(
 
 @Composable
 fun FullSizeClock(
-    options: ContextClockOptions<*>,
+    options: ContextClockOptionsOf<*>,
     modifier: Modifier = Modifier,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
     onClose: () -> Unit,
@@ -91,7 +91,7 @@ fun FullSizeClock(
 
 @Composable
 private fun EdgeToEdgeClock(
-    options: ContextClockOptions<*>,
+    options: ContextClockOptionsOf<*>,
     modifier: Modifier,
     overlay: @Composable (BoxScope.() -> Unit)? = null,
 ) {
@@ -104,7 +104,7 @@ private fun EdgeToEdgeClock(
 }
 
 @Composable
-private fun ClockWithBackground(options: ContextClockOptions<*>) {
+private fun ClockWithBackground(options: ContextClockOptionsOf<*>) {
     val displayOptions = when (options.displayOptions) {
         is DisplayContext.Options.WithBackground -> options.displayOptions
         else -> remember { DisplayContextDefaults.WithBackground() }
@@ -119,7 +119,7 @@ private fun ClockWithBackground(options: ContextClockOptions<*>) {
  */
 @Composable
 private fun ClockWithBackground(
-    clockOptions: Options<*>,
+    clockOptions: AnyOptions,
     displayOptions: DisplayContext.Options.WithBackground,
     modifier: Modifier = Modifier,
 ) {
@@ -140,8 +140,12 @@ private fun ClockWithBackground(
             )
         )
 
-        val offsetX = left + clockOptions.layout.outerHorizontalAlignment.apply(placeable.width, width.toInt())
-        val offsetY = top + clockOptions.layout.outerVerticalAlignment.apply(placeable.height, height.toInt())
+        val offsetX = left + clockOptions.layout.outerHorizontalAlignment.apply(
+            placeable.width,
+            width.toInt()
+        )
+        val offsetY =
+            top + clockOptions.layout.outerVerticalAlignment.apply(placeable.height, height.toInt())
 
         layout(constraints.maxWidth, constraints.maxHeight) {
             placeable.place(offsetX.toInt(), offsetY.toInt())

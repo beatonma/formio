@@ -2,7 +2,7 @@ package org.beatonma.gclocks.app.data.settings
 
 import org.beatonma.gclocks.clocks.whenOptions
 import org.beatonma.gclocks.core.graphics.Color
-import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.options.AnyOptions
 
 enum class ClockType {
     Form,
@@ -16,7 +16,7 @@ enum class ClockType {
 }
 
 
-fun Options<*>.resolveClockType(): ClockType = whenOptions(
+fun AnyOptions.resolveClockType(): ClockType = whenOptions(
     this,
     form = { ClockType.Form },
     io16 = { ClockType.Io16 },
@@ -25,9 +25,9 @@ fun Options<*>.resolveClockType(): ClockType = whenOptions(
 
 
 @Suppress("UNCHECKED_CAST")
-fun <O : Options<*>> O.copyWithColors(colors: List<Color>): O = whenOptions(
+fun <O : AnyOptions> O.copyWithColors(colors: List<Color>): O = whenOptions(
     this,
-    form = { it.copy(paints = it.paints.copy(colors = colors.toTypedArray())) as O },
-    io16 = { it.copy(paints = it.paints.copy(colors = colors.toTypedArray())) as O },
-    io18 = { it.copy(paints = it.paints.copy(colors = colors.toTypedArray())) as O },
+    form = { it.copy(paints = it.paints.copy(colors = colors)) as O },
+    io16 = { it.copy(paints = it.paints.copy(colors = colors)) as O },
+    io18 = { it.copy(paints = it.paints.copy(colors = colors)) as O },
 )

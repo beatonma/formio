@@ -23,19 +23,21 @@ import androidx.savedstate.SavedState
 import androidx.savedstate.read
 import androidx.savedstate.write
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.StringFormat
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import org.beatonma.gclocks.app.data.deserialize
+import org.beatonma.gclocks.app.data.serialize
 import org.beatonma.gclocks.app.data.settings.ContextClockOptions
+import org.beatonma.gclocks.app.data.settings.ContextClockOptionsOf
 import org.beatonma.gclocks.app.data.settings.DisplayContext
+import org.beatonma.gclocks.app.data.settings.FormContextClockOptions
+import org.beatonma.gclocks.app.data.settings.Io16ContextClockOptions
+import org.beatonma.gclocks.app.data.settings.Io18ContextClockOptions
 import org.beatonma.gclocks.app.ui.screens.AboutScreen
 import org.beatonma.gclocks.app.ui.screens.FullSizeClock
 import org.beatonma.gclocks.app.ui.screens.SettingsEditorViewModel
 import org.beatonma.gclocks.clocks.whenOptions
 import org.beatonma.gclocks.compose.LoadingSpinner
 import org.beatonma.gclocks.compose.components.NavigationScaffold
-import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.options.AnyOptions
 import org.beatonma.gclocks.form.FormOptions
 import org.beatonma.gclocks.io16.Io16Options
 import org.beatonma.gclocks.io18.Io18Options
@@ -52,18 +54,21 @@ sealed interface FullScreen : NavigationTarget {
     object AppMain : FullScreen
 
     @Serializable
-    sealed interface ClockPreview<T : Options<*>> : NavigationTarget {
-        val options: ContextClockOptions<T>
+    sealed interface ClockPreview<T : AnyOptions> : NavigationTarget {
+        val options: ContextClockOptionsOf<T>
     }
 
     @Serializable
-    data class FormClockPreview(override val options: ContextClockOptions<FormOptions>) : ClockPreview<FormOptions>
+    data class FormClockPreview(override val options: FormContextClockOptions) :
+        ClockPreview<FormOptions>
 
     @Serializable
-    data class Io16ClockPreview(override val options: ContextClockOptions<Io16Options>) : ClockPreview<Io16Options>
+    data class Io16ClockPreview(override val options: Io16ContextClockOptions) :
+        ClockPreview<Io16Options>
 
     @Serializable
-    data class Io18ClockPreview(override val options: ContextClockOptions<Io18Options>) : ClockPreview<Io18Options>
+    data class Io18ClockPreview(override val options: Io18ContextClockOptions) :
+        ClockPreview<Io18Options>
 }
 
 interface Pane : NavigationTarget {
@@ -109,7 +114,7 @@ data class NavigationMenu(
 @Immutable
 data class AppNavigation(
     val onNavigateAbout: () -> Unit,
-    val onNavigateClockPreview: (ContextClockOptions<*>) -> Unit,
+    val onNavigateClockPreview: (ContextClockOptions<*, *>) -> Unit,
 )
 
 
@@ -135,26 +140,30 @@ fun AppNavigation(
                 settingsEditor,
                 displayContext ?: return@composable LoadingSpinner(),
                 viewModel::setDisplayContext,
-                onNavigateClockPreview = dropUnlessResumed { preview -> fullscreenNavController.navigate(preview) },
+                onNavigateClockPreview = dropUnlessResumed { preview ->
+                    fullscreenNavController.navigate(
+                        preview
+                    )
+                },
                 modifier = modifier,
                 contentAlignment = contentAlignment,
             )
         }
 
         composable<FullScreen.FormClockPreview>(
-            typeMap = mapOf(typing<ContextClockOptions<FormOptions>>())
+            typeMap = mapOf(typing<FormContextClockOptions>())
         ) { backStackEntry ->
             val route = backStackEntry.toRoute<FullScreen.FormClockPreview>()
             FullSizeClock(route.options, onClose = { fullscreenNavController.popBackStack() })
         }
         composable<FullScreen.Io16ClockPreview>(
-            typeMap = mapOf(typing<ContextClockOptions<Io16Options>>())
+            typeMap = mapOf(typing<Io16ContextClockOptions>())
         ) { backStackEntry ->
             val route = backStackEntry.toRoute<FullScreen.Io16ClockPreview>()
             FullSizeClock(route.options, onClose = { fullscreenNavController.popBackStack() })
         }
         composable<FullScreen.Io18ClockPreview>(
-            typeMap = mapOf(typing<ContextClockOptions<Io18Options>>())
+            typeMap = mapOf(typing<Io18ContextClockOptions>())
         ) { backStackEntry ->
             val route = backStackEntry.toRoute<FullScreen.Io18ClockPreview>()
             FullSizeClock(route.options, onClose = { fullscreenNavController.popBackStack() })
@@ -250,23 +259,22 @@ private fun NavigationUI(
  */
 private inline fun <reified T> serializable(
     isNullableAllowed: Boolean = false,
-    formatter: StringFormat = Json.Default
 ): NavType<T> {
     return object : NavType<T>(isNullableAllowed) {
         override fun put(bundle: SavedState, key: String, value: T) {
-            bundle.write { putString(key, formatter.encodeToString(value)) }
+            bundle.write { putString(key, serialize(value)) }
         }
 
         override fun get(bundle: SavedState, key: String): T? {
-            return formatter.decodeFromString(bundle.read { getString(key) })
+            return deserialize(bundle.read { getString(key) })
         }
 
         override fun parseValue(value: String): T {
-            return formatter.decodeFromString(value)
+            return deserialize(value)
         }
 
         override fun serializeAsValue(value: T): String {
-            return formatter.encodeToString(value)
+            return serialize(value)
         }
     }
 }

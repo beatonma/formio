@@ -5,7 +5,7 @@ import org.beatonma.gclocks.core.glyph.GlyphRole
 import org.beatonma.gclocks.core.options.TimeFormat
 
 
-class FormFont(isAnimated: Boolean = true) : ClockFont<FormPaints, FormGlyph> {
+class FormFont(isAnimated: Boolean = true) : ClockFont<FormGlyph> {
     override val measurements: ClockFont.Measurements = getMeasurements(isAnimated)
     override fun getGlyphAt(index: Int, format: TimeFormat, secondsGlyphScale: Float): FormGlyph {
         val role = format.roles.getOrNull(index) ?: GlyphRole.Default

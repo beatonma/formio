@@ -5,7 +5,7 @@ import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.createAnimator
 import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.graphics.Path
-import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.options.AnyOptions
 import org.beatonma.gclocks.form.FormClockRenderer
 import org.beatonma.gclocks.form.FormFont
 import org.beatonma.gclocks.io16.Io16ClockRenderer
@@ -19,13 +19,13 @@ import org.beatonma.gclocks.io18.Io18Renderer
  * @param allowVariance When true, allow the clock to use randomised elements such as shuffling of paint colours or offsetting animations between glyphs. Disable when a consistent appearance is required.
  */
 fun createAnimatorFromOptions(
-    options: Options<*>,
+    options: AnyOptions,
     path: Path,
     allowVariance: Boolean,
     forcedState: GlyphState? = null,
     enableAnimation: Boolean = true,
     onScheduleNextFrame: (delayMillis: Int) -> Unit,
-): ClockAnimator<*, *> {
+): ClockAnimator<*> {
     return whenOptions(
         options,
         form = { formOptions ->
@@ -56,7 +56,12 @@ fun createAnimatorFromOptions(
         io18 = { io18Options ->
             createAnimator(
                 io18Options,
-                Io18Font(path, isAnimated = enableAnimation, shuffleColors = allowVariance, offsetColors = true),
+                Io18Font(
+                    path,
+                    isAnimated = enableAnimation,
+                    shuffleColors = allowVariance,
+                    offsetColors = true
+                ),
                 Io18Renderer(io18Options.paints),
                 onScheduleNextFrame
             )

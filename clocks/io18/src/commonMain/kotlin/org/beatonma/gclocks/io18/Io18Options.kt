@@ -1,8 +1,10 @@
 package org.beatonma.gclocks.io18
 
 import kotlinx.serialization.Serializable
+import org.beatonma.gclocks.core.Clock
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
+import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.options.GlyphOptions
 import org.beatonma.gclocks.core.options.Layout
 import org.beatonma.gclocks.core.options.LayoutOptions
@@ -10,21 +12,31 @@ import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.options.TimeFormat
 
 @Serializable
-data class Io18Options(
-    override val paints: Io18Paints = Io18Paints(),
-    override val layout: Io18LayoutOptions = Io18LayoutOptions(),
-    override val glyph: Io18GlyphOptions = Io18GlyphOptions(),
-) : Options<Io18Paints>
+object Io18Clock : Clock
 
-@Serializable
-data class Io18LayoutOptions(
-    override val layout: Layout = Layout.Wrapped,
-    override val horizontalAlignment: HorizontalAlignment = HorizontalAlignment.End,
-    override val verticalAlignment: VerticalAlignment = VerticalAlignment.Top,
-    override val format: TimeFormat = TimeFormat.HH_MM_SS_24,
-    override val spacingPx: Int = 13,
-    override val secondsGlyphScale: Float = Options.DefaultSecondsGlyphScale,
-) : LayoutOptions
+typealias Io18Options = Options<Io18GlyphOptions>
+
+fun Io18Options(
+    paints: Paints = Io18Paints(),
+    layout: LayoutOptions = Io18LayoutOptions(),
+    glyph: Io18GlyphOptions = Io18GlyphOptions(),
+): Io18Options = Options(Io18Clock, paints, layout, glyph)
+
+fun Io18LayoutOptions(
+    layout: Layout = Layout.Wrapped,
+    format: TimeFormat = TimeFormat.HH_MM_SS_24,
+    spacingPx: Int = 13,
+    horizontalAlignment: HorizontalAlignment = HorizontalAlignment.End,
+    verticalAlignment: VerticalAlignment = VerticalAlignment.Top,
+    secondsGlyphScale: Float = Options.DefaultSecondsGlyphScale,
+) = LayoutOptions(
+    layout,
+    format,
+    spacingPx,
+    horizontalAlignment,
+    verticalAlignment,
+    secondsGlyphScale,
+)
 
 @Serializable
 data class Io18GlyphOptions(

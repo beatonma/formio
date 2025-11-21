@@ -19,7 +19,7 @@ class Io16Font(
      * If false, segment animation will be synchronised across all glyphs.
      */
     private val randomiseSegmentOffset: Boolean = true,
-) : ClockFont<Io16Paints, Io16Glyph> {
+) : ClockFont<Io16Glyph> {
     override val measurements: ClockFont.Measurements = getMeasurements(isAnimated)
     override fun getGlyphAt(index: Int, format: TimeFormat, secondsGlyphScale: Float): Io16Glyph {
         val role = format.roles.getOrNull(index) ?: GlyphRole.Default

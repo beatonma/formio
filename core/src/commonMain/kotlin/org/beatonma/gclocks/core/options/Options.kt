@@ -1,27 +1,37 @@
 package org.beatonma.gclocks.core.options
 
+import kotlinx.serialization.Serializable
+import org.beatonma.gclocks.core.Clock
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
 import org.beatonma.gclocks.core.graphics.Paints
 
-interface Options<P : Paints> {
-    val paints: P
-    val layout: LayoutOptions
-    val glyph: GlyphOptions
 
+typealias AnyOptions = Options<*>
+
+@Serializable
+data class Options<G : GlyphOptions>(
+    val clock: Clock,
+    val paints: Paints,
+    val layout: LayoutOptions,
+    val glyph: G
+) {
     companion object {
         const val DefaultSecondsGlyphScale = 0.5f
     }
 }
 
-interface LayoutOptions {
-    val layout: Layout
-    val format: TimeFormat
-    val spacingPx: Int
 
-    val horizontalAlignment: HorizontalAlignment
-    val verticalAlignment: VerticalAlignment
-
+@Serializable
+data class LayoutOptions(
+    val layout: Layout,
+    val format: TimeFormat,
+    val spacingPx: Int,
+    val horizontalAlignment: HorizontalAlignment,
+    val verticalAlignment: VerticalAlignment,
+    /* Relative scale of glyphs with GlyphRole.Second */
+    val secondsGlyphScale: Float,
+) {
     /* Alignment of the ClockLayout within the available space given to it */
     val outerHorizontalAlignment: HorizontalAlignment get() = horizontalAlignment
 
@@ -33,9 +43,6 @@ interface LayoutOptions {
 
     /* Alignment of glyphs within the ClockLayout */
     val innerVerticalAlignment: VerticalAlignment get() = verticalAlignment
-
-    /* Relative scale of glyphs with GlyphRole.Second */
-    val secondsGlyphScale: Float
 }
 
 interface GlyphOptions {
