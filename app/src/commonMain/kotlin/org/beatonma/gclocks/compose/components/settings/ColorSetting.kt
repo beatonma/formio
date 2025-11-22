@@ -124,7 +124,7 @@ fun ClockColorsSetting(
 ) {
     ClockColorsSetting(
         setting.key,
-        setting.localized.resolve(),
+        setting.name.resolve(),
         setting.helpText?.resolve(),
         setting.value,
         modifier,

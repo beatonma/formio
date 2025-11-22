@@ -161,7 +161,7 @@ interface Io16ClockSettingsAdapter : ClockSettingsAdapter<Io16Options> {
         ) + listOf(
             RichSetting.Float(
                 key = SettingKey.clockStrokeWidthKey,
-                localized = Res.string.setting_stroke_width,
+                name = Res.string.setting_stroke_width,
                 value = paints.strokeWidth,
                 default = 2f,
                 min = 0f,

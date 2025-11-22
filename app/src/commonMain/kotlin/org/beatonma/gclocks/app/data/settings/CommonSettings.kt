@@ -49,7 +49,7 @@ internal fun chooseClockColors(
     onUpdatePaints: (value: List<Color>) -> Unit,
 ) = RichSetting.ClockColors(
     key = SettingKey.clockColors,
-    localized = Res.string.setting_colors,
+    name = Res.string.setting_colors,
     helpText = null,
     value = ClockColors(null, paints.colors.toList()),
     onValueChange = { onValueChange(it.colors) },
@@ -62,7 +62,7 @@ internal fun chooseClockColors(
     onValueChange: (ClockColors) -> Unit,
 ) = RichSetting.ClockColors(
     key = SettingKey.clockColorsWithBackground,
-    localized = Res.string.setting_colors,
+    name = Res.string.setting_colors,
     helpText = null,
     value = ClockColors(background, colors),
     onValueChange = onValueChange,
@@ -71,7 +71,7 @@ internal fun chooseClockColors(
 internal fun chooseLayout(value: Layout, onUpdate: (Layout) -> Unit) =
     RichSetting.SingleSelect(
         key = SettingKey.clockLayout,
-        localized = Res.string.setting_clock_layout,
+        name = Res.string.setting_clock_layout,
         helpText = null,
         value = value,
         values = Layout.entries.toSet(),
@@ -84,7 +84,7 @@ internal fun chooseHorizontalAlignment(
 ) =
     RichSetting.SingleSelect(
         key = SettingKey.clockHorizontalAlignment,
-        localized = Res.string.setting_alignment_horizontal,
+        name = Res.string.setting_alignment_horizontal,
         value = value,
         values = HorizontalAlignment.entries.toSet(),
         onValueChange = onUpdate
@@ -96,7 +96,7 @@ internal fun chooseVerticalAlignment(
 ) =
     RichSetting.SingleSelect(
         key = SettingKey.clockVerticalAlignment,
-        localized = Res.string.setting_alignment_vertical,
+        name = Res.string.setting_alignment_vertical,
         value = value,
         values = VerticalAlignment.entries.toSet(),
         onValueChange = onUpdate
@@ -108,7 +108,7 @@ internal fun chooseTimeFormat(
 ): List<Setting> = listOf(
     RichSetting.Bool(
         key = SettingKey.clockTimeFormatIs24Hour,
-        localized = Res.string.setting_time_is_24_hour,
+        name = Res.string.setting_time_is_24_hour,
         value = value.is24Hour,
         onValueChange = {
             onUpdate(
@@ -122,7 +122,7 @@ internal fun chooseTimeFormat(
     ),
     RichSetting.Bool(
         key = SettingKey.clockTimeFormatIsZeroPadded,
-        localized = Res.string.setting_time_is_zero_padded,
+        name = Res.string.setting_time_is_zero_padded,
         value = value.isZeroPadded,
         onValueChange = {
             onUpdate(
@@ -136,7 +136,7 @@ internal fun chooseTimeFormat(
     ),
     RichSetting.Bool(
         key = SettingKey.clockTimeFormatShowSeconds,
-        localized = Res.string.setting_time_show_seconds,
+        name = Res.string.setting_time_show_seconds,
         value = value.showSeconds,
         onValueChange = {
             onUpdate(
@@ -154,7 +154,7 @@ internal fun chooseTimeFormat(
 internal fun chooseSpacing(value: Int, onUpdate: (Int) -> Unit, default: Int, max: Int) =
     RichSetting.Int(
         key = SettingKey.clockSpacing,
-        localized = Res.string.setting_clock_spacing,
+        name = Res.string.setting_clock_spacing,
         helpText = Res.string.setting_help_clock_spacing,
         value = value,
         default = default,
@@ -167,7 +167,7 @@ internal fun chooseSpacing(value: Int, onUpdate: (Int) -> Unit, default: Int, ma
 internal fun chooseSecondScale(value: Float, onUpdate: (Float) -> Unit) =
     RichSetting.Float(
         key = SettingKey.clockSecondsScale,
-        localized = Res.string.setting_second_scale,
+        name = Res.string.setting_second_scale,
         helpText = Res.string.setting_help_second_scale,
         value = value,
         default = 0.5f,
@@ -180,7 +180,7 @@ internal fun chooseSecondScale(value: Float, onUpdate: (Float) -> Unit) =
 internal fun chooseClockPosition(value: RectF, onUpdate: (RectF) -> Unit) =
     RichSetting.ClockPosition(
         key = SettingKey.clockPosition,
-        localized = Res.string.setting_clock_position,
+        name = Res.string.setting_clock_position,
         value = value,
         onValueChange = onUpdate,
     )
@@ -188,7 +188,7 @@ internal fun chooseClockPosition(value: RectF, onUpdate: (RectF) -> Unit) =
 internal fun chooseClockType(value: ClockType, onUpdate: (ClockType) -> Unit) =
     RichSetting.ClockType(
         key = SettingKey.clockType,
-        localized = Res.string.setting_choose_clock_style,
+        name = Res.string.setting_choose_clock_style,
         value = value,
         onValueChange = onUpdate,
     )

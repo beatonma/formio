@@ -78,7 +78,7 @@ fun ClockPositionSetting(
     modifier: Modifier,
 ) {
     ClockPositionSetting(
-        name = setting.localized.resolve(),
+        name = setting.name.resolve(),
         value = setting.value,
         onValueChange = setting.onValueChange,
         modifier = modifier,

@@ -23,7 +23,7 @@ fun <E : Enum<E>> SingleSelectSetting(
     modifier: Modifier = Modifier,
 ) {
     SingleSelectSetting(
-        name = setting.localized.resolve(),
+        name = setting.name.resolve(),
         value = setting.value,
         values = setting.values,
         modifier = modifier,
@@ -79,7 +79,7 @@ fun <E : Enum<E>> MultiSelectSetting(
     allowEmptySet: Boolean = false,
 ) {
     MultiSelectSetting(
-        name = setting.localized.resolve(),
+        name = setting.name.resolve(),
         value = setting.value,
         values = setting.values,
         onValueChange = setting.onValueChange,

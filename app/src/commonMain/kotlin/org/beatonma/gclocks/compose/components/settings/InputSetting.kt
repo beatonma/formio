@@ -35,7 +35,7 @@ fun IntListSetting(
     modifier: Modifier = Modifier,
 ) {
     IntListSetting(
-        name = setting.localized.resolve(),
+        name = setting.name.resolve(),
         helpText = setting.helpText?.resolve(),
         setting.placeholder?.resolve(),
         setting.defaultValueDescription?.resolve(),

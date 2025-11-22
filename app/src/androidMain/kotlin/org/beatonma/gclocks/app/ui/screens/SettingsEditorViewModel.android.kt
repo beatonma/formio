@@ -146,7 +146,7 @@ private val LauncherPagesKey = Key.IntList("lwp_launcher_pages")
 private fun chooseLwpLauncherPages(value: List<Int>, onUpdate: (List<Int>) -> Unit) =
     RichSetting.IntList(
         key = LauncherPagesKey,
-        localized = Res.string.setting_lwp_launcher_pages,
+        name = Res.string.setting_lwp_launcher_pages,
         helpText = Res.string.setting_help_lwp_launcher_pages,
         placeholder = Res.string.setting_placeholder_lwp_launcher_pages,
         defaultValueDescription = Res.string.setting_lwp_launcher_pages_all,

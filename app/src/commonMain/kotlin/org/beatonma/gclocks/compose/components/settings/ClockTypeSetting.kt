@@ -16,7 +16,7 @@ fun ClockTypeSetting(
     modifier: Modifier = Modifier,
 ) {
     ClockTypeSetting(
-        setting.localized.resolve(),
+        setting.name.resolve(),
         setting.value,
         setting.onValueChange,
         modifier,

@@ -22,7 +22,7 @@ fun IntegerSetting(
     modifier: Modifier = Modifier,
 ) {
     IntegerSetting(
-        name = setting.localized.resolve(),
+        name = setting.name.resolve(),
         helpText = setting.helpText?.resolve(),
         value = setting.value,
         onValueChange = setting.onValueChange,
@@ -48,7 +48,7 @@ fun IntegerSetting(
         name = name,
         helpText = helpText,
         value = value,
-        onOffsetChange = { offset -> onValueChange(offset.roundToInt()) },
+        onValueChange = { offset -> onValueChange(offset.roundToInt()) },
         min = min,
         max = max,
         modifier = modifier,
@@ -67,7 +67,7 @@ fun FloatSetting(
     modifier: Modifier = Modifier,
 ) {
     FloatSetting(
-        name = setting.localized.resolve(),
+        name = setting.name.resolve(),
         helpText = setting.helpText?.resolve(),
         value = setting.value,
         onValueChange = setting.onValueChange,
@@ -93,7 +93,7 @@ fun FloatSetting(
         name = name,
         helpText = helpText,
         value = value,
-        onOffsetChange = onValueChange,
+        onValueChange = onValueChange,
         min = min,
         max = max,
         modifier = modifier,
@@ -111,7 +111,7 @@ private fun <N : Number> NumberSettingLayout(
     name: String,
     helpText: String?,
     value: N,
-    onOffsetChange: (Float) -> Unit,
+    onValueChange: (Float) -> Unit,
     min: N,
     max: N,
     steps: Int,
@@ -131,7 +131,7 @@ private fun <N : Number> NumberSettingLayout(
 
             LabelledSlider(
                 value = value.toFloat(),
-                onValueChange = onOffsetChange,
+                onValueChange = onValueChange,
                 min = min.toFloat(),
                 max = max.toFloat(),
                 steps = steps,

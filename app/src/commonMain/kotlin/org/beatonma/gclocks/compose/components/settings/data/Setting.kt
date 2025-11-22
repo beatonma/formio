@@ -74,7 +74,7 @@ data class RichSettingsGroup(
  */
 sealed interface RichSetting<T : Any> : Setting {
     val key: Key
-    val localized: StringResource
+    val name: StringResource
     val helpText: StringResource?
     val value: T
     val onValueChange: (T) -> Unit
@@ -82,7 +82,7 @@ sealed interface RichSetting<T : Any> : Setting {
     @Immutable
     data class ClockColors(
         override val key: Key.ClockColors,
-        override val localized: StringResource,
+        override val name: StringResource,
         override val helpText: StringResource? = null,
         override val value: ClockColorsData,
         override val onValueChange: (ClockColorsData) -> Unit,
@@ -91,7 +91,7 @@ sealed interface RichSetting<T : Any> : Setting {
     @Immutable
     data class SingleSelect<E : Enum<E>>(
         override val key: Key.Enum<E>,
-        override val localized: StringResource,
+        override val name: StringResource,
         override val helpText: StringResource? = null,
         override val value: E,
         override val onValueChange: (E) -> Unit,
@@ -101,7 +101,7 @@ sealed interface RichSetting<T : Any> : Setting {
     @Immutable
     data class MultiSelect<E : Enum<E>>(
         override val key: Key.Enum<E>,
-        override val localized: StringResource,
+        override val name: StringResource,
         override val helpText: StringResource? = null,
         override val value: Set<E>,
         override val onValueChange: (Set<E>) -> Unit,
@@ -111,7 +111,7 @@ sealed interface RichSetting<T : Any> : Setting {
     @Immutable
     data class Int(
         override val key: Key.Int,
-        override val localized: StringResource,
+        override val name: StringResource,
         override val helpText: StringResource? = null,
         override val value: kotlin.Int,
         val default: kotlin.Int,
@@ -124,7 +124,7 @@ sealed interface RichSetting<T : Any> : Setting {
     @Immutable
     data class Float(
         override val key: Key.Float,
-        override val localized: StringResource,
+        override val name: StringResource,
         override val helpText: StringResource? = null,
         override val value: kotlin.Float,
         val default: kotlin.Float,
@@ -137,7 +137,7 @@ sealed interface RichSetting<T : Any> : Setting {
     @Immutable
     data class Bool(
         override val key: Key.Bool,
-        override val localized: StringResource,
+        override val name: StringResource,
         override val helpText: StringResource? = null,
         override val value: Boolean,
         override val onValueChange: (Boolean) -> Unit,
@@ -146,7 +146,7 @@ sealed interface RichSetting<T : Any> : Setting {
     @Immutable
     data class ClockPosition(
         override val key: Key.RectF,
-        override val localized: StringResource,
+        override val name: StringResource,
         override val helpText: StringResource? = null,
         override val value: RectF,
         override val onValueChange: (RectF) -> Unit,
@@ -155,7 +155,7 @@ sealed interface RichSetting<T : Any> : Setting {
     @Immutable
     data class ClockType(
         override val key: Key.Enum<ClockTypeData>,
-        override val localized: StringResource,
+        override val name: StringResource,
         override val helpText: StringResource? = null,
         override val value: ClockTypeData,
         override val onValueChange: (ClockTypeData) -> Unit,
@@ -163,7 +163,7 @@ sealed interface RichSetting<T : Any> : Setting {
 
     data class IntList(
         override val key: Key.IntList,
-        override val localized: StringResource,
+        override val name: StringResource,
         override val helpText: StringResource? = null,
         override val value: List<kotlin.Int>,
         override val onValueChange: (List<kotlin.Int>) -> Unit,

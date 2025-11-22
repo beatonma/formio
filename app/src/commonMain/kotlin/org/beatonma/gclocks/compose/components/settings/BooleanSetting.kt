@@ -16,7 +16,7 @@ fun BooleanSetting(
     modifier: Modifier = Modifier,
 ) {
     BooleanSetting(
-        setting.localized.resolve(),
+        setting.name.resolve(),
         setting.helpText?.resolve(),
         setting.value,
         setting.onValueChange,
