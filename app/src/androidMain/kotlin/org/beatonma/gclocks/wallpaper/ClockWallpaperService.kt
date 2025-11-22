@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.beatonma.gclocks.android.AndroidCanvasHost
 import org.beatonma.gclocks.android.AndroidPath
 import org.beatonma.gclocks.app.data.loadDisplayMetrics
@@ -86,6 +87,8 @@ class ClockWallpaperService : WallpaperService() {
             return engineScope
         }
 
+        private var deferredVisibilityJob: Job? = null
+
         fun initialize(visibility: GlyphVisibility? = null) {
             val scope = requireEngineScope()
             scope.launch {
@@ -104,7 +107,9 @@ class ClockWallpaperService : WallpaperService() {
                         launcherPages = wallpaperOptions.zeroIndexLauncherPages.ifEmpty { null }
                     }
 
-                    invalidate()
+                    withContext(Dispatchers.Main) {
+                        invalidate()
+                    }
                 }
             }
 
@@ -171,9 +176,9 @@ class ClockWallpaperService : WallpaperService() {
          * and only make the animation visible once that period has passed
          * without further [onVisibilityChanged] calls.
          */
-        private fun deferredVisible(): Job {
-            return requireEngineScope().launch(Dispatchers.Main) {
-                delay(200)
+        private fun deferredVisible() {
+            deferredVisibilityJob?.cancel()
+            deferredVisibilityJob = debounce(200L) {
                 if (isVisible) {
                     val isLocked = keyguardManager.isKeyguardLocked
                     initialize(visibility = if (isLocked) GlyphVisibility.Hidden else null)
@@ -193,6 +198,27 @@ class ClockWallpaperService : WallpaperService() {
                         }
                     }
                 }
+            }
+        }
+
+        /**
+         * Wallpaper events can be fired in quick succession so reacting to each one
+         * immediately can cause glitchy animations. By using [debounce],
+         * we allow a grace period for events to fire, and only apply the update
+         * once that period has passed without further events. As a result, only
+         * the latest requested update will actually be applied.
+         *
+         * For this to work, The resulting [Job] should be stored and cancelled
+         * before calling [debounce] again.
+         *
+         * e.g.
+         *   myJob?.cancel()
+         *   myJob = deferredUpdate { ... }
+         */
+        private fun debounce(gracePeriodMillis: Long = 200L, block: suspend () -> Unit): Job {
+            return requireEngineScope().launch {
+                delay(gracePeriodMillis)
+                block()
             }
         }
 
@@ -311,6 +337,7 @@ class ClockWallpaperService : WallpaperService() {
         private fun createCoroutineScope() = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
         private inner class VisibilityManager {
+            private var job: Job? = null
             var state: VisibilityState = VisibilityState(
                 isRotating = false,
                 isVisible = false,
@@ -324,26 +351,28 @@ class ClockWallpaperService : WallpaperService() {
                 val newState = state.mutable().apply(block).immutable()
 
                 if (state != newState) {
-                    state = newState
-                    updateVisibility()
+                    this.state = newState
+                    job?.cancel()
+                    job = debounce(100) {
+                        withContext(Dispatchers.Main) {
+                            updateVisibility()
+                        }
+                    }
                 }
             }
 
             private fun updateVisibility() {
+                val state = this.state
+
                 if (isPreview) return
                 if (!isVisible && !state.isRotating) {
                     return hide(force = true)
                 }
 
-                val isPageAllowed = state.launcherPages?.let { pages ->
-                    state.currentLauncherPage in pages
-                } ?: true
-
-                if (!state.isKeyguardLocked && isPageAllowed) {
+                if (!state.isKeyguardLocked && state.isPageAllowed) {
                     show()
                 } else {
                     if (state.isRotating) return
-
                     hide()
                 }
             }
@@ -365,6 +394,8 @@ private interface _VisibilityState {
     val isKeyguardLocked: Boolean
     val launcherPages: List<Int>?
     val currentLauncherPage: Int
+
+    val isPageAllowed: Boolean get() = launcherPages?.let { currentLauncherPage in it } ?: true
 }
 
 private data class VisibilityState(
