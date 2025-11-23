@@ -7,9 +7,9 @@ import android.view.MotionEvent
 import android.view.View
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.ClockAnimator
-import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
-import org.beatonma.gclocks.core.options.Options
+import org.beatonma.gclocks.core.glyph.GlyphState
+import org.beatonma.gclocks.core.options.AnyOptions
 import org.beatonma.gclocks.core.util.debug
 
 
@@ -19,11 +19,11 @@ class ClockView @JvmOverloads constructor(
     defStyleAttr: Int = 0,
     defStyleRes: Int = 0,
 ) : View(context, attributeSet, defStyleAttr, defStyleRes) {
-    private var animator: ClockAnimator<*, *>? = null
+    private var animator: ClockAnimator<*>? = null
     private val canvasHost = AndroidCanvasHost()
     private var constraints: MeasureConstraints = MeasureConstraints(0f, 0f)
 
-    fun setOptions(options: Options<*>) {
+    fun setOptions(options: AnyOptions) {
         animator = createAnimatorFromOptions(options, canvasHost.path, allowVariance = true) {
             postInvalidate()
         }.apply {

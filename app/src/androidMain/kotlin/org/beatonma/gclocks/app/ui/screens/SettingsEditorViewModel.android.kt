@@ -6,9 +6,7 @@ import gclocks_multiplatform.app.generated.resources.setting_lwp_launcher_pages
 import gclocks_multiplatform.app.generated.resources.setting_lwp_launcher_pages_all
 import gclocks_multiplatform.app.generated.resources.setting_placeholder_lwp_launcher_pages
 import org.beatonma.gclocks.app.data.settings.DisplayContext
-import org.beatonma.gclocks.app.data.settings.clocks.SettingKey
-import org.beatonma.gclocks.app.data.settings.clocks.chooseClockColors
-import org.beatonma.gclocks.app.data.settings.clocks.chooseClockPosition
+import org.beatonma.gclocks.app.data.settings.GlobalOptions
 import org.beatonma.gclocks.app.data.settings.SettingKey
 import org.beatonma.gclocks.app.data.settings.chooseClockColors
 import org.beatonma.gclocks.app.data.settings.chooseClockPosition
@@ -19,50 +17,25 @@ import org.beatonma.gclocks.compose.components.settings.data.ValidationFailed
 import org.beatonma.gclocks.compose.components.settings.data.replace
 
 
-actual fun addDisplaySettings(
-    settings: RichSettings,
-    options: DisplayContext.Options,
-    update: (DisplayContext.Options) -> Unit,
-): RichSettings {
-    return when (options) {
-        is DisplayContext.Options.Widget -> settings
 actual object DisplaySettingsProvider {
     actual fun addDisplaySettings(
         settings: RichSettings,
         displayContextOptions: DisplayContext.Options,
         updateDisplayContextOptions: (DisplayContext.Options) -> Unit,
+        globalOptions: GlobalOptions,
+        updateGlobalOptions: (GlobalOptions) -> Unit,
     ): RichSettings {
         return when (displayContextOptions) {
             is DisplayContext.Options.Widget -> settings
 
-        is DisplayContext.Options.Screensaver -> settings.copy(
-            colors = settings.colors.replace(
-                SettingKey.clockColors,
-                { previous ->
-                    previous as RichSetting.ClockColors
-                    chooseClockColors(options.backgroundColor, previous.value.colors) { updated ->
-                        updated.background?.let {
-                            update(options.copy(backgroundColor = it))
-                        }
-                        previous.onValueChange(updated)
-                    }
-                },
-            ),
-            layout = listOf(
-                chooseClockPosition(options.position) {
-                    update(options.copy(position = it))
-                },
-            ) + settings.layout,
-        )
             is DisplayContext.Options.Screensaver -> settings.copy(
                 colors = settings.colors.replace(
                     SettingKey.clockColors,
                     { previous ->
                         previous as RichSetting.ClockColors
                         chooseClockColors(
-                            displayContextOptions.backgroundColor,
-                            previous.value.colors,
-                            { updated ->
+                            value = previous.value.copy(background = displayContextOptions.backgroundColor),
+                            onValueChange = { updated ->
                                 updated.background?.let {
                                     updateDisplayContextOptions(
                                         displayContextOptions.copy(
@@ -72,6 +45,14 @@ actual object DisplaySettingsProvider {
                                 }
                                 previous.onValueChange(updated)
                             },
+                            palettes = globalOptions.colorPalettes,
+                            onUpdatePalettes = {
+                                updateGlobalOptions(
+                                    globalOptions.copy(
+                                        colorPalettes = it
+                                    )
+                                )
+                            })
                     },
                 ),
                 layout = listOf(
@@ -81,35 +62,12 @@ actual object DisplaySettingsProvider {
                 ) + settings.layout,
             )
 
-        is DisplayContext.Options.Wallpaper -> settings.copy(
-            colors = settings.colors.replace(SettingKey.clockColors) { previous ->
-                previous as RichSetting.ClockColors
-                chooseClockColors(
-                    options.backgroundColor,
-                    previous.value.colors
-                ) { updated ->
-                    updated.background?.let {
-                        update(options.copy(backgroundColor = it))
-                    }
-                    previous.onValueChange(updated)
-                }
-            },
-            layout = listOf(
-                chooseClockPosition(options.position) {
-                    update(options.copy(position = it))
-                },
-                chooseLwpLauncherPages(options.launcherPages) {
-                    update(options.copy(launcherPages = it))
-                }
-            ) + settings.layout,
-        )
             is DisplayContext.Options.Wallpaper -> settings.copy(
                 colors = settings.colors.replace(SettingKey.clockColors) { previous ->
                     previous as RichSetting.ClockColors
                     chooseClockColors(
-                        displayContextOptions.backgroundColor,
-                        previous.value.colors,
-                        { updated ->
+                        value = previous.value.copy(background = displayContextOptions.backgroundColor),
+                        onValueChange = { updated ->
                             updated.background?.let {
                                 updateDisplayContextOptions(
                                     displayContextOptions.copy(
@@ -119,6 +77,8 @@ actual object DisplaySettingsProvider {
                             }
                             previous.onValueChange(updated)
                         },
+                        palettes = globalOptions.colorPalettes,
+                        onUpdatePalettes = { updateGlobalOptions(globalOptions.copy(colorPalettes = it)) }
                     )
                 },
                 layout = listOf(
@@ -131,11 +91,12 @@ actual object DisplaySettingsProvider {
                 ) + settings.layout,
             )
 
-        else -> defaultAddDisplaySettings(settings, options, update)
             else -> defaultAddDisplaySettings(
                 settings,
                 displayContextOptions,
                 updateDisplayContextOptions,
+                globalOptions,
+                updateGlobalOptions
             )
         }
     }

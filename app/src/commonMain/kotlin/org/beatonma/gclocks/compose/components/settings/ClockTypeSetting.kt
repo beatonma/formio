@@ -37,8 +37,8 @@ fun ClockTypeSetting(
 
         ButtonGroup(
             selected,
-            { it.name.uppercase() },
             onSelect,
+            { it.name.uppercase() },
             ClockType.entries,
             ClockType::colorScheme
         )

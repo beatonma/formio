@@ -25,6 +25,7 @@ import org.beatonma.gclocks.app.data.settings.ClockType
 import org.beatonma.gclocks.app.data.settings.ContextClockOptionsOf
 import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.data.settings.DisplayContextDefaults
+import org.beatonma.gclocks.app.data.settings.GlobalOptions
 import org.beatonma.gclocks.app.data.settings.SettingKey
 import org.beatonma.gclocks.app.data.settings.buildClockSettingsAdapter
 import org.beatonma.gclocks.app.data.settings.chooseClockColors
@@ -71,10 +72,10 @@ class SettingsEditorViewModel(
     val richSettings: StateFlow<RichSettings?> = appSettings.mapLatest { settings ->
         when (settings) {
             null -> null
-            else -> buildRichSettings(settings.contextSettings.clock, settings.contextOptions)
             else -> buildRichSettings(
                 settings.contextSettings.clock,
                 settings.contextOptions,
+                settings.globalOptions
             )
         }
     }.stateIn(viewModelScope, started = SharingStarted.Eagerly, initialValue = null)
@@ -113,6 +114,12 @@ class SettingsEditorViewModel(
         }
     }
 
+    fun setGlobalOptions(globalOptions: GlobalOptions) {
+        _appSettings.update { previous ->
+            previous?.copy(globalOptions = globalOptions)
+        }
+    }
+
     fun save() {
         viewModelScope.launch {
             appSettings.value?.copy()?.let { currentSettings ->
@@ -129,8 +136,8 @@ class SettingsEditorViewModel(
 
     private fun <O : AnyOptions> buildRichSettings(
         clock: ClockType,
-        options: ContextClockOptions<O>
         options: ContextClockOptionsOf<O>,
+        globalOptions: GlobalOptions,
     ): RichSettings {
         @Suppress("UNCHECKED_CAST")
         val adapter = buildClockSettingsAdapter<O>(clock)
@@ -140,16 +147,17 @@ class SettingsEditorViewModel(
                 chooseClockType(clock, ::setClock)
             )
         )
-        settings = adapter.addClockSettings(settings, options.clockOptions, ::setClockOptions)
-        settings = addDisplaySettings(settings, options.displayOptions, ::setDisplayOptions)
-        settings = adapter.filterRichSettings(settings, options.clockOptions, options.displayContext)
         settings = adapter.addClockSettings(
             settings,
             options.clockOptions,
             ::setClockOptions,
+            globalOptions,
+            ::setGlobalOptions
         )
         settings = DisplaySettingsProvider.addDisplaySettings(
             settings, options.displayOptions, ::setDisplayOptions,
+            globalOptions,
+            ::setGlobalOptions
         )
         settings =
             adapter.filterRichSettings(settings, options.clockOptions, options.displayContext)
@@ -158,27 +166,23 @@ class SettingsEditorViewModel(
     }
 }
 
-
-expect fun addDisplaySettings(
-    settings: RichSettings,
-    options: DisplayContext.Options,
-    update: (DisplayContext.Options) -> Unit,
-): RichSettings
 expect object DisplaySettingsProvider {
     fun addDisplaySettings(
         settings: RichSettings,
         displayContextOptions: DisplayContext.Options,
         updateDisplayContextOptions: (DisplayContext.Options) -> Unit,
+        globalOptions: GlobalOptions,
+        updateGlobalOptions: (GlobalOptions) -> Unit,
     ): RichSettings
 }
 
 @Suppress("UnusedReceiverParameter")
 internal fun DisplaySettingsProvider.defaultAddDisplaySettings(
     settings: RichSettings,
-    options: DisplayContext.Options,
-    update: (DisplayContext.Options) -> Unit,
     displayContextOptions: DisplayContext.Options,
     updateDisplayContextOptions: (DisplayContext.Options) -> Unit,
+    globalOptions: GlobalOptions,
+    updateGlobalOptions: (GlobalOptions) -> Unit,
 ): RichSettings {
     return when (displayContextOptions) {
         is DisplayContextDefaults.WithBackground -> {
@@ -188,9 +192,8 @@ internal fun DisplaySettingsProvider.defaultAddDisplaySettings(
                 ) { previous ->
                     val previous = previous as RichSetting.ClockColors
                     chooseClockColors(
-                        displayContextOptions.backgroundColor,
-                        previous.value.colors,
-                        {
+                        value = previous.value.copy(background = displayContextOptions.backgroundColor),
+                        onValueChange = {
                             it.background?.let { backgroundColor ->
                                 updateDisplayContextOptions(
                                     displayContextOptions.copy(
@@ -199,14 +202,13 @@ internal fun DisplaySettingsProvider.defaultAddDisplaySettings(
                                 )
                             }
                             previous.onValueChange(it)
-                        }
                         },
+                        palettes = globalOptions.colorPalettes,
+                        onUpdatePalettes = { updateGlobalOptions(globalOptions.copy(colorPalettes = it)) },
                     )
                 },
                 layout = listOf(
                     chooseClockPosition(
-                        value = options.position,
-                        onUpdate = { update(options.copy(position = it)) },
                         value = displayContextOptions.position,
                         onUpdate = { updateDisplayContextOptions(displayContextOptions.copy(position = it)) },
                     ),

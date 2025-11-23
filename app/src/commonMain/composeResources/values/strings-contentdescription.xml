@@ -5,11 +5,17 @@
 
     <string name="cd_fullscreen_open">Expand to fullscreen</string>
     <string name="cd_fullscreen_close">Exit fullscreen</string>
+    <string name="cd_save_changes">Save changes</string>
+    <string name="cd_discard_changes">Discard changes</string>
 
     <!-- clock size/position editor -->
     <string name="cd_align_vertical_center">Center vertically</string>
     <string name="cd_align_horizontal_center">Center horizontally</string>
     <string name="cd_align_reset">Reset size and position</string>
     <string name="cd_drag_handle_resize">Drag to resize</string>
-    <string name="cd_save_changes">Save changes</string>
+
+    <!-- Color editor -->
+    <string name="cd_coloreditor_use_colorpalette">Use this palette</string>
+    <string name="cd_coloreditor_save_colorpalette">Save this palette</string>
+    <string name="cd_coloreditor_delete_colorpalette">Delete this palette</string>
 </resources>

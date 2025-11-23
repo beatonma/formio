@@ -4,7 +4,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -25,6 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import org.beatonma.gclocks.app.theme.getForegroundColor
+import org.beatonma.gclocks.compose.components.settings.components.ScrollingRow
 import org.beatonma.gclocks.compose.plus
 import org.beatonma.gclocks.compose.vertical
 
@@ -71,14 +71,12 @@ data class ButtonColors(
 /**
  * Approximate implementation of Connected button group:
  *   https://m3.material.io/components/button-groups/specs
- *
- *
  */
 @Composable
 fun <T> ButtonGroup(
     value: T,
-    label: @Composable (T) -> String,
     onValueChange: (T) -> Unit,
+    label: @Composable (T) -> String,
     items: List<T>,
     buttonColors: ((T) -> ButtonColors)? = null,
     modifier: Modifier = Modifier,
@@ -88,46 +86,48 @@ fun <T> ButtonGroup(
     val layoutDirection = LocalLayoutDirection.current
     val defaultColors = rememberDefaultButtonColors()
 
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+    ScrollingRow(modifier, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
         items.forEachIndexed { index, item ->
-            val colors = when (buttonColors) {
-                null -> defaultColors
-                else -> remember { buttonColors(item) }
+            item {
+                val colors = when (buttonColors) {
+                    null -> defaultColors
+                    else -> remember { buttonColors(item) }
+                }
+
+                val isSelected = item == value
+                val isFirst = index == 0
+                val isLast = index == itemCount - 1
+
+                val color by animateColorAsState(if (isSelected) colors.selectedContainerColor else colors.unselectedContainerColor)
+                val contentColor by animateColorAsState(if (isSelected) colors.selectedContentColor else colors.unselectedContentColor)
+
+                val startRadius by animateDpAsState(
+                    when {
+                        isSelected || isFirst -> size.largeRadius
+                        else -> size.smallRadius
+                    }
+                )
+                val endRadius by animateDpAsState(
+                    when {
+                        isSelected || isLast -> size.largeRadius
+                        else -> size.smallRadius
+                    }
+                )
+
+                SelectableButton(
+                    label(item),
+                    ButtonDefaults.buttonColors(color, contentColor),
+                    { onValueChange(item) },
+                    RoundedCornerShape(
+                        topStart = startRadius,
+                        bottomStart = startRadius,
+                        topEnd = endRadius,
+                        bottomEnd = endRadius
+                    ),
+                    size,
+                    layoutDirection,
+                )
             }
-
-            val isSelected = item == value
-            val isFirst = index == 0
-            val isLast = index == itemCount - 1
-
-            val color by animateColorAsState(if (isSelected) colors.selectedContainerColor else colors.unselectedContainerColor)
-            val contentColor by animateColorAsState(if (isSelected) colors.selectedContentColor else colors.unselectedContentColor)
-
-            val startRadius by animateDpAsState(
-                when {
-                    isSelected || isFirst -> size.largeRadius
-                    else -> size.smallRadius
-                }
-            )
-            val endRadius by animateDpAsState(
-                when {
-                    isSelected || isLast -> size.largeRadius
-                    else -> size.smallRadius
-                }
-            )
-
-            SelectableButton(
-                label(item),
-                ButtonDefaults.buttonColors(color, contentColor),
-                { onValueChange(item) },
-                RoundedCornerShape(
-                    topStart = startRadius,
-                    bottomStart = startRadius,
-                    topEnd = endRadius,
-                    bottomEnd = endRadius
-                ),
-                size,
-                layoutDirection,
-            )
         }
     }
 }
@@ -160,7 +160,12 @@ private fun rememberDefaultButtonColors(): ButtonColors {
     val onPrimaryContainer = colorScheme.onPrimary
     val secondaryContainer = colorScheme.secondaryContainer
     val onSecondaryContainer = colorScheme.onSecondaryContainer
-    return remember(primaryContainer, onPrimaryContainer, secondaryContainer, onSecondaryContainer) {
+    return remember(
+        primaryContainer,
+        onPrimaryContainer,
+        secondaryContainer,
+        onSecondaryContainer
+    ) {
         ButtonColors(
             selectedContainerColor = primaryContainer,
             selectedContentColor = onPrimaryContainer,

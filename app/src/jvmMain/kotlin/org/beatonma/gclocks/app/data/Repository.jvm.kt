@@ -53,6 +53,7 @@ private val DisplayContext.preference
             this
         )
     )
+private val GlobalOptionsPreference = stringPreferencesKey(AppSettingsRepository.Keys.GlobalOptions)
 
 fun createDataStore(producePath: () -> String): DataStore<Preferences> =
     PreferenceDataStoreFactory.createWithPath(
@@ -67,7 +68,8 @@ fun DataStore<Preferences>.loadAppSettings(): Flow<AppSettings> {
                 state = deserialize(preferences[CurrentStatePreference]!!),
                 settings = enumEntries<DisplayContext>().associateWith {
                     deserialize(preferences[it.preference]!!)
-                }
+                },
+                globalOptions = deserialize(preferences[GlobalOptionsPreference]!!)
             )
         } catch (e: Exception) {
             debug("Failed to load preferences: $e\n$preferences")
@@ -86,6 +88,7 @@ fun DataStore<Preferences>.loadAppSettings(): Flow<AppSettings> {
 suspend fun DataStore<Preferences>.saveAppSettings(appSettings: AppSettings) {
     edit { prefs ->
         prefs[CurrentStatePreference] = serialize(appSettings.state)
+        prefs[GlobalOptionsPreference] = serialize(appSettings.globalOptions)
 
         enumEntries<DisplayContext>().forEach { context ->
             prefs[context.preference] = serialize(appSettings.settings[context])

@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -48,6 +47,8 @@ import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.navigation_cd_modal_open
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.beatonma.gclocks.app.theme.DesignSpec
+import org.beatonma.gclocks.app.theme.DesignSpec.hamburgerPadding
 import org.beatonma.gclocks.app.ui.NavigationMenu
 import org.beatonma.gclocks.app.ui.NavigationMenuItem
 import org.beatonma.gclocks.compose.AppIcon
@@ -58,7 +59,7 @@ import org.beatonma.gclocks.compose.isWidthAtLeastMedium
 import org.jetbrains.compose.resources.stringResource
 
 private val NavigationDrawerMaxWidth = 240.dp
-private val HamburgerPadding = 16.dp
+private val HamburgerPadding = DesignSpec.HamburgerPadding
 private val PermanentDrawerInset = HamburgerPadding / 2
 private val DrawerContentPadding = PaddingValues(HamburgerPadding / 2)
 private val DrawerItemSpacing = 4.dp
@@ -215,9 +216,7 @@ private fun SecondaryNavigation(
 
         IconButton(
             onClick = { scope.launch { drawerState.open() } },
-            modifier = Modifier
-                .windowInsetsPadding(DrawerDefaults.windowInsets)
-                .padding(HamburgerPadding)
+            modifier = Modifier.hamburgerPadding()
         ) {
             Icon(AppIcon.Hamburger, stringResource(Res.string.navigation_cd_modal_open))
         }

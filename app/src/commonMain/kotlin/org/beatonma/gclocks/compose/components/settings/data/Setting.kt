@@ -6,8 +6,8 @@ import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.util.warn
 import org.jetbrains.compose.resources.StringResource
 import kotlin.jvm.JvmInline
+import org.beatonma.gclocks.app.data.settings.ClockColors as ClockColorsData
 import org.beatonma.gclocks.app.data.settings.ClockType as ClockTypeData
-import org.beatonma.gclocks.compose.components.settings.ClockColors as ClockColorsData
 
 sealed interface Setting
 
@@ -86,6 +86,8 @@ sealed interface RichSetting<T : Any> : Setting {
         override val helpText: StringResource? = null,
         override val value: ClockColorsData,
         override val onValueChange: (ClockColorsData) -> Unit,
+        val palettes: List<ClockColorsData>,
+        val onUpdatePalettes: (List<ClockColorsData>) -> Unit,
     ) : RichSetting<ClockColorsData>
 
     @Immutable

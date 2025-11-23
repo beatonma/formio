@@ -13,6 +13,7 @@ import kotlin.enums.enumEntries
 
 class WebSettingsRepository : AppSettingsRepository {
     private val stateKey = AppSettingsRepository.Keys.AppState
+    private val globalOptionsKey = AppSettingsRepository.Keys.GlobalOptions
     private fun contextKey(context: DisplayContext) = AppSettingsRepository.Keys.settingKey(context)
 
     override fun loadAppSettings(): Flow<AppSettings> {
@@ -23,7 +24,9 @@ class WebSettingsRepository : AppSettingsRepository {
                         state = deserialize(localStorage[stateKey]!!),
                         settings = enumEntries<DisplayContext>().associateWith {
                             deserialize(localStorage[contextKey(it)]!!)
-                        }
+                        },
+                        globalOptions = deserialize(localStorage[globalOptionsKey]!!)
+
                     )
                 } catch (e: Exception) {
                     debug("Failed to load preferences: $e")
@@ -35,6 +38,7 @@ class WebSettingsRepository : AppSettingsRepository {
 
     override suspend fun save(appSettings: AppSettings) {
         localStorage[stateKey] = serialize(appSettings.state)
+        localStorage[globalOptionsKey] = serialize(appSettings.globalOptions)
         enumEntries<DisplayContext>().forEach {
             localStorage[contextKey(it)] = serialize(appSettings.settings[it])
         }

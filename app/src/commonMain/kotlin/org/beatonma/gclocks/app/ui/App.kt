@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
 import org.beatonma.gclocks.app.theme.AppTheme
@@ -27,13 +28,23 @@ fun App(
 
     AppTheme(
         Modifier.debugKeyEvent { event ->
-            if (event.type == KeyEventType.KeyDown && event.key == Key.T) {
-                theme = when (theme) {
-                    Theme.System -> Theme.Light
-                    Theme.Light -> Theme.Dark
-                    Theme.Dark -> Theme.System
+            if (event.type == KeyEventType.KeyDown) {
+                when (event.key) {
+                    Key.T -> {
+                        theme = when (theme) {
+                            Theme.System -> Theme.Light
+                            Theme.Light -> Theme.Dark
+                            Theme.Dark -> Theme.System
+                        }
+                        return@debugKeyEvent true
+                    }
+
+                    Key.X -> {
+                        if (event.isCtrlPressed) {
+                            viewModel.restoreDefaultSettings()
+                        }
+                    }
                 }
-                return@debugKeyEvent true
             }
             false
         },

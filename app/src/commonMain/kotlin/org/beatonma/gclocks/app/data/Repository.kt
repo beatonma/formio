@@ -41,6 +41,7 @@ interface AppSettingsRepository {
 
     object Keys {
         const val AppState = "state"
+        const val GlobalOptions = "global_options"
         fun settingKey(context: DisplayContext) = "context_${context.name}"
     }
 }

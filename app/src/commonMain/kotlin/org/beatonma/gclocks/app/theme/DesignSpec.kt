@@ -3,7 +3,10 @@ package org.beatonma.gclocks.app.theme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.DrawerDefaults
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.unit.dp
 
 object DesignSpec {
@@ -12,7 +15,8 @@ object DesignSpec {
     private val FloatingActionButtonPadding = 16.dp
 
     // https://m3.material.io/components/floating-action-button/specs
-    fun Modifier.floatingActionButton(): Modifier = padding(FloatingActionButtonPadding).safeDrawingPadding()
+    fun Modifier.floatingActionButton(): Modifier =
+        padding(FloatingActionButtonPadding).safeDrawingPadding()
 
     // https://m3.material.io/components/extended-fab/specs
     fun Modifier.extendedFloatingActionButton(): Modifier =
@@ -26,4 +30,10 @@ object DesignSpec {
             minWidth = TouchTargetMinSize,
             minHeight = TouchTargetMinSize
         )
+
+    val HamburgerPadding = 16.dp
+    fun Modifier.hamburgerPadding() = composed {
+        windowInsetsPadding(DrawerDefaults.windowInsets)
+            .padding(HamburgerPadding)
+    }
 }

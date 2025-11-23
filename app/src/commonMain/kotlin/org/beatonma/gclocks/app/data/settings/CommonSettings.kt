@@ -14,7 +14,6 @@ import gclocks_multiplatform.app.generated.resources.setting_second_scale
 import gclocks_multiplatform.app.generated.resources.setting_time_is_24_hour
 import gclocks_multiplatform.app.generated.resources.setting_time_is_zero_padded
 import gclocks_multiplatform.app.generated.resources.setting_time_show_seconds
-import org.beatonma.gclocks.compose.components.settings.ClockColors
 import org.beatonma.gclocks.compose.components.settings.data.Key
 import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import org.beatonma.gclocks.compose.components.settings.data.Setting
@@ -45,27 +44,32 @@ object SettingKey {
 
 internal fun chooseClockColors(
     paints: Paints,
-    onValueChange: (value: List<Color>) -> Unit,
     onUpdatePaints: (value: List<Color>) -> Unit,
+    palettes: List<ClockColors>,
+    onUpdatePalettes: (List<ClockColors>) -> Unit,
 ) = RichSetting.ClockColors(
     key = SettingKey.clockColors,
     name = Res.string.setting_colors,
     helpText = null,
     value = ClockColors(null, paints.colors.toList()),
-    onValueChange = { onValueChange(it.colors) },
     onValueChange = { onUpdatePaints(it.colors) },
+    palettes = palettes,
+    onUpdatePalettes = onUpdatePalettes,
 )
 
 internal fun chooseClockColors(
-    background: Color,
-    colors: List<Color>,
+    value: ClockColors,
     onValueChange: (ClockColors) -> Unit,
+    palettes: List<ClockColors>,
+    onUpdatePalettes: (List<ClockColors>) -> Unit,
 ) = RichSetting.ClockColors(
     key = SettingKey.clockColorsWithBackground,
     name = Res.string.setting_colors,
     helpText = null,
-    value = ClockColors(background, colors),
+    value = value,
     onValueChange = onValueChange,
+    palettes = palettes,
+    onUpdatePalettes = onUpdatePalettes,
 )
 
 internal fun chooseLayout(value: Layout, onUpdate: (Layout) -> Unit) =

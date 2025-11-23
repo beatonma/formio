@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,6 +29,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
@@ -35,7 +38,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +50,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import gclocks_multiplatform.app.generated.resources.Res
+import gclocks_multiplatform.app.generated.resources.cd_coloreditor_delete_colorpalette
+import gclocks_multiplatform.app.generated.resources.cd_coloreditor_save_colorpalette
+import gclocks_multiplatform.app.generated.resources.cd_coloreditor_use_colorpalette
+import gclocks_multiplatform.app.generated.resources.cd_discard_changes
 import gclocks_multiplatform.app.generated.resources.cd_save_changes
 import gclocks_multiplatform.app.generated.resources.setting_color_contentdescription_selected
 import gclocks_multiplatform.app.generated.resources.setting_color_label_hsl_hue_initial
@@ -56,9 +62,11 @@ import gclocks_multiplatform.app.generated.resources.setting_color_label_hsl_sat
 import gclocks_multiplatform.app.generated.resources.setting_color_label_rgb_blue_initial
 import gclocks_multiplatform.app.generated.resources.setting_color_label_rgb_green_initial
 import gclocks_multiplatform.app.generated.resources.setting_color_label_rgb_red_initial
+import org.beatonma.gclocks.app.data.settings.ClockColors
 import org.beatonma.gclocks.app.data.settings.copyWithColors
 import org.beatonma.gclocks.app.theme.DesignSpec.FloatingActionButtonSize
 import org.beatonma.gclocks.app.theme.DesignSpec.floatingActionButton
+import org.beatonma.gclocks.app.theme.DesignSpec.hamburgerPadding
 import org.beatonma.gclocks.app.theme.rememberContentColor
 import org.beatonma.gclocks.app.ui.Localization.stringResourceMap
 import org.beatonma.gclocks.app.ui.resolve
@@ -94,28 +102,6 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 private val DefaultPatchSize = 48.dp
 private val EditablePatchSize = 64.dp
 
-@Immutable
-data class ClockColors(
-    val background: Color?,
-    val colors: List<Color>,
-)
-
-private fun ClockColors.unpack(): List<Color> = (listOf(background) + colors.toList()).filterNotNull()
-private fun ClockColors.unpack(): List<Color> =
-    (listOf(background) + colors.toList()).filterNotNull()
-
-private fun List<Color>.pack(hasBackgroundColor: Boolean): ClockColors =
-    ClockColors(
-        background = this.background(hasBackgroundColor),
-        colors = this.colors(hasBackgroundColor),
-    )
-
-
-private fun List<Color>.background(hasBackgroundColor: Boolean): Color? =
-    if (hasBackgroundColor) this[0] else null
-
-private fun List<Color>.colors(hasBackgroundColor: Boolean): List<Color> =
-    if (hasBackgroundColor) this.subList(1, size) else this
 
 @Composable
 fun ClockColorsSetting(
@@ -127,8 +113,10 @@ fun ClockColorsSetting(
         setting.name.resolve(),
         setting.helpText?.resolve(),
         setting.value,
-        modifier,
-        onValueChange = setting.onValueChange
+        onValueChange = setting.onValueChange,
+        palettes = setting.palettes,
+        onUpdatePalettes = setting.onUpdatePalettes,
+        modifier = modifier,
     )
 }
 
@@ -138,10 +126,11 @@ fun ClockColorsSetting(
     name: String,
     helpText: String?,
     colors: ClockColors,
-    modifier: Modifier = Modifier,
     onValueChange: (ClockColors) -> Unit,
+    palettes: List<ClockColors>,
+    onUpdatePalettes: (List<ClockColors>) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    val hasBackgroundColor = colors.background != null
     var editingIndex: Int? by rememberSaveable(key) { mutableStateOf(null) }
 
     CheckableSettingLayout(
@@ -151,22 +140,9 @@ fun ClockColorsSetting(
         helpText = helpText,
         text = { Text(name) },
         checkable = {
-            @Composable
-            fun ColorBlock(color: Color) {
-                Box(
-                    Modifier
-                        .size(24.dp)
-                        .border(
-                            Dp.Hairline,
-                            LocalContentColor.current.copy(alpha = 0.2f),
-                            shapes.small
-                        )
-                        .background(color.toCompose(), shapes.small)
-                        .aspectRatio(1f)
-                ) {}
+            for (color in colors.allColors) {
+                ColorPreview(color)
             }
-
-            colors.unpack().forEach { ColorBlock(it) }
         },
     )
 
@@ -174,15 +150,15 @@ fun ClockColorsSetting(
         val clockPreview = LocalClockPreview.current
             ?: throw IllegalStateException("ColorSetting expects LocalClockPreview to be provided")
 
-        var editableColors: List<Color> by remember(colors) { mutableStateOf(colors.unpack()) }
+        var editableColors by remember(colors) { mutableStateOf(colors) }
 
         val saveChanges: () -> Unit = {
-            onValueChange(editableColors.pack(hasBackgroundColor))
+            onValueChange(editableColors)
             editingIndex = null
         }
 
         val clockPreviewOptions =
-            clockPreview.options.copyWithColors(editableColors.colors(hasBackgroundColor))
+            clockPreview.options.copyWithColors(editableColors.colors)
         val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
         val editorContent: @Composable (Modifier) -> Unit = { editorContentModifier ->
             EditorContent(
@@ -192,6 +168,8 @@ fun ClockColorsSetting(
                 { editingIndex = it },
                 editableColors,
                 { editableColors = it },
+                palettes,
+                onUpdatePalettes,
                 editorContentModifier
             )
         }
@@ -199,7 +177,7 @@ fun ClockColorsSetting(
         Box(
             Modifier
                 .background(
-                    editableColors.background(hasBackgroundColor)?.toCompose()
+                    editableColors.background?.toCompose()
                         ?: colorScheme.background
                 )
                 .fillMaxSize()
@@ -222,6 +200,10 @@ fun ClockColorsSetting(
                 }
             }
 
+            IconButton({ editingIndex = null }, Modifier.hamburgerPadding()) {
+                Icon(AppIcon.Back, stringResource(Res.string.cd_discard_changes))
+            }
+
             FloatingActionButton(
                 onClick = saveChanges,
                 Modifier.floatingActionButton().align(Alignment.BottomEnd)
@@ -238,10 +220,14 @@ private fun EditorContent(
     windowSizeClass: WindowSizeClass,
     editingIndex: Int?,
     setEditingIndex: (Int?) -> Unit,
-    editableColors: List<Color>,
-    setEditableColors: (List<Color>) -> Unit,
+    editableColors: ClockColors,
+    setEditableColors: (ClockColors) -> Unit,
+    palettes: List<ClockColors>,
+    onUpdatePalettes: (List<ClockColors>) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var mode by rememberSaveable { mutableStateOf(ColorEditorMode.Samples) }
+    val colorsList = editableColors.allColors
     if (!(windowSizeClass.isHeightSmall() && windowSizeClass.isWidthSmall())) {
         Clock(
             clockOptions,
@@ -254,7 +240,7 @@ private fun EditorContent(
     Card(modifier.padding(16.dp)) {
         Column(
             Modifier
-                .widthIn(max = 600.dp)
+                .widthIn(max = 500.dp)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -266,27 +252,56 @@ private fun EditorContent(
                 rowState,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                itemsIndexed(editableColors) { index, color ->
+                itemsIndexed(colorsList) { index, color ->
                     val isSelected = index == editingIndex
                     val size by animateDpAsState(if (isSelected) EditablePatchSize else DefaultPatchSize)
 
-                    Patch(color.toCompose(), { setEditingIndex(index) }, size = size) {
+                    ColorPatch(color.toCompose(), { setEditingIndex(index) }, size = size) {
                         if (isSelected) {
                             Icon(AppIcon.ArrowDown, null)
                         }
                     }
                 }
+
+                item {
+                    IconButton({
+                        mode = ColorEditorMode.Palettes
+                        if (editableColors !in palettes) {
+                            onUpdatePalettes(palettes + editableColors)
+                        }
+                    }) {
+                        Icon(
+                            AppIcon.Save,
+                            stringResource(Res.string.cd_coloreditor_save_colorpalette)
+                        )
+                    }
+                }
             }
 
             editingIndex?.let { index ->
-                val editingColor = editableColors[index]
+                val editingColor = colorsList[index]
                 ColorEditor(
+                    mode,
+                    { mode = it },
                     editingColor,
-                    {
-                        val value = editableColors.toMutableList()
-                        value[index] = it
-                        setEditableColors(value.toList())
+                    onColorChanged = { color ->
+                        val updatedColors = colorsList.toMutableList()
+                        updatedColors[index] = color
+                        setEditableColors(editableColors.update(updatedColors.toList()))
                     },
+                    currentPalette = editableColors,
+                    palettes = palettes,
+                    onPaletteSelected = { palette ->
+                        setEditableColors(
+                            ClockColors(
+                                background = palette.background ?: editableColors.background,
+                                colors = editableColors.colors.mapIndexed { i, color ->
+                                    palette.colors.getOrNull(i) ?: color
+                                }
+                            )
+                        )
+                    },
+                    onPalettesChanged = onUpdatePalettes,
                 )
             }
         }
@@ -295,18 +310,25 @@ private fun EditorContent(
 
 enum class ColorEditorMode {
     Samples,
+    Palettes,
     HSL,
     RGB,
     HEX,
+    ;
 }
 
 @Composable
 private fun ColorEditor(
+    mode: ColorEditorMode,
+    setMode: (ColorEditorMode) -> Unit,
     color: Color,
-    onColorChange: (Color) -> Unit,
+    onColorChanged: (Color) -> Unit,
+    currentPalette: ClockColors,
+    palettes: List<ClockColors>,
+    onPaletteSelected: (ClockColors) -> Unit,
+    onPalettesChanged: (List<ClockColors>) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var mode by rememberSaveable { mutableStateOf(ColorEditorMode.Samples) }
     val localizedModes = remember { ColorEditorMode::class.stringResourceMap }
 
     LazyColumn(
@@ -317,8 +339,8 @@ private fun ColorEditor(
         item {
             ButtonGroup(
                 mode,
+                setMode,
                 { localizedModes[it]?.resolve() ?: it.name },
-                { mode = it },
                 ColorEditorMode.entries,
                 size = ButtonGroupSize.Small
             )
@@ -327,10 +349,16 @@ private fun ColorEditor(
         item {
             Box(Modifier.animateContentSize()) {
                 when (mode) {
-                    ColorEditorMode.Samples -> SampleColors(color, onColorChange)
-                    ColorEditorMode.HSL -> HslComponents(color, onColorChange)
-                    ColorEditorMode.RGB -> RgbComponents(color, onColorChange)
-                    ColorEditorMode.HEX -> HexEditor(color, onColorChange)
+                    ColorEditorMode.Samples -> SampleColors(color, onColorChanged)
+                    ColorEditorMode.HSL -> HslComponents(color, onColorChanged)
+                    ColorEditorMode.RGB -> RgbComponents(color, onColorChanged)
+                    ColorEditorMode.HEX -> HexEditor(color, onColorChanged)
+                    ColorEditorMode.Palettes -> ColorPalettes(
+                        currentPalette,
+                        palettes,
+                        onSelect = onPaletteSelected,
+                        onDelete = { deleted -> onPalettesChanged(palettes.filter { it != deleted }) }
+                    )
                 }
             }
         }
@@ -476,7 +504,7 @@ private fun SampleColorPatch(
     isSelected: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    Patch(
+    ColorPatch(
         color = value.toCompose(),
         onClick = { onValueChange(value) },
         content = if (isSelected) {
@@ -534,7 +562,7 @@ private fun ColorComponent(
 }
 
 @Composable
-private fun Patch(
+private fun ColorPatch(
     color: ComposeColor,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -556,4 +584,75 @@ private fun Patch(
             }
         }
     }
+}
+
+
+@Composable
+private fun ColorPalettes(
+    currentPalette: ClockColors,
+    palettes: List<ClockColors>,
+    modifier: Modifier = Modifier,
+    onSelect: (ClockColors) -> Unit,
+    onDelete: (ClockColors) -> Unit,
+) {
+    Column(modifier) {
+        for (index in palettes.indices) {
+            val palette = palettes[index]
+            ColorPalette(
+                palette,
+                isSelected = currentPalette == palette,
+                onSelect = { onSelect(palette) },
+                onDelete = { onDelete(palette) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ColorPalette(
+    palette: ClockColors,
+    isSelected: Boolean,
+    onSelect: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    CheckableSettingLayout(
+        onSelect,
+        Role.RadioButton,
+        modifier,
+        text = {
+            palette.background?.let {
+                ColorPreview(it, 32.dp)
+                Spacer(Modifier.width(4.dp))
+            }
+            for (color in palette.colors) {
+                ColorPreview(color, 32.dp)
+            }
+        }, checkable = {
+            Icon(
+                if (isSelected) AppIcon.Checkmark else AppIcon.ArrowUp,
+                stringResource(Res.string.cd_coloreditor_use_colorpalette)
+            )
+
+            IconButton(onDelete) {
+                Icon(AppIcon.Delete, stringResource(Res.string.cd_coloreditor_delete_colorpalette))
+            }
+        }
+    )
+}
+
+
+@Composable
+private fun ColorPreview(color: Color, size: Dp = 24.dp) {
+    Box(
+        Modifier
+            .size(size)
+            .border(
+                Dp.Hairline,
+                LocalContentColor.current.copy(alpha = 0.2f),
+                shapes.small
+            )
+            .background(color.toCompose(), shapes.small)
+            .aspectRatio(1f)
+    ) {}
 }

@@ -14,13 +14,13 @@ import org.beatonma.gclocks.form.FormOptions
 import org.beatonma.gclocks.io16.Io16Options
 import org.beatonma.gclocks.io18.Io18Options
 
-interface ClockSettingsAdapter<O : Options<*>> {
-    fun addClockSettings(richSettings: RichSettings, options: O, updateOptions: (O) -> Unit): RichSettings
-interface ClockSettingsAdapter<O : Options<G>, G : GlyphOptions> {
+interface ClockSettingsAdapter<O : AnyOptions> {
     fun addClockSettings(
         richSettings: RichSettings,
         options: O,
         updateOptions: (O) -> Unit,
+        globalOptions: GlobalOptions,
+        setGlobalOptions: (GlobalOptions) -> Unit,
     ): RichSettings {
         val updateLayout: (LayoutOptions) -> Unit = {
             @Suppress("UNCHECKED_CAST")
@@ -29,7 +29,12 @@ interface ClockSettingsAdapter<O : Options<G>, G : GlyphOptions> {
         return richSettings.append(
             colors = buildColorSettings(
                 options.paints,
-                { updateOptions(options.copy(paints = it) as O) },
+                {
+                    @Suppress("UNCHECKED_CAST")
+                    updateOptions(options.copy(paints = it) as O)
+                },
+                globalOptions.colorPalettes,
+                { setGlobalOptions(globalOptions.copy(colorPalettes = it)) }
             ),
             layout = buildLayoutSettings(options.layout, updateLayout),
             time = buildTimeSettings(options.layout, updateLayout),
@@ -72,16 +77,19 @@ interface ClockSettingsAdapter<O : Options<G>, G : GlyphOptions> {
             }
         }
     }
-}
 
     fun buildColorSettings(
         paints: Paints,
         onUpdatePaints: (Paints) -> Unit,
+        palettes: List<ClockColors>,
+        onUpdatePalettes: (List<ClockColors>) -> Unit,
     ): List<Setting> {
         return listOf(
             chooseClockColors(
                 paints,
                 { colors -> onUpdatePaints(paints.copy(colors = colors)) },
+                palettes,
+                onUpdatePalettes
             )
         )
     }
@@ -101,7 +109,6 @@ interface ClockSettingsAdapter<O : Options<G>, G : GlyphOptions> {
         },
     )
 
-internal fun defaultBuildClockSettingsAdapter(clock: ClockType): ClockSettingsAdapter<*> {
     fun buildTimeSettings(
         layoutOptions: LayoutOptions,
         onUpdate: (LayoutOptions) -> Unit,

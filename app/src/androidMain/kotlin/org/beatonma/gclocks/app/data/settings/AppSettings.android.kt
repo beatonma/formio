@@ -47,6 +47,7 @@ actual val DefaultAppSettings: AppSettings
                 else -> value
             }
         },
+        globalOptions = GlobalOptions(),
     )
 
 

@@ -67,12 +67,54 @@ data class AppState(
     val displayContext: DisplayContext,
 )
 
+@Serializable
+@Immutable
+data class ClockColors(
+    val background: Color?,
+    val colors: List<Color>,
+) {
+    val allColors: List<Color>
+        get() = when (background) {
+            null -> colors
+            else -> listOf(background) + colors
+        }
+
+    fun update(newColors: List<Color>): ClockColors =
+        when (background) {
+            null -> ClockColors(background = null, colors = newColors)
+            else -> ClockColors(
+                background = newColors[0],
+                colors = newColors.subList(1, newColors.size)
+            )
+        }
+}
+
+@Serializable
+@Immutable
+data class GlobalOptions(
+    val colorPalettes: List<ClockColors> = listOf(
+        ClockColors(
+            background = DisplayContextDefaults.DefaultBackgroundColor,
+            colors = FormPaints.DefaultColors
+        ),
+        ClockColors(
+            background = DisplayContextDefaults.DefaultBackgroundColor,
+            colors = Io16Paints.DefaultColors
+        ),
+        ClockColors(
+            background = DisplayContextDefaults.DefaultBackgroundColor,
+            colors = Io18Paints.DefaultColors
+        ),
+    )
+)
+
 
 @Serializable
 @Immutable
 data class AppSettings(
     val state: AppState,
     val settings: Map<DisplayContext, ContextSettings>,
+    val globalOptions: GlobalOptions
 ) {
     val contextSettings: ContextSettings get() = getContextSettings(state.displayContext)
     val contextOptions: ContextClockOptions<*, *> get() = getContextOptions(state.displayContext)
@@ -111,6 +153,8 @@ data class AppSettings(
         displayOptions: DisplayContext.Options?,
     ): AppSettings {
         val previous = settings[state.displayContext] ?: ContextSettings(state.displayContext)
+
+        @Suppress("UNCHECKED_CAST")
         val updatedSettings = settings.toMutableMap().apply {
             set(
                 state.displayContext,
