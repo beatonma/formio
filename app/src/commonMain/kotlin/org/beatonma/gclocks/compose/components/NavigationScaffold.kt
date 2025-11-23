@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -44,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import gclocks_multiplatform.app.generated.resources.Res
+import gclocks_multiplatform.app.generated.resources.navigation_cd_modal_close
 import gclocks_multiplatform.app.generated.resources.navigation_cd_modal_open
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -192,6 +194,17 @@ private fun SecondaryNavigation(
         drawerContent = {
             ModalDrawerSheet(drawerState, Modifier.widthIn(max = NavigationDrawerMaxWidth)) {
                 NavigationColumn(DrawerContentPadding, DrawerItemSpacing) {
+                    IconButton(
+                        onClick = { scope.launch { drawerState.close() } },
+                        Modifier.padding(4.dp)
+                    ) {
+                        Icon(
+                            AppIcon.HamburgerClose,
+                            stringResource(Res.string.navigation_cd_modal_close)
+                        )
+                    }
+                    Spacer(Modifier.height(0.dp))
+
                     if (!menu.usesNavigationBar) {
                         menu.primary.forEach { menuItem ->
                             DrawerItem(menuItem, menuItem == selected) {
@@ -199,8 +212,8 @@ private fun SecondaryNavigation(
                                 scope.launch { drawerState.close() }
                             }
                         }
-                        Separator()
                     }
+                    Separator()
 
                     menu.secondary.forEach { menuItem ->
                         DrawerItem(menuItem, menuItem == selected) {
@@ -262,11 +275,26 @@ private fun ColumnScope.RailItem(
     isSelected: Boolean,
     onSelect: (NavigationMenuItem) -> Unit
 ) {
-    NavigationRailItem(
-        label = { Text(stringResource(item.label)) },
-        selected = isSelected,
+    RailItem(
+        label = stringResource(item.label),
+        isSelected = isSelected,
         onClick = { onSelect(item) },
         icon = { Icon(item.icon, stringResource(item.contentDescription)) },
+    )
+}
+
+@Composable
+private fun ColumnScope.RailItem(
+    label: String?,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    icon: @Composable () -> Unit
+) {
+    NavigationRailItem(
+        label = { label?.let { Text(it) } },
+        selected = isSelected,
+        onClick = onClick,
+        icon = icon,
     )
 }
 
@@ -276,11 +304,26 @@ private fun ColumnScope.DrawerItem(
     isSelected: Boolean,
     onSelect: (NavigationMenuItem) -> Unit
 ) {
-    NavigationDrawerItem(
-        label = { Text(stringResource(item.label)) },
-        selected = isSelected,
+    DrawerItem(
+        label = stringResource(item.label),
+        isSelected = isSelected,
         onClick = { onSelect(item) },
         icon = { Icon(item.icon, stringResource(item.contentDescription)) },
+    )
+}
+
+@Composable
+private fun ColumnScope.DrawerItem(
+    label: String?,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    icon: @Composable () -> Unit
+) {
+    NavigationDrawerItem(
+        label = { label?.let { Text(it) } },
+        selected = isSelected,
+        onClick = onClick,
+        icon = icon,
     )
 }
 
