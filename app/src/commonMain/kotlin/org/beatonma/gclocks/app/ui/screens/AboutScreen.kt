@@ -4,7 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -29,6 +32,7 @@ import gclocks_multiplatform.app.generated.resources.about_io_markdown
 import org.beatonma.gclocks.app.theme.ClockColorScheme
 import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.components.MarkdownText
+import org.beatonma.gclocks.compose.plus
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
 import org.beatonma.gclocks.core.options.Layout
@@ -50,13 +54,13 @@ private val CardContentModifier = Modifier.padding(16.dp)
 
 @Composable
 fun AboutScreen() {
-    Scaffold {
+    Scaffold { insets ->
         val itemSpacing = 16.dp
         LazyVerticalStaggeredGrid(
             StaggeredGridCells.Adaptive(minSize = 300.dp),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = insets + WindowInsets.safeDrawing.asPaddingValues() + PaddingValues(16.dp),
             horizontalArrangement = Arrangement.spacedBy(itemSpacing),
-            verticalItemSpacing = itemSpacing
+            verticalItemSpacing = itemSpacing,
         ) {
             item { AboutApp() }
             item { AboutForm() }

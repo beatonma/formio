@@ -17,10 +17,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.waterfall
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -60,6 +62,7 @@ import gclocks_multiplatform.app.generated.resources.cd_fullscreen_open
 import gclocks_multiplatform.app.generated.resources.setting_save_changes_fab
 import org.beatonma.gclocks.app.data.settings.ContextClockOptionsOf
 import org.beatonma.gclocks.app.data.settings.DisplayContext
+import org.beatonma.gclocks.app.data.settings.DisplayContextDefaults
 import org.beatonma.gclocks.app.theme.rememberContentColor
 import org.beatonma.gclocks.app.ui.AppNavigation
 import org.beatonma.gclocks.compose.AppIcon
@@ -85,7 +88,7 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 
 
 private val ColumnPreferredWidth = 350.dp
-private val ColumnMaxWidth = 400.dp
+private val ColumnMaxWidth = 450.dp
 
 private val ColumnSpacing = 32.dp
 private val HorizontalMargin = 8.dp
@@ -205,6 +208,8 @@ private fun ClockSettingsScaffold(
                                 .animateContentSize(),
                             clockModifier = Modifier
                                 .sizeIn(maxWidth = 600.dp, maxHeight = 300.dp)
+                                .fillMaxWidth()
+                                .windowInsetsPadding(WindowInsets.safeDrawing)
                                 .padding(64.dp),
                         )
                     }
@@ -480,9 +485,9 @@ private fun GroupSeparator(modifier: Modifier, content: @Composable BoxScope.() 
 @Composable
 private fun resolveClockBackgroundColor(displayOptions: DisplayContext.Options): ComposeColor {
     return when (displayOptions) {
-        is DisplayContext.Options.WithBackground -> displayOptions.backgroundColor.toCompose()
-        else -> null
-    } ?: colorScheme.surface
+        is DisplayContext.Options.WithBackground -> displayOptions.backgroundColor
+        else -> DisplayContextDefaults.DefaultBackgroundColor
+    }.toCompose()
 }
 
 
