@@ -6,6 +6,7 @@ import org.beatonma.gclocks.core.createAnimator
 import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.options.AnyOptions
+import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 import org.beatonma.gclocks.form.FormClockRenderer
 import org.beatonma.gclocks.form.FormFont
 import org.beatonma.gclocks.io16.Io16ClockRenderer
@@ -42,7 +43,13 @@ fun createAnimatorFromOptions(
                 Io16Font(
                     isAnimated = enableAnimation,
                     debugGetGlyphAt = if (forcedState == null) null else ({ glyph ->
-                        glyph.apply { setState(forcedState, force = true) }
+                        glyph.apply {
+                            setState(
+                                forcedState,
+                                force = true,
+                                currentTimeMillis = getCurrentTimeMillis()
+                            )
+                        }
                     }),
                     randomiseSegmentOffset = allowVariance,
                 ),

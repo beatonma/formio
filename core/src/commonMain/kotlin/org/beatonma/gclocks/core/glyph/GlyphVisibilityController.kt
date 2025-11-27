@@ -5,10 +5,14 @@ import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 import org.beatonma.gclocks.core.util.progress
 
+private typealias OnVisibilityChanged = ((GlyphVisibility, currentTimeMillis: Long) -> Unit)
+
 
 sealed interface GlyphVisibilityController : SecondChangedObserver {
     val visibility: GlyphVisibility
-    val onVisibilityChanged: ((GlyphVisibility) -> Unit)?
+    val onVisibilityChanged: OnVisibilityChanged?
+
+    fun setVisibility(newVisibility: GlyphVisibility, currentTimeMillis: Long)
 
     fun setState(newVisibility: GlyphVisibility, force: Boolean, currentTimeMillis: Long)
 
@@ -19,21 +23,26 @@ sealed interface GlyphVisibilityController : SecondChangedObserver {
 }
 
 abstract class BaseGlyphVisibilityController(
-    override val onVisibilityChanged: ((GlyphVisibility) -> Unit)? = null,
+    override val onVisibilityChanged: OnVisibilityChanged? = null,
 ) : GlyphVisibilityController {
     override var visibility: GlyphVisibility = GlyphVisibility.Appearing
-        protected set(value) {
-            val isChanged = field != value
-            field = value
-            if (isChanged) {
-                onVisibilityChanged?.invoke(value)
-            }
+        protected set
+
+    override fun setVisibility(
+        newVisibility: GlyphVisibility,
+        currentTimeMillis: Long
+    ) {
+        val isChanged = visibility != newVisibility
+        visibility = newVisibility
+        if (isChanged) {
+            onVisibilityChanged?.invoke(newVisibility, currentTimeMillis)
         }
+    }
 }
 
 
 class SynchronizedVisibilityController(
-    onVisibilityChanged: ((GlyphVisibility) -> Unit)? = null,
+    onVisibilityChanged: OnVisibilityChanged? = null,
 ) : BaseGlyphVisibilityController(onVisibilityChanged) {
     private var pendingVisibility: GlyphVisibility? = null
 
@@ -41,13 +50,12 @@ class SynchronizedVisibilityController(
         val pending = pendingVisibility
 
         if (pending != null) {
-            visibility = pending
-            pendingVisibility = null
+            applyVisibility(pending)
         } else {
             if (visibility == GlyphVisibility.Appearing) {
-                visibility = GlyphVisibility.Visible
+                applyVisibility(GlyphVisibility.Visible)
             } else if (visibility == GlyphVisibility.Disappearing) {
-                visibility = GlyphVisibility.Hidden
+                applyVisibility(GlyphVisibility.Hidden)
             }
         }
     }
@@ -66,8 +74,7 @@ class SynchronizedVisibilityController(
         currentTimeMillis: Long
     ) {
         if (force) {
-            // Defer visibility change until the start of the next second
-            pendingVisibility = newVisibility
+            applyVisibility(newVisibility)
             return
         }
 
@@ -81,19 +88,11 @@ class SynchronizedVisibilityController(
         when (visibility) {
             GlyphVisibility.Visible -> cancelPending()
             GlyphVisibility.Hidden, GlyphVisibility.Disappearing -> {
-                setState(
-                    GlyphVisibility.Appearing,
-                    force = true,
-                    currentTimeMillis = currentTimeMillis
-                )
+                queuePending(GlyphVisibility.Appearing)
             }
 
             GlyphVisibility.Appearing -> {
-                setState(
-                    GlyphVisibility.Visible,
-                    force = true,
-                    currentTimeMillis = currentTimeMillis
-                )
+                queuePending(GlyphVisibility.Visible)
             }
         }
     }
@@ -102,25 +101,26 @@ class SynchronizedVisibilityController(
         when (visibility) {
             GlyphVisibility.Hidden -> cancelPending()
             GlyphVisibility.Visible, GlyphVisibility.Appearing -> {
-                setState(
-                    GlyphVisibility.Disappearing,
-                    force = true,
-                    currentTimeMillis = currentTimeMillis
-                )
+                queuePending(GlyphVisibility.Disappearing)
             }
 
             GlyphVisibility.Disappearing -> {
-                setState(
-                    GlyphVisibility.Hidden,
-                    force = true,
-                    currentTimeMillis = currentTimeMillis
-                )
+                queuePending(GlyphVisibility.Hidden)
             }
 
             else -> debug(false) {
                 debug("disappear() has no effect when visibility == $visibility")
             }
         }
+    }
+
+    private fun applyVisibility(newVisibility: GlyphVisibility) {
+        cancelPending()
+        visibility = newVisibility
+    }
+
+    private fun queuePending(newVisibility: GlyphVisibility) {
+        pendingVisibility = newVisibility
     }
 
     private fun cancelPending() {
@@ -131,7 +131,7 @@ class SynchronizedVisibilityController(
 
 class DesynchronizedGlyphVisibilityController(
     currentTimeMillis: Long = getCurrentTimeMillis(),
-    onVisibilityChanged: ((GlyphVisibility) -> Unit)? = null,
+    onVisibilityChanged: OnVisibilityChanged? = null,
 ) : BaseGlyphVisibilityController(onVisibilityChanged) {
     var visibilityChangedAt: Long = currentTimeMillis
     var visibilityChangedProgress: Float = 0f

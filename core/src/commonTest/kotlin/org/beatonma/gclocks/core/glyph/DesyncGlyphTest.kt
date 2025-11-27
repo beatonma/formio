@@ -2,6 +2,7 @@ package org.beatonma.gclocks.core.glyph
 
 import org.beatonma.gclocks.core.fixtures.TestGlyph
 import org.beatonma.gclocks.core.fixtures.TestGlyphOptions
+import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 import org.beatonma.gclocks.test.shouldbe
 import kotlin.test.Test
 
@@ -31,30 +32,38 @@ class DesyncGlyphTest {
         with(testGlyph()) {
             state shouldbe GlyphState.Active
 
-            setState(GlyphState.Inactive, force = true)
+            setState(GlyphState.Inactive, force = true, currentTimeMillis = getCurrentTimeMillis())
             state shouldbe GlyphState.Inactive
 
-            setState(GlyphState.Activating, force = true)
+            setState(
+                GlyphState.Activating,
+                force = true,
+                currentTimeMillis = getCurrentTimeMillis()
+            )
             state shouldbe GlyphState.Activating
 
-            setState(GlyphState.Deactivating, force = true)
+            setState(
+                GlyphState.Deactivating,
+                force = true,
+                currentTimeMillis = getCurrentTimeMillis()
+            )
             state shouldbe GlyphState.Deactivating
 
-            setState(GlyphState.Active, force = true)
+            setState(GlyphState.Active, force = true, currentTimeMillis = getCurrentTimeMillis())
             state shouldbe GlyphState.Active
         }
 
         with(testGlyph()) {
             state shouldbe GlyphState.Active
 
-            setState(GlyphState.Inactive, force = false)
+            setState(GlyphState.Inactive, force = false, currentTimeMillis = getCurrentTimeMillis())
             state shouldbe GlyphState.Deactivating
         }
 
         with(testGlyph()) {
-            setState(GlyphState.Inactive, force = true)
+            setState(GlyphState.Inactive, force = true, currentTimeMillis = getCurrentTimeMillis())
 
-            setState(GlyphState.Active, force = false)
+            setState(GlyphState.Active, force = false, currentTimeMillis = getCurrentTimeMillis())
             state shouldbe GlyphState.Activating
         }
     }
@@ -64,27 +73,51 @@ class DesyncGlyphTest {
         with(testGlyph()) {
             visibility shouldbe GlyphVisibility.Appearing
 
-            setState(GlyphVisibility.Disappearing, force = true)
+            setState(
+                GlyphVisibility.Disappearing,
+                force = true,
+                currentTimeMillis = getCurrentTimeMillis()
+            )
             visibility shouldbe GlyphVisibility.Disappearing
 
-            setState(GlyphVisibility.Appearing, force = true)
+            setState(
+                GlyphVisibility.Appearing,
+                force = true,
+                currentTimeMillis = getCurrentTimeMillis()
+            )
             visibility shouldbe GlyphVisibility.Appearing
 
-            setState(GlyphVisibility.Hidden, force = true)
+            setState(
+                GlyphVisibility.Hidden,
+                force = true,
+                currentTimeMillis = getCurrentTimeMillis()
+            )
             visibility shouldbe GlyphVisibility.Hidden
         }
 
         with(testGlyph()) {
             visibility shouldbe GlyphVisibility.Appearing
 
-            setState(GlyphVisibility.Hidden, force = false)
+            setState(
+                GlyphVisibility.Hidden,
+                force = false,
+                currentTimeMillis = getCurrentTimeMillis()
+            )
             visibility shouldbe GlyphVisibility.Disappearing
         }
 
         with(testGlyph()) {
-            setState(GlyphVisibility.Hidden, force = true)
+            setState(
+                GlyphVisibility.Hidden,
+                force = true,
+                currentTimeMillis = getCurrentTimeMillis()
+            )
 
-            setState(GlyphVisibility.Visible, force = false)
+            setState(
+                GlyphVisibility.Visible,
+                force = false,
+                currentTimeMillis = getCurrentTimeMillis()
+            )
             visibility shouldbe GlyphVisibility.Appearing
         }
     }
@@ -123,7 +156,7 @@ class DesyncGlyphTest {
             tick(options, time.next())
             state shouldbe GlyphState.Active
 
-            setState(GlyphState.Inactive)
+            setState(GlyphState.Inactive, currentTimeMillis = time.next())
             state shouldbe GlyphState.Active
         }
 
@@ -135,7 +168,7 @@ class DesyncGlyphTest {
             tick(options, time.next())
             state shouldbe GlyphState.Inactive
 
-            setState(GlyphState.Active)
+            setState(GlyphState.Active, currentTimeMillis = time.next())
             state shouldbe GlyphState.Inactive
         }
 
@@ -148,7 +181,7 @@ class DesyncGlyphTest {
             tick(options, time.next())
             state shouldbe GlyphState.Active
 
-            setState(GlyphState.Inactive)
+            setState(GlyphState.Inactive, currentTimeMillis = time.next())
             state shouldbe GlyphState.Active
         }
     }

@@ -35,22 +35,27 @@ interface ClockAnimator<G : ClockGlyph> : ConstrainedLayout {
         state: GlyphState = GlyphState.Active,
         instant: Instant = getInstant(),
     ) {
-        setState(state, force = true)
+        setState(state, force = true, currentTimeMillis = instant.currentTimeMillis)
         setConstraints(MeasureConstraints(width, height))
         tick(instant)
         render(canvas)
     }
 
-    fun setState(state: GlyphState, visibility: GlyphVisibility, force: Boolean) {
-        layout.setState(state, visibility, force)
+    fun setState(
+        state: GlyphState,
+        visibility: GlyphVisibility,
+        force: Boolean,
+        currentTimeMillis: Long
+    ) {
+        layout.setState(state, visibility, force, currentTimeMillis)
     }
 
-    fun setState(state: GlyphState, force: Boolean) {
-        layout.setState(state, force)
+    fun setState(state: GlyphState, force: Boolean, currentTimeMillis: Long) {
+        layout.setState(state, force, currentTimeMillis)
     }
 
-    fun setState(visibility: GlyphVisibility, force: Boolean) {
-        layout.setState(visibility, force)
+    fun setState(visibility: GlyphVisibility, force: Boolean, currentTimeMillis: Long) {
+        layout.setState(visibility, force, currentTimeMillis)
     }
 
     fun getGlyphAt(x: Float, y: Float): G? =

@@ -11,6 +11,7 @@ import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.options.AnyOptions
 import org.beatonma.gclocks.core.util.debug
+import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 
 
 class ClockView @JvmOverloads constructor(
@@ -69,7 +70,8 @@ class ClockView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        animator?.getGlyphAt(event.x, event.y)?.setState(GlyphState.Active)
+        animator?.getGlyphAt(event.x, event.y)
+            ?.setState(GlyphState.Active, currentTimeMillis = getCurrentTimeMillis())
         return super.onTouchEvent(event)
     }
 }

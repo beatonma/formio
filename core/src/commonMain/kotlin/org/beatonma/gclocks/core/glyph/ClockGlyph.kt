@@ -17,7 +17,7 @@ sealed class BaseClockGlyph(
     override val role: GlyphRole,
     override val scale: Float = 1f,
     lock: GlyphState? = null,
-    currentTimeMillis: Long = getCurrentTimeMillis(),
+    initialTimeMillis: Long = getCurrentTimeMillis(),
 ) : BaseGlyph, ClockGlyph {
     final override var key: String = " "
         protected set(value) {
@@ -35,7 +35,7 @@ sealed class BaseClockGlyph(
         protected set
 
     override val stateController: GlyphStateController =
-        DefaultGlyphStateController(lock, currentTimeMillis)
+        DefaultGlyphStateController(lock, initialTimeMillis)
 
     override val lock: GlyphState? get() = stateController.lock
 
@@ -55,9 +55,9 @@ abstract class ClockGlyphSynchronizedVisibility(
     currentTimeMillis: Long = getCurrentTimeMillis(),
 ) : BaseClockGlyph(role, scale, lock, currentTimeMillis) {
     override val visibilityController: GlyphVisibilityController =
-        SynchronizedVisibilityController { newVisibility ->
+        SynchronizedVisibilityController { newVisibility, currentTimeMillis ->
             if (newVisibility == GlyphVisibility.Visible || newVisibility == GlyphVisibility.Appearing) {
-                setState(GlyphState.Active, force = true)
+                setState(GlyphState.Active, force = true, currentTimeMillis = currentTimeMillis)
             }
         }
 
@@ -85,11 +85,12 @@ abstract class ClockGlyphDesynchronizedVisibility(
     lock: GlyphState? = null,
     currentTimeMillis: Long = getCurrentTimeMillis(),
 ) : BaseClockGlyph(role, scale, lock, currentTimeMillis) {
-    override val visibilityController = DesynchronizedGlyphVisibilityController { newVisibility ->
-        if (newVisibility == GlyphVisibility.Visible || newVisibility == GlyphVisibility.Appearing) {
-            setState(GlyphState.Active, force = true)
+    override val visibilityController =
+        DesynchronizedGlyphVisibilityController { newVisibility, currentTimeMillis ->
+            if (newVisibility == GlyphVisibility.Visible || newVisibility == GlyphVisibility.Appearing) {
+                setState(GlyphState.Active, force = true, currentTimeMillis = currentTimeMillis)
+            }
         }
-    }
     val visibilityChangedProgress get() = visibilityController.visibilityChangedProgress
 
     override fun setKey(value: String, force: Boolean) {

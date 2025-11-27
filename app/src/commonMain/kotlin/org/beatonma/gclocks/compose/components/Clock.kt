@@ -15,6 +15,7 @@ import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.glyph.GlyphVisibility
 import org.beatonma.gclocks.core.options.AnyOptions
+import org.beatonma.gclocks.core.util.currentTimeMillis
 import org.beatonma.gclocks.core.util.getInstant
 import kotlin.time.Duration
 import kotlin.time.Instant
@@ -35,7 +36,7 @@ fun Clock(
     val animator = rememberClockAnimator(options, allowVariance, forcedState)
 
     LaunchedEffect(visibility) {
-        if (visibility != null) animator.setState(visibility, false)
+        if (visibility != null) animator.setState(visibility, false, getInstant().currentTimeMillis)
     }
 
     Clock(animator, modifier, getInstant)
@@ -56,22 +57,34 @@ fun Clock(
             .debugKeyEvent { event ->
                 return@debugKeyEvent when (event.key) {
                     Key.One -> {
-                        animator.setState(GlyphState.Inactive, false)
+                        animator.setState(
+                            GlyphState.Inactive,
+                            false,
+                            getInstant().currentTimeMillis
+                        )
                         true
                     }
 
                     Key.Two -> {
-                        animator.setState(GlyphState.Active, false)
+                        animator.setState(GlyphState.Active, false, getInstant().currentTimeMillis)
                         true
                     }
 
                     Key.Three -> {
-                        animator.setState(GlyphVisibility.Hidden, false)
+                        animator.setState(
+                            GlyphVisibility.Hidden,
+                            false,
+                            getInstant().currentTimeMillis
+                        )
                         true
                     }
 
                     Key.Four -> {
-                        animator.setState(GlyphVisibility.Visible, false)
+                        animator.setState(
+                            GlyphVisibility.Visible,
+                            false,
+                            getInstant().currentTimeMillis
+                        )
                         true
                     }
 
@@ -86,7 +99,10 @@ fun Clock(
                         val pointer = event.changes.firstOrNull() ?: continue
                         val (x, y) = pointer.position
 
-                        animator.getGlyphAt(x, y)?.setState(GlyphState.Active)
+                        animator.getGlyphAt(x, y)?.setState(
+                            GlyphState.Active,
+                            currentTimeMillis = getInstant().currentTimeMillis
+                        )
                     }
                 }
             }

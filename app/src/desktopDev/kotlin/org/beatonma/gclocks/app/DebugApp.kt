@@ -61,6 +61,7 @@ import org.beatonma.gclocks.core.glyph.GlyphVisibility
 import org.beatonma.gclocks.core.options.AnyOptions
 import org.beatonma.gclocks.core.types.ProgressFloat
 import org.beatonma.gclocks.core.util.TimeOfDay
+import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 import org.beatonma.gclocks.core.util.getInstant
 import org.beatonma.gclocks.core.util.interpolate
 import org.beatonma.gclocks.core.util.nextSecond
@@ -83,7 +84,7 @@ import kotlin.time.Instant
 import androidx.compose.ui.graphics.Color as ComposeColor
 
 
-private val ItemModifier = Modifier.background(Color.Black)
+private val ItemModifier = Modifier.background(ComposeColor.Black)
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,106 +92,140 @@ private val ItemModifier = Modifier.background(Color.Black)
 fun DebugApp() {
     val keys = remember { ClockGlyph.Key.entries.map { it.key } }.filter { it.length > 1 }
     var animationPosition by remember { mutableStateOf<Float?>(null) }
-    var customTimeStr by remember { mutableStateOf("") }
-    val timeFunc: () -> Instant by remember {
-        mutableStateOf({
-            parseTime(
-                customTimeStr,
-                interpolate(animationPosition ?: 0f, 0f, 1000f).roundToInt()
-            )
-        })
-    }
+    var timeFunc: () -> Instant by remember { mutableStateOf(::getInstant) }
     var state: GlyphState? by remember { mutableStateOf(null) }
     var visibility: GlyphVisibility? by remember { mutableStateOf(GlyphVisibility.Visible) }
 
-    MaterialTheme {
-        Box(Modifier.background(Color.LightGray)) {
+    AppTheme {
+        Box(Modifier.fillMaxSize()) {
             LazyVerticalGrid(
                 GridCells.Adaptive(220.dp),
-                modifier = Modifier.fillMaxSize()
-                    .background(Color.DarkGray),
+                modifier = Modifier.background(ComposeColor.DarkGray),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = WindowInsets.systemBars.asPaddingValues() + VerticalBottomContentPadding,
             ) {
-                clockPreview(
-                    FormOptions(
-                        layout = FormLayoutOptions(
-                            format = TimeFormat.hh_MM_SS_12,
-                            verticalAlignment = VerticalAlignment.Bottom
-                        )
-                    ), timeFunc, state, visibility
-                )
-//                clockPreview(
-//                    Io16Options(
-//                        layout = Io16LayoutOptions(
-//                            format = TimeFormat.hh_MM_SS_12
-//                        )
-//                    ), timeFunc, state, visibility
-//                )
-//                clockPreview(
-//                    Io18Options(
-//                        layout = Io18LayoutOptions(
-//                            format = TimeFormat.hh_MM_SS_12
-//                        )
-//                    ), timeFunc, state, visibility
-//                )
+                clockPreview(FormOptions(), timeFunc, state, visibility)
+                clockPreview(Io16Options(), timeFunc, state, visibility)
+                clockPreview(Io18Options(), timeFunc, state, visibility)
 
-//                FormGlyphs(keys, animationPosition, state, visibility)
+                lineBreak()
+
+                FormGlyphs(keys, animationPosition, state, visibility)
 //                Io16Glyphs(keys, animationPosition, state)
 //                Io18Glyphs(keys, animationPosition, state)
             }
 
-            Column(
-                Modifier.align(Alignment.BottomCenter)
-                    .background(colorScheme.surface)
-                    .padding(8.dp)
-                    .systemBarsPadding()
-            ) {
-                // Dev tools
-                StateDropdown(state, { state = it })
-                VisibilityDropdown(visibility, { visibility = it })
+            Controls(
+                state,
+                { state = it },
+                visibility,
+                { visibility = it },
+                animationPosition,
+                { animationPosition = it },
+                { timeFunc = it },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .widthIn(max = 400.dp)
+            )
+        }
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TextField(
-                        customTimeStr,
-                        { customTimeStr = it },
-                        placeholder = { Text("Custom Time") }
-                    )
+    }
+}
 
-                    FastForward {
-                        customTimeStr =
-                            parseTime(
-                                customTimeStr,
-                                interpolate(animationPosition ?: 0f, 0f, 1000f).roundToInt()
-                            ).timeOfDay.nextSecond().toString()
-                    }
-                }
+@Composable
+private fun Controls(
+    state: GlyphState?,
+    setState: (GlyphState?) -> Unit,
+    visibility: GlyphVisibility?,
+    setVisibility: (GlyphVisibility?) -> Unit,
+    animationPosition: Float?,
+    setAnimationPosition: (Float?) -> Unit,
+    setTimeFunc: (() -> Instant) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var controlsVisible by remember { mutableStateOf(true) }
+    var customTimeStr by remember { mutableStateOf("") }
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = animationPosition == null,
-                        onCheckedChange = { animationPosition = if (it) null else 0f }
-                    )
-                    Text(
-                        when (animationPosition) {
-                            null -> ""
-                            else -> "%.2f".format(animationPosition)
-                        }
-                    )
-                }
-                Slider(
-                    animationPosition ?: 0f,
-                    { animationPosition = it },
-                    valueRange = 0f..1f,
-                    steps = 100,
+    LaunchedEffect(customTimeStr, animationPosition) {
+        setTimeFunc(
+            {
+                val instant = parseTime(
+                    customTimeStr,
+                    interpolate(animationPosition ?: 0f, 0f, 1000f).roundToInt()
                 )
+
+                animationPosition?.let {
+                    customTimeStr = instant.timeOfDay.toString()
+                }
+
+                instant
+            }
+        )
+    }
+
+    Surface(modifier) {
+        Column(
+            Modifier
+                .padding(16.dp)
+                .systemBarsPadding(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            TextButton(
+                { controlsVisible = !controlsVisible },
+                Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text("Controls")
+            }
+
+            AnimatedVisibility(controlsVisible, enter = EnterVertical, exit = ExitVertical) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row {
+                        Dropdown<GlyphState>("State", state, setState)
+                        Dropdown<GlyphVisibility>("Visibility", visibility, setVisibility)
+                    }
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextField(
+                            customTimeStr,
+                            { customTimeStr = it },
+                            placeholder = { Text("Custom Time") }
+                        )
+
+                        FastForward {
+                            customTimeStr =
+                                parseTime(
+                                    customTimeStr,
+                                    interpolate(animationPosition ?: 0f, 0f, 1000f).roundToInt()
+                                ).timeOfDay.nextSecond().toString()
+                        }
+                    }
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = animationPosition == null,
+                            onCheckedChange = { setAnimationPosition(if (it) null else 0f) }
+                        )
+                        Text(
+                            when (animationPosition) {
+                                null -> "Play"
+                                else -> "%.2f".format(animationPosition)
+                            }
+                        )
+                    }
+                    Slider(
+                        animationPosition ?: 0f,
+                        setAnimationPosition,
+                        valueRange = 0f..0.999f,
+                        steps = 999,
+                    )
+                }
             }
         }
     }
@@ -203,7 +238,7 @@ private fun <O : AnyOptions> LazyGridScope.clockPreview(
     forcedState: GlyphState?,
     forcedVisibility: GlyphVisibility?,
 ) {
-    item(span = { GridItemSpan(maxLineSpan) }) {
+    item(span = { GridItemSpan(2) }) {
         Clock(
             options,
             ItemModifier.fillMaxSize(),
@@ -228,8 +263,18 @@ private fun LazyGridScope.FormGlyphs(
         GlyphPreview(
             remember(state, visibility) {
                 FormGlyph(GlyphRole.Hour, lock = state).apply {
-                    visibility?.let { setState(it, force = true) }
-                    setKey(key)
+                    setKey(key, force = true)
+                    visibility?.let {
+                        setState(
+                            it,
+                            force = true,
+                            currentTimeMillis = getCurrentTimeMillis()
+                        )
+                    }
+                        ?: setState(
+                            GlyphVisibility.Visible,
+                            currentTimeMillis = getCurrentTimeMillis()
+                        )
                 }
             },
             remember { FormPaints() },
@@ -251,9 +296,23 @@ private fun LazyGridScope.Io16Glyphs(
     ) { key ->
         GlyphPreview(
             remember(state) {
-                Io16Glyph(GlyphRole.Hour, animationOffset = ProgressFloat.Zero, lock = state).apply {
-                    visibility?.let { setState(it, force = true) }
-                    setKey(key)
+                Io16Glyph(
+                    GlyphRole.Hour,
+                    animationOffset = ProgressFloat.Zero,
+                    lock = state
+                ).apply {
+                    setKey(key, force = true)
+                    visibility?.let {
+                        setState(
+                            it,
+                            force = true,
+                            currentTimeMillis = getCurrentTimeMillis()
+                        )
+                    }
+                        ?: setState(
+                            GlyphVisibility.Visible,
+                            currentTimeMillis = getCurrentTimeMillis()
+                        )
                 }
             },
             remember { Io16Paints() },
@@ -286,8 +345,18 @@ private fun LazyGridScope.Io18Glyphs(
         GlyphPreview(
             remember(state) {
                 Io18Glyph(io18Animations, GlyphRole.Default, lock = state).apply {
-                    visibility?.let { setState(it, force = true) }
-                    setKey(key)
+                    setKey(key, force = true)
+                    visibility?.let {
+                        setState(
+                            it,
+                            force = true,
+                            currentTimeMillis = getCurrentTimeMillis()
+                        )
+                    }
+                        ?: setState(
+                            GlyphVisibility.Visible,
+                            currentTimeMillis = getCurrentTimeMillis()
+                        )
                 }
             },
             remember { Io18Paints() },
@@ -297,7 +366,7 @@ private fun LazyGridScope.Io18Glyphs(
     }
 }
 
-private fun parseTime(str: String, millis: Int): Instant {
+private fun parseTime(str: String, millis: Int?): Instant {
     val instant = getInstant()
     try {
         Regex("(\\d{1,2}):?(\\d{2})?:?(\\d{2})?").find(str)?.let {
@@ -305,15 +374,17 @@ private fun parseTime(str: String, millis: Int): Instant {
             val m = it.groups[2]?.value?.toInt() ?: 0
             val s = it.groups[3]?.value?.toInt() ?: 0
 
-            if (millis < 1000) {
-                return instant.withTimeOfDay(
-                    TimeOfDay(
-                        hour = h,
-                        minute = m,
-                        second = s,
-                        millisecond = millis,
+            millis?.let { millis ->
+                if (millis < 1000) {
+                    return instant.withTimeOfDay(
+                        TimeOfDay(
+                            hour = h,
+                            minute = m,
+                            second = s,
+                            millisecond = millis,
+                        )
                     )
-                )
+                }
             }
             return instant.withTimeOfDay(TimeOfDay(h, m, s).nextSecond())
         }
@@ -323,42 +394,22 @@ private fun parseTime(str: String, millis: Int): Instant {
     return instant
 }
 
-
 @Composable
-private fun StateDropdown(
-    selected: GlyphState?,
-    onSelect: (GlyphState?) -> Unit,
+private inline fun <reified E : Enum<E>> Dropdown(
+    defaultText: String,
+    selected: E?,
+    crossinline onSelect: (E?) -> Unit,
 ) {
     var isDropdownExtended by remember { mutableStateOf(false) }
 
     Box {
         TextButton(onClick = { isDropdownExtended = !isDropdownExtended }) {
-            Text(selected?.name ?: "State override")
+            Text(selected?.name ?: defaultText)
         }
         DropdownMenu(isDropdownExtended, { isDropdownExtended = false }) {
             DropdownMenuItem({ Text("Reset") }, onClick = { onSelect(null) })
-            GlyphState.entries.forEach {
-                DropdownMenuItem({ Text(it.name) }, onClick = { onSelect(it) })
-            }
-        }
-    }
-}
-
-@Composable
-private fun VisibilityDropdown(
-    selected: GlyphVisibility?,
-    onSelect: (GlyphVisibility?) -> Unit,
-) {
-    var isDropdownExtended by remember { mutableStateOf(false) }
-
-    Box {
-        TextButton(onClick = { isDropdownExtended = !isDropdownExtended }) {
-            Text(selected?.name ?: "Visibility override")
-        }
-        DropdownMenu(isDropdownExtended, { isDropdownExtended = false }) {
-            DropdownMenuItem({ Text("Reset") }, onClick = { onSelect(null) })
-            GlyphVisibility.entries.forEach {
-                DropdownMenuItem({ Text(it.name) }, onClick = { onSelect(it) })
+            enumEntries<E>().forEach { entry ->
+                DropdownMenuItem({ Text(entry.name) }, onClick = { onSelect(entry) })
             }
         }
     }
@@ -396,5 +447,12 @@ private fun FastForward(block: () -> Unit) {
         )
     ) {
         Icon(Icons.Default.FastForward, "")
+    }
+}
+
+
+private fun LazyGridScope.lineBreak() {
+    item(span = { GridItemSpan(maxLineSpan) }) {
+
     }
 }

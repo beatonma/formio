@@ -36,6 +36,7 @@ import org.beatonma.gclocks.core.graphics.Stroke
 import org.beatonma.gclocks.core.options.GlyphOptions
 import org.beatonma.gclocks.core.util.currentTimeMillis
 import org.beatonma.gclocks.core.util.debug
+import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 import org.beatonma.gclocks.core.util.getInstant
 import org.beatonma.gclocks.core.util.getTime
 import org.beatonma.gclocks.core.util.progress
@@ -75,7 +76,10 @@ fun <G : Glyph> GlyphPreview(
                         val pointer = event.changes.firstOrNull() ?: continue
 
                         if (event.type == PointerEventType.Press) {
-                            preview.glyph.setState(GlyphState.Active)
+                            preview.glyph.setState(
+                                GlyphState.Active,
+                                currentTimeMillis = getCurrentTimeMillis()
+                            )
                         }
                     }
                 }

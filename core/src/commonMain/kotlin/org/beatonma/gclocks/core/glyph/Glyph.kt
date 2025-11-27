@@ -5,7 +5,6 @@ import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Paints
 import org.beatonma.gclocks.core.options.GlyphOptions
-import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 
 enum class GlyphVisibility {
     Visible,
@@ -83,7 +82,7 @@ interface Glyph {
         newState: GlyphState,
         newVisibility: GlyphVisibility,
         force: Boolean = false,
-        currentTimeMillis: Long = getCurrentTimeMillis()
+        currentTimeMillis: Long
     ) {
         setState(newState, force, currentTimeMillis)
         setState(newVisibility, force, currentTimeMillis)
@@ -92,16 +91,16 @@ interface Glyph {
     fun setState(
         newState: GlyphState,
         force: Boolean = false,
-        currentTimeMillis: Long = getCurrentTimeMillis()
+        currentTimeMillis: Long
     )
 
     fun setState(
         newVisibility: GlyphVisibility,
         force: Boolean = false,
-        currentTimeMillis: Long = getCurrentTimeMillis()
+        currentTimeMillis: Long
     )
 
-    fun tick(options: GlyphOptions, currentTimeMillis: Long = getCurrentTimeMillis())
+    fun tick(options: GlyphOptions, currentTimeMillis: Long)
 
     companion object {
         fun createKey(start: Char, end: Char = start): String {

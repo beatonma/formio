@@ -50,32 +50,42 @@ internal class Glyphs<G : ClockGlyph>(
             val nextChar = next[index]
 
             val glyph = mutableGlyphs[index]
+            val currentTimeMillis = instant.currentTimeMillis
 
             if (isNewSecond) {
-                glyph.glyph.onSecondChange(instant.currentTimeMillis)
+                glyph.glyph.onSecondChange(currentTimeMillis)
             }
 
-            updateGlyph(glyph, Glyph.createKey(fromChar, nextChar))
+            updateGlyph(glyph, Glyph.createKey(fromChar, nextChar), currentTimeMillis)
         }
     }
 
 
-    fun setState(state: GlyphState, visibility: GlyphVisibility, force: Boolean) {
-        glyphs.fastForEach { it.glyph.setState(state, visibility, force) }
+    fun setState(
+        state: GlyphState,
+        visibility: GlyphVisibility,
+        force: Boolean,
+        currentTimeMillis: Long
+    ) {
+        glyphs.fastForEach { it.glyph.setState(state, visibility, force, currentTimeMillis) }
     }
 
-    fun setState(state: GlyphState, force: Boolean) {
-        glyphs.fastForEach { it.glyph.setState(state, force) }
+    fun setState(state: GlyphState, force: Boolean, currentTimeMillis: Long) {
+        glyphs.fastForEach { it.glyph.setState(state, force, currentTimeMillis) }
     }
 
-    fun setState(visibility: GlyphVisibility, force: Boolean) {
-        glyphs.fastForEach { it.glyph.setState(visibility, force) }
+    fun setState(visibility: GlyphVisibility, force: Boolean, currentTimeMillis: Long) {
+        glyphs.fastForEach { it.glyph.setState(visibility, force, currentTimeMillis) }
     }
 
-    private fun updateGlyph(status: MutableGlyphStatus<G>, key: String): GlyphStatus<G> {
+    private fun updateGlyph(
+        status: MutableGlyphStatus<G>,
+        key: String,
+        currentTimeMillis: Long
+    ): GlyphStatus<G> {
         val glyph = status.glyph
         glyph.setKey(key)
-        glyph.tick(options)
+        glyph.tick(options, currentTimeMillis)
 
         var progress: Float = when (glyph.isAnimating) {
             true -> progress(animationTimeMillis, 0f, options.glyphMorphMillis.toFloat())
@@ -92,11 +102,11 @@ internal class Glyphs<G : ClockGlyph>(
 
         val index = status.index
         if (progress != 0f) {
-            glyph.setState(GlyphState.Active)
+            glyph.setState(GlyphState.Active, currentTimeMillis = currentTimeMillis)
             if (index > 0) {
                 val previous = mutableGlyphs[index - 1]
                 if (previous.glyph.canonicalStartGlyph.isDigit()) {
-                    previous.setState(GlyphState.Active)
+                    previous.setState(GlyphState.Active, currentTimeMillis)
                 }
             }
         }
@@ -138,8 +148,8 @@ private class MutableGlyphStatus<G : Glyph>(
         return this
     }
 
-    fun setState(state: GlyphState) {
-        glyph.setState(state)
+    fun setState(state: GlyphState, currentTimeMillis: Long) {
+        glyph.setState(state, currentTimeMillis = currentTimeMillis)
     }
 
     override fun toString(): String {

@@ -77,16 +77,21 @@ class ClockLayout<G : ClockGlyph>(
         layout.measureFrame(glyphs.glyphs, callback)
     }
 
-    fun setState(state: GlyphState, visibility: GlyphVisibility, force: Boolean = true) {
-        glyphs.setState(state, visibility, force)
+    fun setState(
+        state: GlyphState,
+        visibility: GlyphVisibility,
+        force: Boolean = true,
+        currentTimeMillis: Long
+    ) {
+        glyphs.setState(state, visibility, force, currentTimeMillis)
     }
 
-    fun setState(state: GlyphState, force: Boolean = true) {
-        glyphs.setState(state, force)
+    fun setState(state: GlyphState, force: Boolean = true, currentTimeMillis: Long) {
+        glyphs.setState(state, force, currentTimeMillis)
     }
 
-    fun setState(visibility: GlyphVisibility, force: Boolean = true) {
-        glyphs.setState(visibility, force)
+    fun setState(visibility: GlyphVisibility, force: Boolean = true, currentTimeMillis: Long) {
+        glyphs.setState(visibility, force, currentTimeMillis)
     }
 
     fun getGlyphAt(x: Float, y: Float): G? {
