@@ -1,6 +1,6 @@
 package org.beatonma.gclocks.clocks
 
-import org.beatonma.gclocks.app.data.settings.ContextClockOptionsOf
+import org.beatonma.gclocks.app.data.settings.ContextClockOptions
 import org.beatonma.gclocks.app.data.settings.FormContextClockOptions
 import org.beatonma.gclocks.app.data.settings.Io16ContextClockOptions
 import org.beatonma.gclocks.app.data.settings.Io18ContextClockOptions
@@ -30,7 +30,7 @@ inline fun <O : AnyOptions, R> whenOptions(
 
 
 inline fun <O : AnyOptions, R> whenOptions(
-    options: ContextClockOptionsOf<O>,
+    options: ContextClockOptions<O>,
     form: (FormContextClockOptions) -> R,
     io16: (Io16ContextClockOptions) -> R,
     io18: (Io18ContextClockOptions) -> R,

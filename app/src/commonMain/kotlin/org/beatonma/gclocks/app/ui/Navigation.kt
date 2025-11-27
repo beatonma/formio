@@ -25,8 +25,8 @@ import androidx.savedstate.write
 import kotlinx.serialization.Serializable
 import org.beatonma.gclocks.app.data.deserialize
 import org.beatonma.gclocks.app.data.serialize
+import org.beatonma.gclocks.app.data.settings.AnyContextClockOptions
 import org.beatonma.gclocks.app.data.settings.ContextClockOptions
-import org.beatonma.gclocks.app.data.settings.ContextClockOptionsOf
 import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.data.settings.FormContextClockOptions
 import org.beatonma.gclocks.app.data.settings.Io16ContextClockOptions
@@ -55,7 +55,7 @@ sealed interface FullScreen : NavigationTarget {
 
     @Serializable
     sealed interface ClockPreview<T : AnyOptions> : NavigationTarget {
-        val options: ContextClockOptionsOf<T>
+        val options: ContextClockOptions<T>
     }
 
     @Serializable
@@ -114,7 +114,7 @@ data class NavigationMenu(
 @Immutable
 data class AppNavigation(
     val onNavigateAbout: () -> Unit,
-    val onNavigateClockPreview: (ContextClockOptions<*, *>) -> Unit,
+    val onNavigateClockPreview: (AnyContextClockOptions) -> Unit,
 )
 
 

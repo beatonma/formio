@@ -23,7 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.beatonma.gclocks.app.data.settings.ContextClockOptionsOf
+import org.beatonma.gclocks.app.data.settings.AnyContextClockOptions
 import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.data.settings.DisplayContextDefaults
 import org.beatonma.gclocks.app.theme.DesignSpec.floatingActionButton
@@ -39,7 +39,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun FullSizeClock(
-    options: ContextClockOptionsOf<*>,
+    options: AnyContextClockOptions,
     modifier: Modifier = Modifier,
 ) {
     EdgeToEdgeClock(options, modifier) {
@@ -50,7 +50,7 @@ fun FullSizeClock(
 
 @Composable
 fun FullSizeClock(
-    options: ContextClockOptionsOf<*>,
+    options: AnyContextClockOptions,
     modifier: Modifier = Modifier,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
     onClose: () -> Unit,
@@ -91,7 +91,7 @@ fun FullSizeClock(
 
 @Composable
 private fun EdgeToEdgeClock(
-    options: ContextClockOptionsOf<*>,
+    options: AnyContextClockOptions,
     modifier: Modifier,
     overlay: @Composable (BoxScope.() -> Unit)? = null,
 ) {
@@ -104,7 +104,7 @@ private fun EdgeToEdgeClock(
 }
 
 @Composable
-private fun ClockWithBackground(options: ContextClockOptionsOf<*>) {
+private fun ClockWithBackground(options: AnyContextClockOptions) {
     val displayOptions = when (options.displayOptions) {
         is DisplayContext.Options.WithBackground -> options.displayOptions
         else -> remember { DisplayContextDefaults.WithBackground() }

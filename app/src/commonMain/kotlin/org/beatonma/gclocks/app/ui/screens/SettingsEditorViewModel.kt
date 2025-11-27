@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 import org.beatonma.gclocks.app.data.AppSettingsRepository
 import org.beatonma.gclocks.app.data.settings.AppSettings
 import org.beatonma.gclocks.app.data.settings.ClockType
-import org.beatonma.gclocks.app.data.settings.ContextClockOptionsOf
+import org.beatonma.gclocks.app.data.settings.ContextClockOptions
 import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.data.settings.DisplayContextDefaults
 import org.beatonma.gclocks.app.data.settings.GlobalOptions
@@ -136,7 +136,7 @@ class SettingsEditorViewModel(
 
     private fun <O : AnyOptions> buildRichSettings(
         clock: ClockType,
-        options: ContextClockOptionsOf<O>,
+        options: ContextClockOptions<O>,
         globalOptions: GlobalOptions,
     ): RichSettings {
         @Suppress("UNCHECKED_CAST")

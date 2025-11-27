@@ -60,7 +60,7 @@ import androidx.window.core.layout.WindowSizeClass
 import gclocks_multiplatform.app.generated.resources.Res
 import gclocks_multiplatform.app.generated.resources.cd_fullscreen_open
 import gclocks_multiplatform.app.generated.resources.setting_save_changes_fab
-import org.beatonma.gclocks.app.data.settings.ContextClockOptionsOf
+import org.beatonma.gclocks.app.data.settings.AnyContextClockOptions
 import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.data.settings.DisplayContextDefaults
 import org.beatonma.gclocks.app.theme.rememberContentColor
@@ -164,7 +164,7 @@ fun SettingsEditorScreen(
 private fun ClockSettingsScaffold(
     modifier: Modifier = Modifier,
     key: Any,
-    options: ContextClockOptionsOf<*>,
+    options: AnyContextClockOptions,
     richSettings: RichSettings,
     hasUnsavedChanges: Boolean,
     onSave: () -> Unit,

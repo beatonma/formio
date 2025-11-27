@@ -4,15 +4,10 @@ import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.options.AnyOptions
-import org.beatonma.gclocks.core.options.GlyphOptions
-import org.beatonma.gclocks.core.options.Options
-import org.beatonma.gclocks.form.FormGlyphOptions
 import org.beatonma.gclocks.form.FormOptions
 import org.beatonma.gclocks.form.FormPaints
-import org.beatonma.gclocks.io16.Io16GlyphOptions
 import org.beatonma.gclocks.io16.Io16Options
 import org.beatonma.gclocks.io16.Io16Paints
-import org.beatonma.gclocks.io18.Io18GlyphOptions
 import org.beatonma.gclocks.io18.Io18Options
 import org.beatonma.gclocks.io18.Io18Paints
 
@@ -41,7 +36,7 @@ data class ContextSettings(
         context.defaultOptions(),
     ),
 ) {
-    fun getContextOptions(clock: ClockType = this.clock): ContextClockOptions<*, *> =
+    fun getContextOptions(clock: ClockType = this.clock): AnyContextClockOptions =
         when (clock) {
             ClockType.Form -> this.form
             ClockType.Io16 -> this.io16
@@ -51,15 +46,15 @@ data class ContextSettings(
 
 @Serializable
 @Immutable
-data class ContextClockOptions<O : Options<G>, G : GlyphOptions>(
+data class ContextClockOptions<O : AnyOptions>(
     val displayContext: DisplayContext,
     val clockOptions: O,
     val displayOptions: DisplayContext.Options,
 )
-typealias FormContextClockOptions = ContextClockOptions<FormOptions, FormGlyphOptions>
-typealias Io16ContextClockOptions = ContextClockOptions<Io16Options, Io16GlyphOptions>
-typealias Io18ContextClockOptions = ContextClockOptions<Io18Options, Io18GlyphOptions>
-typealias ContextClockOptionsOf<O> = ContextClockOptions<O, *>
+typealias FormContextClockOptions = ContextClockOptions<FormOptions>
+typealias Io16ContextClockOptions = ContextClockOptions<Io16Options>
+typealias Io18ContextClockOptions = ContextClockOptions<Io18Options>
+typealias AnyContextClockOptions = ContextClockOptions<*>
 
 @Serializable
 @Immutable
@@ -117,9 +112,9 @@ data class AppSettings(
     val globalOptions: GlobalOptions
 ) {
     val contextSettings: ContextSettings get() = getContextSettings(state.displayContext)
-    val contextOptions: ContextClockOptions<*, *> get() = getContextOptions(state.displayContext)
+    val contextOptions: AnyContextClockOptions get() = getContextOptions(state.displayContext)
 
-    fun getContextOptions(context: DisplayContext): ContextClockOptions<*, *> {
+    fun getContextOptions(context: DisplayContext): AnyContextClockOptions {
         return getContextSettings(context).getContextOptions()
     }
 

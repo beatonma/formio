@@ -6,9 +6,8 @@ import org.beatonma.gclocks.app.data.settings.ContextClockOptions
 import org.beatonma.gclocks.app.data.settings.DisplayContextDefaults
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.toColor
-import org.beatonma.gclocks.core.options.GlyphOptions
+import org.beatonma.gclocks.core.options.AnyOptions
 import org.beatonma.gclocks.core.options.Layout
-import org.beatonma.gclocks.core.options.Options
 import org.beatonma.gclocks.core.options.TimeFormat
 
 
@@ -85,10 +84,10 @@ private inline fun <reified E : Enum<E>> enumValueOrNull(key: String): E? =
 external fun decodeURIComponent(uri: String): String
 
 
-private fun <G : GlyphOptions, O : Options<G>> mergeOptions(
-    options: ContextClockOptions<O, G>,
+private fun <O : AnyOptions> mergeOptions(
+    options: ContextClockOptions<O>,
     custom: ClockSearchParams
-): ContextClockOptions<O, G> {
+): ContextClockOptions<O> {
     return options.copy(
         clockOptions = options.clockOptions.merge(custom),
         displayOptions = DisplayContextDefaults.WithBackground(
@@ -98,7 +97,7 @@ private fun <G : GlyphOptions, O : Options<G>> mergeOptions(
 }
 
 @Suppress("UNCHECKED_CAST")
-private fun <O : Options<G>, G : GlyphOptions> O.merge(custom: ClockSearchParams): O =
+private fun <O : AnyOptions> O.merge(custom: ClockSearchParams): O =
     copy(
         layout = layout.copy(
             layout = custom.layout ?: layout.layout,
