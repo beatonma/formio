@@ -85,8 +85,12 @@ actual object DisplaySettingsProvider {
                     chooseClockPosition(displayContextOptions.position) {
                         updateDisplayContextOptions(displayContextOptions.copy(position = it))
                     },
-                    chooseLwpLauncherPages(displayContextOptions.launcherPages) {
-                        updateDisplayContextOptions(displayContextOptions.copy(launcherPages = it))
+                    chooseLwpLauncherPages(displayContextOptions.visibleOnLauncherPages) {
+                        updateDisplayContextOptions(
+                            displayContextOptions.copy(
+                                visibleOnLauncherPages = it
+                            )
+                        )
                     }
                 ) + settings.layout,
             )

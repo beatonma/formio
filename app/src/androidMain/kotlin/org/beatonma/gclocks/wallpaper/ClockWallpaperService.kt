@@ -2,40 +2,14 @@ package org.beatonma.gclocks.wallpaper
 
 import android.app.KeyguardManager
 import android.app.wallpaper.WallpaperDescription
-import android.graphics.Canvas
 import android.service.wallpaper.WallpaperService
 import android.view.MotionEvent
 import android.view.SurfaceHolder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.beatonma.gclocks.android.AndroidCanvasHost
-import org.beatonma.gclocks.android.AndroidPath
-import org.beatonma.gclocks.app.data.loadDisplayMetrics
-import org.beatonma.gclocks.app.data.settings.ContextClockOptionsOf
-import org.beatonma.gclocks.app.data.settings.DisplayContext
-import org.beatonma.gclocks.app.data.settings.DisplayMetrics
 import org.beatonma.gclocks.app.data.settingsRepository
-import org.beatonma.gclocks.clocks.createAnimatorFromOptions
-import org.beatonma.gclocks.core.ClockAnimator
-import org.beatonma.gclocks.core.geometry.MeasureConstraints
-import org.beatonma.gclocks.core.geometry.RectF
-import org.beatonma.gclocks.core.glyph.GlyphState
-import org.beatonma.gclocks.core.glyph.GlyphVisibility
-import org.beatonma.gclocks.core.graphics.Color
-import org.beatonma.gclocks.core.options.AnyOptions
+import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.util.debug
-import kotlin.math.roundToInt
+import android.graphics.Canvas as AndroidCanvas
 
 
 class ClockWallpaperService : WallpaperService() {
@@ -57,77 +31,35 @@ class ClockWallpaperService : WallpaperService() {
     }
 
     private inner class ClockEngine : Engine() {
-        @OptIn(ExperimentalCoroutinesApi::class)
-        private val settings: Flow<ContextClockOptionsOf<*>> = settingsRepository
-            .loadAppSettings()
-            .mapLatest { it.getContextOptions(DisplayContext.LiveWallpaper) }
-
-        private val displayMetrics: Flow<DisplayMetrics> = settingsRepository.loadDisplayMetrics()
-
-        private val canvasHost: AndroidCanvasHost = AndroidCanvasHost()
-        private val path: AndroidPath = AndroidPath()
-        private var animator: ClockAnimator<*>? = null
-        private var backgroundColor: Color = Color(0xff000000.toInt())
-        private var relativeBounds: RectF = RectF(0f, 0f, 1f, 1f)
-        private var absoluteBounds: RectF = RectF(0f, 0f, 0f, 0f)
-        private var width: Int = 0
-        private var height: Int = 0
-        private var frameDelayMillis: Long = (1000f / 60f).toLong()
-        private var previousClockOptions: AnyOptions? = null
-
-        private val visibilityManager = VisibilityManager()
-
         private val keyguardManager = getSystemService(KEYGUARD_SERVICE) as KeyguardManager
+        private lateinit var delegate: WallpaperEngineDelegate
 
-        private var engineScope: CoroutineScope = createCoroutineScope()
-        private fun requireEngineScope(): CoroutineScope {
-            if (!engineScope.isActive) {
-                engineScope = createCoroutineScope()
-            }
-            return engineScope
-        }
-
-        private var deferredVisibilityJob: Job? = null
-
-        fun initialize(visibility: GlyphVisibility? = null) {
-            val scope = requireEngineScope()
-            scope.launch {
-                settings.collectLatest { settings ->
-                    val wallpaperOptions =
-                        settings.displayOptions as DisplayContext.Options.Wallpaper
-
-                    backgroundColor = wallpaperOptions.backgroundColor
-                    relativeBounds = RectF(wallpaperOptions.position)
-
-                    animator = createAnimator(settings.clockOptions).apply {
-                        visibility?.let { vis -> setState(vis, true) }
-                    }
-
-                    visibilityManager.update {
-                        launcherPages = wallpaperOptions.zeroIndexLauncherPages.ifEmpty { null }
-                    }
-
-                    withContext(Dispatchers.Main) {
-                        invalidate()
-                    }
+        override fun onCreate(surfaceHolder: SurfaceHolder?) {
+            super.onCreate(surfaceHolder)
+            delegate = WallpaperEngineDelegate(
+                this,
+                settingsRepository,
+                onDraw = {
+                    withCanvasHost(it, delegate::draw)
+                },
+                onClearCanvas = {
+                    withCanvasHost(it, delegate::clear)
                 }
-            }
+            )
+        }
 
-            scope.launch {
-                displayMetrics.collectLatest { metrics ->
-                    frameDelayMillis = metrics.frameDelayMillis
+        private inline fun withCanvasHost(canvasHost: AndroidCanvasHost, block: (Canvas) -> Unit) {
+            var surfaceCanvas: AndroidCanvas? = null
+            try {
+                surfaceCanvas = surfaceHolder.lockCanvas() ?: run {
+                    debug("draw aborted: unabled to lock surface canvas")
+                    return
                 }
-            }
-        }
-
-        fun invalidate() {
-            draw()
-        }
-
-        private fun postInvalidate(delayMillis: Long) {
-            requireEngineScope().launch(Dispatchers.Main) {
-                delay(delayMillis)
-                invalidate()
+                canvasHost.withCanvas(surfaceCanvas, block)
+            } finally {
+                if (surfaceCanvas != null) {
+                    surfaceHolder.unlockCanvasAndPost(surfaceCanvas)
+                }
             }
         }
 
@@ -135,91 +67,15 @@ class ClockWallpaperService : WallpaperService() {
             holder: SurfaceHolder?,
             format: Int,
             width: Int,
-            height: Int,
+            height: Int
         ) {
             super.onSurfaceChanged(holder, format, width, height)
-
-            if (this.width == height && this.height == width && width != height) {
-                visibilityManager.update { isRotating = true }
-            }
-
-            this.width = width
-            this.height = height
-
-            updateConstraints()
+            delegate.onSurfaceChanged(width, height)
         }
 
         override fun onVisibilityChanged(visible: Boolean) {
             super.onVisibilityChanged(visible)
-
-            visibilityManager.update {
-                isVisible = visible
-                isKeyguardLocked = keyguardManager.isKeyguardLocked
-            }
-
-            if (visible) {
-                deferredVisible()
-            } else {
-                if (!visibilityManager.state.isRotating) {
-                    engineScope.cancel()
-                    clear()
-                }
-            }
-        }
-
-        /**
-         * During device rotation, [onVisibilityChanged] can be called many times
-         * and reacting to each of those events results in jarring animations being
-         * cancelled a moment after they start.
-         *
-         * By calling [deferredVisible] we allow a grace period for this to happen,
-         * and only make the animation visible once that period has passed
-         * without further [onVisibilityChanged] calls.
-         */
-        private fun deferredVisible() {
-            deferredVisibilityJob?.cancel()
-            deferredVisibilityJob = debounce(200L) {
-                if (isVisible) {
-                    val isLocked = keyguardManager.isKeyguardLocked
-                    initialize(visibility = if (isLocked) GlyphVisibility.Hidden else null)
-                    visibilityManager.update {
-                        isRotating = false
-                        isVisible = true
-                        isKeyguardLocked = isLocked
-                    }
-
-                    if (isLocked) {
-                        while (true) {
-                            delay(200)
-                            if (!keyguardManager.isKeyguardLocked) {
-                                visibilityManager.update { isKeyguardLocked = false }
-                                break
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /**
-         * Wallpaper events can be fired in quick succession so reacting to each one
-         * immediately can cause glitchy animations. By using [debounce],
-         * we allow a grace period for events to fire, and only apply the update
-         * once that period has passed without further events. As a result, only
-         * the latest requested update will actually be applied.
-         *
-         * For this to work, The resulting [Job] should be stored and cancelled
-         * before calling [debounce] again.
-         *
-         * e.g.
-         *   myJob?.cancel()
-         *   myJob = deferredUpdate { ... }
-         */
-        private fun debounce(gracePeriodMillis: Long = 200L, block: suspend () -> Unit): Job {
-            return requireEngineScope().launch {
-                delay(gracePeriodMillis)
-                block()
-            }
+            delegate.onVisibilityChanged(visible) { keyguardManager.isKeyguardLocked }
         }
 
         override fun onOffsetsChanged(
@@ -228,7 +84,7 @@ class ClockWallpaperService : WallpaperService() {
             xOffsetStep: Float,
             yOffsetStep: Float,
             xPixelOffset: Int,
-            yPixelOffset: Int,
+            yPixelOffset: Int
         ) {
             super.onOffsetsChanged(
                 xOffset,
@@ -238,194 +94,26 @@ class ClockWallpaperService : WallpaperService() {
                 xPixelOffset,
                 yPixelOffset
             )
-            if (xOffsetStep == 0f) {
-                return
-            }
-            val currentPosition: Float = (1f / xOffsetStep) * xOffset
-            visibilityManager.update { currentLauncherPage = currentPosition.roundToInt() }
+            delegate.onOffsetsChanged(
+                xOffset,
+                yOffset,
+                xOffsetStep,
+                yOffsetStep,
+                xPixelOffset,
+                yPixelOffset
+            )
         }
 
         override fun onTouchEvent(event: MotionEvent) {
-            animator?.getGlyphAt(
-                event.x - absoluteBounds.left,
-                event.y - absoluteBounds.top
-            )?.setState(GlyphState.Active)
-
-            super.onTouchEvent(event)
-        }
-
-        private fun createAnimator(options: AnyOptions): ClockAnimator<*> {
-            val constraints = updateConstraints()
-
-            if (options == previousClockOptions) {
-                animator?.let {
-                    it.setConstraints(constraints)
-                    return it
-                }
-            }
-
-            previousClockOptions = options
-            return createAnimatorFromOptions(options, path, allowVariance = true) {
-                postInvalidate(frameDelayMillis)
-            }.apply {
-                setConstraints(constraints)
-            }
-        }
-
-        private fun updateConstraints(): MeasureConstraints {
-            val w = width.toFloat()
-            val h = height.toFloat()
-
-            absoluteBounds = RectF(
-                relativeBounds.left * w,
-                relativeBounds.top * h,
-                relativeBounds.right * w,
-                relativeBounds.bottom * h
-            )
-            val constraints = MeasureConstraints(
-                absoluteBounds.width,
-                absoluteBounds.height
-            )
-
-            animator?.setConstraints(constraints)
-            return constraints
-        }
-
-        private fun draw() {
-            val animator = animator ?: run {
-                debug("draw aborted: animator is null")
-                return
-            }
-            withCanvas { canvas ->
-                canvas.fill(backgroundColor)
-                animator.tick()
-                canvas.withTranslation(absoluteBounds.left, absoluteBounds.top) {
-                    animator.render(canvas)
-                }
-            }
-        }
-
-        private fun clear() {
-            withCanvas { canvas ->
-                canvas.fill(backgroundColor)
-            }
-        }
-
-        private inline fun withCanvas(block: (org.beatonma.gclocks.core.graphics.Canvas) -> Unit) {
-            var surfaceCanvas: Canvas? = null
-            try {
-                surfaceCanvas = surfaceHolder.lockCanvas() ?: run {
-                    debug("draw aborted: unabled to lock surface canvas")
-                    return
-                }
-
-                canvasHost.withCanvas(surfaceCanvas) { canvas ->
-                    block(canvas)
-                }
-            } finally {
-                if (surfaceCanvas != null) {
-                    surfaceHolder.unlockCanvasAndPost(surfaceCanvas)
-                }
+            val consumed = delegate.onTouchEvent(event)
+            if (!consumed) {
+                super.onTouchEvent(event)
             }
         }
 
         override fun onDestroy() {
-            engineScope.cancel()
+            delegate.onDestroy()
             super.onDestroy()
         }
-
-        private fun createCoroutineScope() = CoroutineScope(Dispatchers.Main + SupervisorJob())
-
-        private inner class VisibilityManager {
-            private var job: Job? = null
-            var state: VisibilityState = VisibilityState(
-                isRotating = false,
-                isVisible = false,
-                isKeyguardLocked = false,
-                launcherPages = null,
-                currentLauncherPage = 0
-            )
-                private set
-
-            fun update(block: MutableVisibilityState.() -> Unit) {
-                val newState = state.mutable().apply(block).immutable()
-
-                if (state != newState) {
-                    this.state = newState
-                    job?.cancel()
-                    job = debounce(100) {
-                        withContext(Dispatchers.Main) {
-                            updateVisibility()
-                        }
-                    }
-                }
-            }
-
-            private fun updateVisibility() {
-                val state = this.state
-
-                if (isPreview) return
-                if (!isVisible && !state.isRotating) {
-                    return hide(force = true)
-                }
-
-                if (!state.isKeyguardLocked && state.isPageAllowed) {
-                    show()
-                } else {
-                    if (state.isRotating) return
-                    hide()
-                }
-            }
-
-            private fun show(force: Boolean = false) {
-                animator?.setState(GlyphVisibility.Visible, force)
-            }
-
-            private fun hide(force: Boolean = false) {
-                animator?.setState(GlyphVisibility.Hidden, force)
-            }
-        }
     }
-}
-
-private interface _VisibilityState {
-    val isRotating: Boolean
-    val isVisible: Boolean
-    val isKeyguardLocked: Boolean
-    val launcherPages: List<Int>?
-    val currentLauncherPage: Int
-
-    val isPageAllowed: Boolean get() = launcherPages?.let { currentLauncherPage in it } ?: true
-}
-
-private data class VisibilityState(
-    override val isRotating: Boolean,
-    override val isVisible: Boolean,
-    override val isKeyguardLocked: Boolean,
-    override val launcherPages: List<Int>?,
-    override val currentLauncherPage: Int,
-) : _VisibilityState {
-    fun mutable() = MutableVisibilityState(
-        isRotating = isRotating,
-        isVisible = isVisible,
-        isKeyguardLocked = isKeyguardLocked,
-        launcherPages = launcherPages,
-        currentLauncherPage = currentLauncherPage
-    )
-}
-
-private data class MutableVisibilityState(
-    override var isRotating: Boolean,
-    override var isVisible: Boolean,
-    override var isKeyguardLocked: Boolean,
-    override var launcherPages: List<Int>?,
-    override var currentLauncherPage: Int,
-) : _VisibilityState {
-    fun immutable() = VisibilityState(
-        isRotating = isRotating,
-        isVisible = isVisible,
-        isKeyguardLocked = isKeyguardLocked,
-        launcherPages = launcherPages,
-        currentLauncherPage = currentLauncherPage
-    )
 }

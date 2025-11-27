@@ -35,18 +35,18 @@ actual enum class DisplayContext {
             override val backgroundColor: Color = DisplayContextDefaults.DefaultBackgroundColor,
             override val position: RectF = DisplayContextDefaults.DefaultPosition,
 
-            /** 1-indexed list of pages */
-            val launcherPages: List<Int> = listOf()
+            /** 1-indexed list of pages where the clock should be visible */
+            val visibleOnLauncherPages: List<Int> = listOf()
         ) : WithBackground {
             init {
                 debug {
-                    launcherPages.fastForEach {
+                    visibleOnLauncherPages.fastForEach {
                         require(it > 0) { "Launcher pages must be positive" }
                     }
                 }
             }
 
-            val zeroIndexLauncherPages get() = launcherPages.map { it - 1 }
+            val zeroIndexLauncherPages get() = visibleOnLauncherPages.map { it - 1 }
         }
 
         @Serializable

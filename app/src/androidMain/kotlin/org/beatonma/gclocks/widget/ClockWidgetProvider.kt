@@ -15,8 +15,8 @@ import org.beatonma.gclocks.android.AppContext
 import org.beatonma.gclocks.android.appContext
 import org.beatonma.gclocks.app.data.AppSettingsRepository
 import org.beatonma.gclocks.app.data.deserialize
+import org.beatonma.gclocks.app.data.loadWidgetSettings
 import org.beatonma.gclocks.app.data.serialize
-import org.beatonma.gclocks.app.data.settings.AppSettings
 import org.beatonma.gclocks.app.data.settings.DefaultAppSettings
 import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.data.settingsRepository
@@ -79,8 +79,9 @@ class ClockWidgetProvider : AppWidgetProvider(), ClockWidget {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
 
         val repository = context.settingsRepository
-        val appSettings: AppSettings = runBlocking {
-            repository.loadAppSettings().firstOrNull() ?: DefaultAppSettings
+        val widgetSettings = runBlocking {
+            repository.loadWidgetSettings().firstOrNull()
+                ?: DefaultAppSettings.getContextOptions(DisplayContext.Widget)
         }
         val remoteViews = RemoteViews(context.packageName, R.layout.widget)
 
@@ -89,7 +90,7 @@ class ClockWidgetProvider : AppWidgetProvider(), ClockWidget {
                 WidgetSize.load(repository, widgetId) ?: WidgetSize.Default
             }
             val bitmap = ClockWidget.createBitmap(
-                appSettings.getContextOptions(DisplayContext.Widget).clockOptions,
+                widgetSettings.clockOptions,
                 size.maxWidth,
                 size.maxHeight
             )

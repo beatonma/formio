@@ -11,9 +11,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import org.beatonma.gclocks.android.ClockView
+import org.beatonma.gclocks.app.data.loadScreensaverSettings
 import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.data.settingsRepository
 import org.beatonma.gclocks.core.geometry.MutableRectF
@@ -30,17 +30,30 @@ class DreamView @JvmOverloads constructor(
 
     var onWakeFromDaydream: (() -> Unit)? = null
 
-    private val gestureDetector = GestureDetector(context, object : GestureDetector.OnGestureListener {
-        override fun onLongPress(e: MotionEvent) {
-            onWakeFromDaydream?.invoke()
-        }
+    private val gestureDetector =
+        GestureDetector(context, object : GestureDetector.OnGestureListener {
+            override fun onLongPress(e: MotionEvent) {
+                onWakeFromDaydream?.invoke()
+            }
 
-        override fun onDown(e: MotionEvent): Boolean = true
-        override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean = false
-        override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean = false
-        override fun onShowPress(e: MotionEvent) {}
-        override fun onSingleTapUp(e: MotionEvent): Boolean = false
-    })
+            override fun onDown(e: MotionEvent): Boolean = true
+            override fun onFling(
+                e1: MotionEvent?,
+                e2: MotionEvent,
+                velocityX: Float,
+                velocityY: Float
+            ): Boolean = false
+
+            override fun onScroll(
+                e1: MotionEvent?,
+                e2: MotionEvent,
+                distanceX: Float,
+                distanceY: Float
+            ): Boolean = false
+
+            override fun onShowPress(e: MotionEvent) {}
+            override fun onSingleTapUp(e: MotionEvent): Boolean = false
+        })
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         return gestureDetector.onTouchEvent(event) || super.onTouchEvent(event)
@@ -57,8 +70,7 @@ class DreamView @JvmOverloads constructor(
 
         coroutineScope.launch {
             @OptIn(ExperimentalCoroutinesApi::class)
-            context.settingsRepository.loadAppSettings()
-                .mapLatest { it.getContextOptions(DisplayContext.Screensaver) }
+            context.settingsRepository.loadScreensaverSettings()
                 .collectLatest { settings ->
                     val screensaverOptions =
                         settings.displayOptions as DisplayContext.Options.Screensaver

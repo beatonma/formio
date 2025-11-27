@@ -43,7 +43,8 @@ kotlin {
                 outputFileName = when (mode) {
                     KotlinWebpackConfig.Mode.PRODUCTION -> {
                         val timestamp: String =
-                            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
+                            LocalDateTime.now()
+                                .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
                         "gclocks-${timestamp}.js"
                     }
 
@@ -109,10 +110,13 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.skiko.awt.runtime.linux.x64)
         }
-
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(project(":test"))
+        }
+
+        androidUnitTest.dependencies {
+            implementation(libs.kotlinx.coroutinesTest)
         }
     }
 }
