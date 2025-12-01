@@ -18,7 +18,7 @@ object Io16Paints {
 
 fun Io16Paints(
     colors: List<Color> = Io16Paints.DefaultColors,
-    strokeWidth: Float = 0f,
+    strokeWidth: Float = 4f,
 ): Paints {
     require(colors.size == 5) {
         "Io16Paints require 5 colors but got ${colors.size}"
