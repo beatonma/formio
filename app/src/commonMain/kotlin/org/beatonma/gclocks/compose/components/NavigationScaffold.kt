@@ -8,16 +8,11 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
@@ -27,11 +22,9 @@ import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationRail
-import androidx.compose.material3.NavigationRailDefaults
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.Text
@@ -50,11 +43,9 @@ import gclocks_multiplatform.app.generated.resources.navigation_cd_modal_open
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.beatonma.gclocks.app.theme.DesignSpec
-import org.beatonma.gclocks.app.theme.DesignSpec.hamburgerPadding
 import org.beatonma.gclocks.app.ui.NavigationMenu
 import org.beatonma.gclocks.app.ui.NavigationMenuItem
 import org.beatonma.gclocks.compose.AppIcon
-import org.beatonma.gclocks.compose.horizontal
 import org.beatonma.gclocks.compose.isHeightAtLeastMedium
 import org.beatonma.gclocks.compose.isWidthAtLeastExpanded
 import org.beatonma.gclocks.compose.isWidthAtLeastMedium
@@ -69,13 +60,17 @@ private val RailContentPadding = PaddingValues(horizontal = 8.dp, vertical = Ham
 private val RailItemSpacing = 4.dp
 
 
+private fun hasSecondaryNavigation(navigationType: NavigationSuiteType): Boolean =
+    navigationType == NavigationSuiteType.NavigationBar
+
 @Composable
 fun NavigationScaffold(
     selected: NavigationMenuItem,
     onSelect: (NavigationMenuItem) -> Unit,
     menu: NavigationMenu,
     navigationType: NavigationSuiteType = getNavigationLayoutType(),
-    content: @Composable () -> Unit,
+    scope: CoroutineScope = rememberCoroutineScope(),
+    content: @Composable (navigationIcon: @Composable () -> Unit) -> Unit,
 ) {
     /*
     * SecondaryNavigation wrapping PrimaryNavigation may be counterintuitive:
@@ -83,24 +78,20 @@ fun NavigationScaffold(
     * be placed in a modal drawer which, when visible, needs to fill the window
     * height and render above the bottom navigation bar.
     */
-    SecondaryNavigation(menu, navigationType, selected, onSelect) {
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+
+    SecondaryNavigation(menu, navigationType, selected, onSelect, drawerState, scope = scope) {
         NavigationSuiteScaffoldLayout(
             navigationSuite = { PrimaryNavigation(menu, navigationType, selected, onSelect) },
             layoutType = navigationType,
         ) {
-            Box(
-                Modifier.consumeWindowInsets(
-                    when (navigationType) {
-                        NavigationSuiteType.NavigationBar -> NavigationBarDefaults.windowInsets
-                        NavigationSuiteType.NavigationRail -> NavigationRailDefaults.windowInsets
-                        NavigationSuiteType.NavigationDrawer -> DrawerDefaults.windowInsets
-                        else -> WindowInsets(0, 0, 0, 0)
+            Box {
+                content {
+                    // Pass navigationIcon to child content so it can be displayed in a context-suitable way
+                    if (hasSecondaryNavigation(navigationType)) {
+                        Hamburger(isOpen = false, onClick = { scope.launch { drawerState.open() } })
                     }
-                )
-                    .padding(WindowInsets.navigationBars.asPaddingValues().horizontal())
-                    .consumeWindowInsets(WindowInsets.navigationBars.asPaddingValues().horizontal())
-            ) {
-                content()
+                }
             }
         }
     }
@@ -180,11 +171,11 @@ private fun SecondaryNavigation(
     navigationType: NavigationSuiteType,
     selected: NavigationMenuItem,
     onSelect: (NavigationMenuItem) -> Unit,
-    drawerState: DrawerState = rememberDrawerState(DrawerValue.Closed),
+    drawerState: DrawerState,
     scope: CoroutineScope = rememberCoroutineScope(),
     content: @Composable () -> Unit,
 ) {
-    if (navigationType != NavigationSuiteType.NavigationBar) {
+    if (!hasSecondaryNavigation(navigationType)) {
         // Secondary navigation only needed if primary navigation uses NavigationBar.
         return content()
     }
@@ -194,15 +185,11 @@ private fun SecondaryNavigation(
         drawerContent = {
             ModalDrawerSheet(drawerState, Modifier.widthIn(max = NavigationDrawerMaxWidth)) {
                 NavigationColumn(DrawerContentPadding, DrawerItemSpacing) {
-                    IconButton(
+                    Hamburger(
+                        isOpen = true,
                         onClick = { scope.launch { drawerState.close() } },
-                        Modifier.padding(4.dp)
-                    ) {
-                        Icon(
-                            AppIcon.HamburgerClose,
-                            stringResource(Res.string.navigation_cd_modal_close)
-                        )
-                    }
+                        modifier = Modifier.padding(4.dp)
+                    )
                     Spacer(Modifier.height(0.dp))
 
                     if (!menu.usesNavigationBar) {
@@ -226,13 +213,6 @@ private fun SecondaryNavigation(
         }
     ) {
         content()
-
-        IconButton(
-            onClick = { scope.launch { drawerState.open() } },
-            modifier = Modifier.hamburgerPadding()
-        ) {
-            Icon(AppIcon.Hamburger, stringResource(Res.string.navigation_cd_modal_open))
-        }
     }
 }
 
@@ -347,3 +327,28 @@ private fun NavigationColumn(
 }
 
 private val NavigationMenu.usesNavigationBar: Boolean get() = primary.size > 1
+
+
+@Composable
+private fun Hamburger(
+    isOpen: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    IconButton(
+        onClick = onClick,
+        modifier
+    ) {
+        if (isOpen) {
+            Icon(
+                AppIcon.HamburgerClose,
+                stringResource(Res.string.navigation_cd_modal_close)
+            )
+        } else {
+            Icon(
+                AppIcon.Hamburger,
+                stringResource(Res.string.navigation_cd_modal_open)
+            )
+        }
+    }
+}

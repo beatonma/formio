@@ -14,7 +14,7 @@ import org.jetbrains.compose.resources.stringResource
 fun main() = application {
     val windowState = rememberWindowState(
         position = WindowPosition.Aligned(Alignment.TopEnd),
-        size = DpSize(400.dp, 800.dp),
+        size = DpSize(1600.dp, 1200.dp),
     )
 
     Window(

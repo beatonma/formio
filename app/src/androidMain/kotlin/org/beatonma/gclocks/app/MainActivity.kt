@@ -26,6 +26,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.beatonma.R
 import org.beatonma.gclocks.android.alarmManager
@@ -57,10 +58,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
+        setAppContent()
+
         shouldShowWidgetPermissionRequest = !canScheduleExactAlarms(appContext.alarmManager)
         lifecycleScope.launch { updateDisplayMetrics() }
-
-        setAppContent()
     }
 
     private fun setAppContent() {
@@ -79,11 +80,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            App(editorViewModel, systemBarsController) { navigation ->
+            App(editorViewModel, systemBarsController) { navigation, navigationIcon ->
                 SettingsEditorScreen(
                     editorViewModel,
                     navigation,
                     snackbarHostState = snackbarHostState,
+                    navigationIcon = navigationIcon,
                     toolbar = { ClockToolbar(it) }
                 )
             }
@@ -130,7 +132,8 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun rememberSystemBarsController(): SystemBarsController {
-        val systemUiController = remember { WindowCompat.getInsetsController(window, window.decorView) }
+        val systemUiController =
+            remember { WindowCompat.getInsetsController(window, window.decorView) }
         val systemBarsController = remember {
             SystemBarsController(
                 onRequestHideSystemBars = { systemUiController.hide(WindowInsetsCompat.Type.systemBars()) },

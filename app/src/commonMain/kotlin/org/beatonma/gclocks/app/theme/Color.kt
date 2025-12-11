@@ -39,6 +39,7 @@ fun Color.getForegroundColor(alpha: Float = Opacity.TextPrimary): Color = when {
 }.copy(alpha = alpha)
 
 
+val scrim = Color(0x88000000)
 /*
  * Colors below generated via https://material-foundation.github.io/material-theme-builder/
  */
@@ -67,7 +68,7 @@ val surfaceVariantLight = Color(0xFFE3E1EC)
 val onSurfaceVariantLight = Color(0xFF46464F)
 val outlineLight = Color(0xFF767680)
 val outlineVariantLight = Color(0xFFC6C5D0)
-val scrimLight = Color(0xFF000000)
+val scrimLight = scrim
 val inverseSurfaceLight = Color(0xFF303036)
 val inverseOnSurfaceLight = Color(0xFFF2EFF7)
 val inversePrimaryLight = Color(0xFFBAC3FF)
@@ -103,7 +104,7 @@ val surfaceVariantDark = Color(0xFF46464F)
 val onSurfaceVariantDark = Color(0xFFC6C5D0)
 val outlineDark = Color(0xFF90909A)
 val outlineVariantDark = Color(0xFF46464F)
-val scrimDark = Color(0xFF000000)
+val scrimDark = scrim
 val inverseSurfaceDark = Color(0xFFE4E1E9)
 val inverseOnSurfaceDark = Color(0xFF303036)
 val inversePrimaryDark = Color(0xFF515B92)

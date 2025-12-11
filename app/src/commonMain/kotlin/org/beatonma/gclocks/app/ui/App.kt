@@ -22,7 +22,7 @@ import org.beatonma.gclocks.compose.debugKeyEvent
 fun App(
     viewModel: SettingsEditorViewModel,
     systemBarsController: SystemBarsController? = null,
-    settingsEditor: (@Composable (AppNavigation) -> Unit)? = null,
+    settingsEditor: SettingsEditorUI? = null,
 ) {
     var theme: Theme by remember { mutableStateOf(Theme.System) }
 
@@ -53,8 +53,8 @@ fun App(
         CompositionLocalProvider(LocalSystemBars provides systemBarsController) {
             AppNavigation(
                 viewModel,
-                settingsEditor = settingsEditor ?: { navigation ->
-                    SettingsEditorScreen(viewModel, navigation)
+                settingsEditor = settingsEditor ?: { navigation, navigationIcon ->
+                    SettingsEditorScreen(viewModel, navigation, navigationIcon = navigationIcon)
                 }
             )
         }

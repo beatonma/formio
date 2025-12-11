@@ -11,18 +11,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.waterfall
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -31,7 +28,6 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -46,7 +42,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
@@ -63,6 +58,7 @@ import gclocks_multiplatform.app.generated.resources.setting_save_changes_fab
 import org.beatonma.gclocks.app.data.settings.AnyContextClockOptions
 import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.data.settings.DisplayContextDefaults
+import org.beatonma.gclocks.app.theme.DesignSpec.hamburgerPadding
 import org.beatonma.gclocks.app.theme.rememberContentColor
 import org.beatonma.gclocks.app.ui.AppNavigation
 import org.beatonma.gclocks.compose.AppIcon
@@ -76,12 +72,11 @@ import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import org.beatonma.gclocks.compose.components.settings.data.RichSettings
 import org.beatonma.gclocks.compose.components.settings.data.RichSettingsGroup
 import org.beatonma.gclocks.compose.components.settings.data.Setting
+import org.beatonma.gclocks.compose.copy
 import org.beatonma.gclocks.compose.debugKeyEvent
-import org.beatonma.gclocks.compose.horizontal
 import org.beatonma.gclocks.compose.onlyIf
 import org.beatonma.gclocks.compose.plus
 import org.beatonma.gclocks.compose.toCompose
-import org.beatonma.gclocks.compose.vertical
 import org.beatonma.gclocks.core.options.AnyOptions
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.graphics.Color as ComposeColor
@@ -90,13 +85,8 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 private val ColumnPreferredWidth = 350.dp
 private val ColumnMaxWidth = 450.dp
 
-private val ColumnSpacing = 32.dp
-private val HorizontalMargin = 8.dp
-
-private fun Modifier.horizontalMarginModifier() = composed {
-    padding(horizontal = HorizontalMargin)
-        .padding(WindowInsets.waterfall.asPaddingValues())
-}
+private val ColumnSpacing = 16.dp
+private val ColumnTopPadding = 8.dp
 
 
 /**
@@ -113,7 +103,8 @@ val LocalClockPreview: ProvidableCompositionLocal<ClockPreview?> = compositionLo
 data class SettingsEditorAdapter(
     val snackbarHostState: SnackbarHostState? = null,
     val onClickPreview: ((DisplayContext) -> Unit)? = null,
-    val toolbar: (@Composable RowScope.(DisplayContext) -> Unit)? = null,
+    val navigationIcon: (@Composable () -> Unit)? = null,
+    val toolbar: (@Composable RowScope.() -> Unit)? = null,
 )
 
 
@@ -122,31 +113,42 @@ fun SettingsEditorScreen(
     viewModel: SettingsEditorViewModel,
     navigation: AppNavigation,
     snackbarHostState: SnackbarHostState? = null,
+    navigationIcon: (@Composable () -> Unit)? = null,
     toolbar: @Composable (RowScope.(DisplayContext) -> Unit)? = null,
 ) {
     val _settings by viewModel.appSettings.collectAsStateWithLifecycle()
     val _richSettings by viewModel.richSettings.collectAsStateWithLifecycle()
-    val settings = _settings ?: return LoadingSpinner(Modifier.fillMaxSize())
-    val richSettings = _richSettings
-        ?: return LoadingSpinner(Modifier.fillMaxSize(), settings.contextSettings.clock)
 
     val hasUnsavedChanges by viewModel.hasUnsavedChanges.collectAsStateWithLifecycle()
+
+    val settings = _settings ?: return LoadingSpinner(Modifier.fillMaxSize())
     val onClickPreview: () -> Unit =
         remember(navigation.onNavigateClockPreview, settings.contextOptions) {
             { navigation.onNavigateClockPreview(settings.contextOptions) }
         }
 
-    val adapter = remember(navigation, snackbarHostState, toolbar, onClickPreview) {
+    val adapter = remember(navigation, snackbarHostState, navigationIcon, toolbar, onClickPreview) {
         SettingsEditorAdapter(
             snackbarHostState = snackbarHostState,
             onClickPreview = toolbar?.let { { onClickPreview() } },
-            toolbar = toolbar ?: {
+            navigationIcon = navigationIcon,
+            toolbar = toolbar?.let { toolbar ->
+                {
+                    toolbar(
+                        this,
+                        settings.contextOptions.displayContext
+                    )
+                }
+            } ?: {
                 IconButton(onClickPreview) {
                     Icon(AppIcon.FullscreenOpen, stringResource(Res.string.cd_fullscreen_open))
                 }
             }
         )
     }
+
+    val richSettings = _richSettings
+        ?: return LoadingSpinner(Modifier.fillMaxSize(), settings.contextSettings.clock)
 
     ClockSettingsScaffold(
         Modifier.debugKeyEvents(viewModel::restoreDefaultSettings),
@@ -193,13 +195,13 @@ private fun ClockSettingsScaffold(
             SettingsUi(
                 key,
                 richSettings,
+                contentPadding,
                 Modifier.fillMaxWidth(),
-                contentPadding = VerticalBottomContentPadding + contentPadding.horizontal(),
                 clockPreview = { modifier ->
                     CompositionLocalProvider(LocalContentColor provides foregroundColor) {
                         ClockPreview(
                             options.clockOptions,
-                            settingsEditorAdapter?.toolbar?.let { toolbar -> { toolbar(options.displayContext) } },
+                            settingsEditorAdapter?.toolbar,
                             modifier
                                 .background(backgroundColor)
                                 .onlyIf(settingsEditorAdapter?.onClickPreview) { onClick ->
@@ -208,13 +210,20 @@ private fun ClockSettingsScaffold(
                                 .animateContentSize(),
                             clockModifier = Modifier
                                 .sizeIn(maxWidth = 600.dp, maxHeight = 300.dp)
-                                .fillMaxWidth()
-                                .windowInsetsPadding(WindowInsets.safeDrawing)
-                                .padding(64.dp),
+                                .padding(contentPadding)
+                                .consumeWindowInsets(contentPadding)
+                                .padding(64.dp)
+                                .fillMaxWidth(),
                         )
                     }
                 }
             )
+        }
+
+        Box(Modifier.hamburgerPadding()) {
+            CompositionLocalProvider(LocalContentColor provides foregroundColor) {
+                settingsEditorAdapter?.navigationIcon?.invoke()
+            }
         }
     }
 }
@@ -240,6 +249,7 @@ private fun ClockPreview(
 private fun WideAndTall(
     key: Any,
     richSettings: RichSettings,
+    columnModifier: Modifier,
     itemModifier: Modifier,
     groupModifier: Modifier,
     contentPadding: PaddingValues,
@@ -259,11 +269,11 @@ private fun WideAndTall(
                 Alignment.CenterHorizontally
             )
         ) {
-            val columnModifier = Modifier.widthIn(max = ColumnMaxWidth).weight(1f, fill = false)
+            val columnModifier = columnModifier.weight(1f, fill = false)
             ClockSettingsColumn(
                 key,
                 left,
-                contentPadding,
+                contentPadding.copy(end = 0.dp),
                 modifier = columnModifier,
                 itemModifier = itemModifier,
                 groupModifier = groupModifier
@@ -272,7 +282,7 @@ private fun WideAndTall(
             ClockSettingsColumn(
                 key,
                 right,
-                contentPadding,
+                contentPadding.copy(start = 0.dp),
                 modifier = columnModifier,
                 itemModifier = itemModifier,
                 groupModifier = groupModifier
@@ -285,6 +295,7 @@ private fun WideAndTall(
 private fun NarrowAndTall(
     key: Any,
     richSettings: RichSettings,
+    columnModifier: Modifier,
     itemModifier: Modifier,
     groupModifier: Modifier,
     contentPadding: PaddingValues,
@@ -295,7 +306,8 @@ private fun NarrowAndTall(
     ClockSettingsColumn(
         key,
         settings,
-        contentPadding,
+        contentPadding.copy(top = 0.dp),
+        modifier = columnModifier,
         itemModifier = itemModifier,
         groupModifier = groupModifier
     ) {
@@ -310,6 +322,7 @@ private fun NarrowAndTall(
 private fun WideAndShort(
     key: Any,
     richSettings: RichSettings,
+    columnModifier: Modifier,
     itemModifier: Modifier,
     groupModifier: Modifier,
     contentPadding: PaddingValues,
@@ -319,17 +332,16 @@ private fun WideAndShort(
 
     Row(
         Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(ColumnSpacing, Alignment.CenterHorizontally)
     ) {
-        val columnModifier = Modifier.weight(1f, fill = false)
+        val columnModifier = columnModifier.weight(1f, fill = true)
         clockPreview(columnModifier.fillMaxHeight())
 
         Box(columnModifier) {
             ClockSettingsColumn(
                 key,
                 settings,
-                contentPadding + WindowInsets.systemBars.asPaddingValues().vertical(),
-                modifier = Modifier.widthIn(max = ColumnMaxWidth),
+                contentPadding.copy(start = 0.dp),
+                modifier = columnModifier,
                 itemModifier = itemModifier,
                 groupModifier = groupModifier
             )
@@ -341,6 +353,7 @@ private fun WideAndShort(
 private fun NarrowAndShort(
     key: Any,
     richSettings: RichSettings,
+    columnModifier: Modifier,
     itemModifier: Modifier,
     groupModifier: Modifier,
     contentPadding: PaddingValues,
@@ -351,7 +364,8 @@ private fun NarrowAndShort(
     ClockSettingsColumn(
         key,
         settings,
-        contentPadding + WindowInsets.systemBars.asPaddingValues().vertical(),
+        contentPadding,
+        modifier = columnModifier,
         itemModifier = itemModifier,
         groupModifier = groupModifier
     ) {
@@ -368,14 +382,13 @@ private fun NarrowAndShort(
 private fun SettingsUi(
     key: Any,
     richSettings: RichSettings,
-    modifier: Modifier = Modifier,
     contentPadding: PaddingValues,
+    modifier: Modifier = Modifier,
     clockPreview: (@Composable (Modifier) -> Unit),
 ) {
+    val columnModifier = Modifier
     val groupModifier = Modifier.padding(vertical = 8.dp)
-    val itemModifier = Modifier
-        .horizontalMarginModifier()
-        .padding(vertical = 4.dp)
+    val itemModifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
 
     BoxWithConstraints(modifier, contentAlignment = Alignment.TopCenter) {
         val isWide: Boolean
@@ -390,6 +403,7 @@ private fun SettingsUi(
             isWide && isTall -> WideAndTall(
                 key,
                 richSettings,
+                columnModifier,
                 itemModifier,
                 groupModifier,
                 contentPadding,
@@ -399,6 +413,7 @@ private fun SettingsUi(
             isWide -> WideAndShort(
                 key,
                 richSettings,
+                columnModifier,
                 itemModifier,
                 groupModifier,
                 contentPadding,
@@ -408,6 +423,7 @@ private fun SettingsUi(
             isTall -> NarrowAndTall(
                 key,
                 richSettings,
+                columnModifier,
                 itemModifier,
                 groupModifier,
                 contentPadding,
@@ -417,6 +433,7 @@ private fun SettingsUi(
             else -> NarrowAndShort(
                 key,
                 richSettings,
+                columnModifier,
                 itemModifier,
                 groupModifier,
                 contentPadding,
@@ -445,10 +462,12 @@ private fun ClockSettingsColumn(
     LazyColumn(
         modifier.widthIn(max = maxWidth),
         state = state,
-        contentPadding = contentPadding,
+        contentPadding = contentPadding + VerticalBottomContentPadding,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val headerItemOffset = header()
+
+        item { Spacer(Modifier.height(ColumnTopPadding)) }
 
         fun addItems(_settings: List<Setting>, indexOffset: Int) {
             _settings.forEachIndexed { index, item ->

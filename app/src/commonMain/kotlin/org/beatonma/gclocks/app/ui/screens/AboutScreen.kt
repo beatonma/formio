@@ -5,18 +5,23 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -29,9 +34,13 @@ import gclocks_multiplatform.app.generated.resources.about_form_markdown
 import gclocks_multiplatform.app.generated.resources.about_io16_markdown
 import gclocks_multiplatform.app.generated.resources.about_io18_markdown
 import gclocks_multiplatform.app.generated.resources.about_io_markdown
+import gclocks_multiplatform.app.generated.resources.app_name
 import org.beatonma.gclocks.app.theme.ClockColorScheme
+import org.beatonma.gclocks.compose.VerticalBottomContentPadding
+import org.beatonma.gclocks.compose.animation.AnimatedFade
 import org.beatonma.gclocks.compose.components.Clock
 import org.beatonma.gclocks.compose.components.MarkdownText
+import org.beatonma.gclocks.compose.components.appBarVisibility
 import org.beatonma.gclocks.compose.plus
 import org.beatonma.gclocks.core.geometry.HorizontalAlignment
 import org.beatonma.gclocks.core.geometry.VerticalAlignment
@@ -53,12 +62,26 @@ private fun clockPreviewModifier(color: Color) =
 private val CardContentModifier = Modifier.padding(16.dp)
 
 @Composable
-fun AboutScreen() {
-    Scaffold { insets ->
+fun AboutScreen(navigationIcon: @Composable () -> Unit) {
+    val gridState = rememberLazyStaggeredGridState()
+    val appBarVisibility = appBarVisibility(gridState)
+
+    Scaffold(
+        topBar = {
+            @OptIn(ExperimentalMaterial3Api::class)
+            TopAppBar(
+                title = { AnimatedFade(!appBarVisibility.isTransparent) { Text(stringResource(Res.string.app_name)) } },
+                navigationIcon = navigationIcon,
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = appBarVisibility.color),
+            )
+        }
+    ) { insets ->
         val itemSpacing = 16.dp
         LazyVerticalStaggeredGrid(
             StaggeredGridCells.Adaptive(minSize = 300.dp),
-            contentPadding = insets + WindowInsets.safeDrawing.asPaddingValues() + PaddingValues(16.dp),
+            Modifier.consumeWindowInsets(insets).consumeWindowInsets(WindowInsets.safeDrawing),
+            state = gridState,
+            contentPadding = insets + PaddingValues(16.dp) + VerticalBottomContentPadding,
             horizontalArrangement = Arrangement.spacedBy(itemSpacing),
             verticalItemSpacing = itemSpacing,
         ) {
@@ -73,8 +96,8 @@ fun AboutScreen() {
 
 @Composable
 private fun AboutApp(modifier: Modifier = Modifier) {
-    Box(modifier.padding(top = 96.dp)) {
-        MarkdownText(stringResource(Res.string.about_app_markdown), CardContentModifier)
+    Box(modifier) {
+        MarkdownText(stringResource(Res.string.about_app_markdown))
     }
 }
 

@@ -31,9 +31,9 @@ object DesignSpec {
             minHeight = TouchTargetMinSize
         )
 
-    val HamburgerPadding = 16.dp
+    val HamburgerPadding = 8.dp
     fun Modifier.hamburgerPadding() = composed {
         windowInsetsPadding(DrawerDefaults.windowInsets)
-            .padding(HamburgerPadding)
+            .padding(vertical = HamburgerPadding, horizontal = HamburgerPadding / 2)
     }
 }

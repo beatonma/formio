@@ -27,7 +27,7 @@ enum class Theme {
 @Composable
 fun AppTheme(
     modifier: Modifier = Modifier,
-    theme: Theme = Theme.Light,
+    theme: Theme = Theme.System,
     content: @Composable () -> Unit,
 ) {
     MaterialTheme(colorScheme = getColorScheme(theme)) {

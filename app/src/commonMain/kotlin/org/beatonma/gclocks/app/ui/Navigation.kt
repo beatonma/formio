@@ -2,6 +2,7 @@ package org.beatonma.gclocks.app.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -118,12 +119,14 @@ data class AppNavigation(
 )
 
 
+typealias SettingsEditorUI = @Composable (navigation: AppNavigation, navigationIcon: @Composable () -> Unit) -> Unit
+
 @Composable
 fun AppNavigation(
     viewModel: SettingsEditorViewModel,
     modifier: Modifier = Modifier,
     contentAlignment: Alignment = Alignment.TopStart,
-    settingsEditor: @Composable (AppNavigation) -> Unit,
+    settingsEditor: SettingsEditorUI,
 ) {
     // Navigation destinations for this controller fill the entire window.
     val fullscreenNavController = rememberNavController()
@@ -171,9 +174,10 @@ fun AppNavigation(
     }
 }
 
+
 @Composable
 private fun NavigationUI(
-    settingsEditor: @Composable (AppNavigation) -> Unit,
+    settingsEditor: SettingsEditorUI,
     displayContext: DisplayContext,
     setDisplayContext: (DisplayContext) -> Unit,
     onNavigateClockPreview: (FullScreen.ClockPreview<*>) -> Unit,
@@ -184,13 +188,15 @@ private fun NavigationUI(
     // Navigation destinations for this controller fill only the content slot.of navigation UI.
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val route = navBackStackEntry?.destination?.route ?: Pane.SettingsEditor.route
 
-    val currentPane: NavigationMenuItem = when {
-        route.endsWith(Pane.About.route) -> NavigationMenuItem.About
-        route.endsWith(Pane.SettingsEditor.route) -> NavigationMenuItem.entries.find { it.name == displayContext.name }
-        else -> null
-    } ?: throw IllegalStateException("Unhandled route $route")
+    val currentPane: NavigationMenuItem by derivedStateOf {
+        val route = navBackStackEntry?.destination?.route ?: Pane.SettingsEditor.route
+        when {
+            route.endsWith(Pane.About.route) -> NavigationMenuItem.About
+            route.endsWith(Pane.SettingsEditor.route) -> NavigationMenuItem.entries.find { it.name == displayContext.name }
+            else -> null
+        } ?: throw IllegalStateException("Unhandled route $route")
+    }
 
     fun navigateTo(item: NavigationMenuItem) {
         when (item) {
@@ -219,9 +225,9 @@ private fun NavigationUI(
 
     NavigationScaffold(
         selected = currentPane,
-        onSelect = { navigateTo(it) },
+        onSelect = ::navigateTo,
         menu = menu,
-    ) {
+    ) { navigationIcon ->
         NavHost(
             navController,
             startDestination = startDestination,
@@ -242,11 +248,11 @@ private fun NavigationUI(
                     },
                 )
 
-                settingsEditor(appNavigation)
+                settingsEditor(appNavigation, navigationIcon)
             }
 
             composable<Pane.About> {
-                AboutScreen()
+                AboutScreen(navigationIcon)
             }
         }
     }

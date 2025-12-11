@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -36,12 +38,39 @@ fun PaddingValues.bottom(): PaddingValues = PaddingValues(
 )
 
 @Composable
-fun PaddingValues.horizontal(): PaddingValues = run {
-    val direction = LocalLayoutDirection.current
+fun PaddingValues.start(direction: LayoutDirection = LocalLayoutDirection.current): PaddingValues =
     PaddingValues(
         start = calculateStartPadding(direction),
-        end = calculateEndPadding(direction)
     )
-}
 
-val VerticalBottomContentPadding = PaddingValues(bottom = 128.dp)
+@Composable
+fun PaddingValues.end(direction: LayoutDirection = LocalLayoutDirection.current): PaddingValues =
+    PaddingValues(
+        end = calculateEndPadding(direction),
+    )
+
+@Composable
+fun PaddingValues.horizontal(direction: LayoutDirection = LocalLayoutDirection.current): PaddingValues =
+    run {
+        PaddingValues(
+            start = calculateStartPadding(direction),
+            end = calculateEndPadding(direction)
+        )
+    }
+
+@Composable
+fun PaddingValues.copy(
+    start: Dp? = null,
+    top: Dp? = null,
+    end: Dp? = null,
+    bottom: Dp? = null,
+    direction: LayoutDirection = LocalLayoutDirection.current,
+) = PaddingValues(
+    start ?: calculateStartPadding(direction),
+    top ?: calculateTopPadding(),
+    end ?: calculateEndPadding(direction),
+    bottom ?: calculateBottomPadding(),
+)
+
+
+val VerticalBottomContentPadding = PaddingValues(bottom = 96.dp)
