@@ -122,7 +122,6 @@ internal class WallpaperEngineDelegateImpl(
                     setState(GlyphVisibility.Hidden, true, getCurrentTimeMillis())
                 }
                 // Ensure visibility state is applied to animator
-                debug("clock settings updated: force apply state")
                 visibilityManager.applyStateNow()
                 invalidate()
             }
@@ -181,8 +180,7 @@ internal class WallpaperEngineDelegateImpl(
             deferredVisible(getIsKeyguardLocked)
         } else {
             if (!visibilityManager.isRotating) {
-                visibilityManager.forceHide()
-                engineScope.cancel()
+                cancelScope()
             }
         }
     }
@@ -202,6 +200,8 @@ internal class WallpaperEngineDelegateImpl(
 
             if (animator == null || !visibilityManager.isRotating) {
                 initialize()
+            } else {
+                invalidate()
             }
             val isLocked = getIsKeyguardLocked()
             visibilityManager.update {
@@ -285,24 +285,28 @@ internal class WallpaperEngineDelegateImpl(
     }
 
     override fun draw(canvas: Canvas) {
-        val animator = animator ?: return
         canvas.fill(backgroundColor)
-        animator.tick()
-        canvas.withTranslation(absoluteBounds.left, absoluteBounds.top) {
-            animator.render(canvas)
+        animator?.let { animator ->
+            animator.tick()
+            canvas.withTranslation(absoluteBounds.left, absoluteBounds.top) {
+                animator.render(canvas)
+            }
         }
     }
 
     override fun clear(canvas: Canvas) {
-        debug("CLEAR")
         canvas.fill(backgroundColor)
     }
 
     override fun onDestroy() {
-        engineScope.cancel()
+        cancelScope()
     }
 
     private fun createCoroutineScope() = CoroutineScope(mainDispatcher + SupervisorJob())
+    private fun cancelScope() {
+        visibilityManager.forceHide()
+        engineScope.cancel()
+    }
 
     internal inner class VisibilityManager(isWallpaperVisible: Boolean) {
         private val debouncer = Debouncer(ioDispatcher)
@@ -357,6 +361,7 @@ internal class WallpaperEngineDelegateImpl(
 
         fun forceHide() {
             hide(force = true)
+            appliedState = null
             onClearCanvas(canvasHost)
         }
 
@@ -370,7 +375,7 @@ internal class WallpaperEngineDelegateImpl(
             isRotating = false
             val state = state
             if (state == appliedState) {
-                return
+                return debug("updateVisibility: state has not changed")
             }
             applyStateNow()
         }
