@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
         setAppContent()
 
         shouldShowWidgetPermissionRequest = !canScheduleExactAlarms(appContext.alarmManager)
-        lifecycleScope.launch { updateDisplayMetrics() }
+        lifecycleScope.launch(Dispatchers.io) { updateDisplayMetrics() }
     }
 
     private fun setAppContent() {

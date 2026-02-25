@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +32,7 @@ import org.beatonma.gclocks.app.data.settings.buildClockSettingsAdapter
 import org.beatonma.gclocks.app.data.settings.chooseClockColors
 import org.beatonma.gclocks.app.data.settings.chooseClockPosition
 import org.beatonma.gclocks.app.data.settings.chooseClockType
+import org.beatonma.gclocks.app.io
 import org.beatonma.gclocks.compose.components.settings.data.RichSetting
 import org.beatonma.gclocks.compose.components.settings.data.RichSettings
 import org.beatonma.gclocks.compose.components.settings.data.replace
@@ -82,7 +84,7 @@ class SettingsEditorViewModel(
 
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.io) {
             repository.loadAppSettings().collectLatest {
                 _appSettings.value = it
                 _lastSavedAppSettings.value = it
@@ -121,7 +123,7 @@ class SettingsEditorViewModel(
     }
 
     fun save() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.io) {
             appSettings.value?.copy()?.let { currentSettings ->
                 repository.save(currentSettings)
                 _lastSavedAppSettings.update { currentSettings }
@@ -131,7 +133,7 @@ class SettingsEditorViewModel(
     }
 
     fun restoreDefaultSettings() {
-        viewModelScope.launch { repository.restoreDefaultSettings() }
+        viewModelScope.launch(Dispatchers.io) { repository.restoreDefaultSettings() }
     }
 
     private fun <O : AnyOptions> buildRichSettings(

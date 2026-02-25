@@ -22,6 +22,7 @@ import org.beatonma.gclocks.app.data.loadDisplayMetrics
 import org.beatonma.gclocks.app.data.loadWallpaperSettings
 import org.beatonma.gclocks.app.data.settings.DisplayContext
 import org.beatonma.gclocks.app.data.settings.DisplayMetrics
+import org.beatonma.gclocks.app.io
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
@@ -47,7 +48,7 @@ interface WallpaperEngineDelegate {
         xOffsetStep: Float,
         yOffsetStep: Float,
         xPixelOffset: Int,
-        yPixelOffset: Int
+        yPixelOffset: Int,
     )
 
     fun onTouchEvent(event: MotionEvent): Boolean
@@ -85,7 +86,7 @@ internal class WallpaperEngineDelegateImpl(
     private val wallpaperSettings: Flow<DisplayContext.Options.Wallpaper>,
     private val clockSettings: Flow<AnyOptions>,
     private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.io,
     private val onDraw: (AndroidCanvasHost) -> Unit,
     private val onClearCanvas: (AndroidCanvasHost) -> Unit,
     private val getCurrentTimeMillis: () -> Long = ::getCurrentTimeMillis,
