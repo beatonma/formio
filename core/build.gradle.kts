@@ -64,10 +64,3 @@ kotlin {
         }
     }
 }
-
-tasks.named("compileKotlinJvm").configure {
-    dependsOn(generateBuildConfig)
-}
-tasks.named("compileKotlinWasmJs").configure {
-    dependsOn(generateBuildConfig)
-}
