@@ -39,7 +39,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
@@ -50,6 +52,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
 import gclocks_multiplatform.app.generated.resources.Res
@@ -100,13 +103,6 @@ data class ClockPreview(
 
 val LocalClockPreview: ProvidableCompositionLocal<ClockPreview?> = compositionLocalOf { null }
 
-data class SettingsEditorAdapter(
-    val snackbarHostState: SnackbarHostState? = null,
-    val onClickPreview: ((DisplayContext) -> Unit)? = null,
-    val navigationIcon: (@Composable () -> Unit)? = null,
-    val toolbar: (@Composable RowScope.() -> Unit)? = null,
-)
-
 
 @Composable
 fun SettingsEditorScreen(
@@ -116,39 +112,24 @@ fun SettingsEditorScreen(
     navigationIcon: (@Composable () -> Unit)? = null,
     toolbar: @Composable (RowScope.(DisplayContext) -> Unit)? = null,
 ) {
+    var isLoading by remember { mutableStateOf(true) }
+
+    AnimatedFade(isLoading, Modifier.zIndex(1000f)) {
+        LoadingSpinner(Modifier.fillMaxSize())
+    }
+
     val _settings by viewModel.appSettings.collectAsStateWithLifecycle()
     val _richSettings by viewModel.richSettings.collectAsStateWithLifecycle()
 
     val hasUnsavedChanges by viewModel.hasUnsavedChanges.collectAsStateWithLifecycle()
 
-    val settings = _settings ?: return LoadingSpinner(Modifier.fillMaxSize())
+    val settings = _settings ?: return
     val onClickPreview: () -> Unit =
         remember(navigation.onNavigateClockPreview, settings.contextOptions) {
             { navigation.onNavigateClockPreview(settings.contextOptions) }
         }
 
-    val adapter = remember(navigation, snackbarHostState, navigationIcon, toolbar, onClickPreview) {
-        SettingsEditorAdapter(
-            snackbarHostState = snackbarHostState,
-            onClickPreview = toolbar?.let { { onClickPreview() } },
-            navigationIcon = navigationIcon,
-            toolbar = toolbar?.let { toolbar ->
-                {
-                    toolbar(
-                        this,
-                        settings.contextOptions.displayContext
-                    )
-                }
-            } ?: {
-                IconButton(onClickPreview) {
-                    Icon(AppIcon.FullscreenOpen, stringResource(Res.string.cd_fullscreen_open))
-                }
-            }
-        )
-    }
-
-    val richSettings = _richSettings
-        ?: return LoadingSpinner(Modifier.fillMaxSize(), settings.contextSettings.clock)
+    val richSettings = _richSettings ?: return
 
     ClockSettingsScaffold(
         Modifier.debugKeyEvents(viewModel::restoreDefaultSettings),
@@ -156,9 +137,27 @@ fun SettingsEditorScreen(
         options = settings.contextOptions,
         richSettings = richSettings,
         hasUnsavedChanges = hasUnsavedChanges,
+        snackbarHostState = snackbarHostState,
+        onClickPreview = { onClickPreview() },
+        navigationIcon = navigationIcon,
+        toolbar = toolbar?.let { toolbar ->
+            {
+                toolbar(
+                    this,
+                    settings.contextOptions.displayContext
+                )
+            }
+        } ?: {
+            IconButton(onClickPreview) {
+                Icon(AppIcon.FullscreenOpen, stringResource(Res.string.cd_fullscreen_open))
+            }
+        },
         onSave = viewModel::save,
-        settingsEditorAdapter = adapter,
     )
+
+    LaunchedEffect(Unit) {
+        isLoading = false
+    }
 }
 
 
@@ -166,18 +165,19 @@ fun SettingsEditorScreen(
 private fun ClockSettingsScaffold(
     modifier: Modifier = Modifier,
     key: Any,
-    options: AnyContextClockOptions,
-    richSettings: RichSettings,
+    options: AnyContextClockOptions?,
+    richSettings: RichSettings?,
     hasUnsavedChanges: Boolean,
+    snackbarHostState: SnackbarHostState?,
+    onClickPreview: ((DisplayContext) -> Unit)?,
+    navigationIcon: (@Composable () -> Unit)?,
+    toolbar: (@Composable RowScope.() -> Unit)?,
     onSave: () -> Unit,
-    settingsEditorAdapter: SettingsEditorAdapter?,
 ) {
-    val backgroundColor = resolveClockBackgroundColor(options.displayOptions)
-    val foregroundColor = rememberContentColor(backgroundColor)
 
     Scaffold(
         modifier,
-        snackbarHost = { settingsEditorAdapter?.snackbarHostState?.let { SnackbarHost(it) } },
+        snackbarHost = { snackbarHostState?.let { SnackbarHost(it) } },
         floatingActionButton = {
             AnimatedFade(hasUnsavedChanges) {
                 ExtendedFloatingActionButton(onSave) {
@@ -186,6 +186,11 @@ private fun ClockSettingsScaffold(
             }
         },
     ) { contentPadding ->
+        if (options == null || richSettings == null) return@Scaffold LoadingSpinner(Modifier.fillMaxSize())
+
+        val backgroundColor = resolveClockBackgroundColor(options.displayOptions)
+        val foregroundColor = rememberContentColor(backgroundColor)
+
         CompositionLocalProvider(
             LocalClockPreview provides ClockPreview(
                 options.clockOptions,
@@ -201,10 +206,10 @@ private fun ClockSettingsScaffold(
                     CompositionLocalProvider(LocalContentColor provides foregroundColor) {
                         ClockPreview(
                             options.clockOptions,
-                            settingsEditorAdapter?.toolbar,
+                            toolbar,
                             modifier
                                 .background(backgroundColor)
-                                .onlyIf(settingsEditorAdapter?.onClickPreview) { onClick ->
+                                .onlyIf(onClickPreview) { onClick ->
                                     clickable(onClick = { onClick(options.displayContext) })
                                 }
                                 .animateContentSize(),
@@ -222,7 +227,7 @@ private fun ClockSettingsScaffold(
 
         Box(Modifier.hamburgerPadding()) {
             CompositionLocalProvider(LocalContentColor provides foregroundColor) {
-                settingsEditorAdapter?.navigationIcon?.invoke()
+                navigationIcon?.invoke()
             }
         }
     }
