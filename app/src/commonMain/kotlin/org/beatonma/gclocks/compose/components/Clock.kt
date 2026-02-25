@@ -5,11 +5,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.pointer.pointerInput
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
 import org.beatonma.gclocks.compose.ComposePath
-import org.beatonma.gclocks.compose.debugKeyEvent
+import org.beatonma.gclocks.compose.debugHotkey
 import org.beatonma.gclocks.compose.rememberCanvasHost
 import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.glyph.GlyphState
@@ -36,7 +35,9 @@ fun Clock(
     val animator = rememberClockAnimator(options, allowVariance, forcedState)
 
     LaunchedEffect(visibility) {
-        if (visibility != null) animator.setState(visibility, false, getInstant().currentTimeMillis)
+        if (visibility != null) {
+            animator.setState(visibility, false, getInstant().currentTimeMillis)
+        }
     }
 
     Clock(animator, modifier, getInstant)
@@ -54,8 +55,8 @@ fun Clock(
     ConstrainedCanvas(
         animator,
         modifier
-            .debugKeyEvent { event ->
-                return@debugKeyEvent when (event.key) {
+            .debugHotkey { key ->
+                when (key) {
                     Key.One -> {
                         animator.setState(
                             GlyphState.Inactive,

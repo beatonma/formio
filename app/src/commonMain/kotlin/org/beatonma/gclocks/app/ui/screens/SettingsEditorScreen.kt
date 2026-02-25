@@ -44,11 +44,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.isCtrlPressed
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -76,7 +71,6 @@ import org.beatonma.gclocks.compose.components.settings.data.RichSettings
 import org.beatonma.gclocks.compose.components.settings.data.RichSettingsGroup
 import org.beatonma.gclocks.compose.components.settings.data.Setting
 import org.beatonma.gclocks.compose.copy
-import org.beatonma.gclocks.compose.debugKeyEvent
 import org.beatonma.gclocks.compose.onlyIf
 import org.beatonma.gclocks.compose.plus
 import org.beatonma.gclocks.compose.toCompose
@@ -132,7 +126,6 @@ fun SettingsEditorScreen(
     val richSettings = _richSettings ?: return
 
     ClockSettingsScaffold(
-        Modifier.debugKeyEvents(viewModel::restoreDefaultSettings),
         key = "${settings.state.displayContext}_${settings.contextSettings.clock}",
         options = settings.contextOptions,
         richSettings = richSettings,
@@ -512,19 +505,4 @@ private fun resolveClockBackgroundColor(displayOptions: DisplayContext.Options):
         is DisplayContext.Options.WithBackground -> displayOptions.backgroundColor
         else -> DisplayContextDefaults.DefaultBackgroundColor
     }.toCompose()
-}
-
-
-private fun Modifier.debugKeyEvents(onRestoreDefaultSettings: () -> Unit) = debugKeyEvent { event ->
-    if (event.type == KeyEventType.KeyDown) {
-        when (event.key) {
-            Key.R -> {
-                if (event.isCtrlPressed) {
-                    onRestoreDefaultSettings()
-                    return@debugKeyEvent true
-                }
-            }
-        }
-    }
-    false
 }

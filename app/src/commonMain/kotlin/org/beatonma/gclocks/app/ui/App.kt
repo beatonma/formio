@@ -8,15 +8,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.isCtrlPressed
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.type
 import org.beatonma.gclocks.app.theme.AppTheme
 import org.beatonma.gclocks.app.theme.Theme
 import org.beatonma.gclocks.app.ui.screens.SettingsEditorScreen
 import org.beatonma.gclocks.app.ui.screens.SettingsEditorViewModel
-import org.beatonma.gclocks.compose.debugKeyEvent
+import org.beatonma.gclocks.compose.debugHotkey
 
 @Composable
 fun App(
@@ -26,37 +22,37 @@ fun App(
 ) {
     var theme: Theme by remember { mutableStateOf(Theme.System) }
 
-    AppTheme(
-        Modifier.debugKeyEvent { event ->
-            if (event.type == KeyEventType.KeyDown) {
-                when (event.key) {
+    HotkeyRegistryProvider {
+        AppTheme(
+            theme = theme,
+            modifier = Modifier.debugHotkey { key ->
+                when (key) {
                     Key.T -> {
                         theme = when (theme) {
                             Theme.System -> Theme.Light
                             Theme.Light -> Theme.Dark
                             Theme.Dark -> Theme.System
                         }
-                        return@debugKeyEvent true
+                        true
                     }
 
-                    Key.X -> {
-                        if (event.isCtrlPressed) {
-                            viewModel.restoreDefaultSettings()
-                        }
+                    Key.R -> {
+                        viewModel.restoreDefaultSettings()
+                        true
                     }
+
+                    else -> false
                 }
             }
-            false
-        },
-        theme = theme
-    ) {
-        CompositionLocalProvider(LocalSystemBars provides systemBarsController) {
-            AppNavigation(
-                viewModel,
-                settingsEditor = settingsEditor ?: { navigation, navigationIcon ->
-                    SettingsEditorScreen(viewModel, navigation, navigationIcon = navigationIcon)
-                }
-            )
+        ) {
+            CompositionLocalProvider(LocalSystemBars provides systemBarsController) {
+                AppNavigation(
+                    viewModel,
+                    settingsEditor = settingsEditor ?: { navigation, navigationIcon ->
+                        SettingsEditorScreen(viewModel, navigation, navigationIcon = navigationIcon)
+                    }
+                )
+            }
         }
     }
 }

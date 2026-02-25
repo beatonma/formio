@@ -13,6 +13,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.dropUnlessResumed
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -185,9 +186,9 @@ private fun NavigationUI(
     contentAlignment: Alignment = Alignment.TopStart,
     startDestination: Pane = Pane.SettingsEditor,
 ) {
-    // Navigation destinations for this controller fill only the content slot.of navigation UI.
-    val navController = rememberNavController()
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    // Navigation destinations for this controller fill only the content slot of navigation UI.
+    val panelNavController = rememberNavController()
+    val navBackStackEntry by panelNavController.currentBackStackEntryAsState()
 
     val currentPane: NavigationMenuItem by derivedStateOf {
         val route = navBackStackEntry?.destination?.route ?: Pane.SettingsEditor.route
@@ -200,17 +201,15 @@ private fun NavigationUI(
 
     fun navigateTo(item: NavigationMenuItem) {
         when (item) {
-            NavigationMenuItem.About -> navController.navigate(Pane.About) {
+            NavigationMenuItem.About -> panelNavController.navigate(Pane.About) {
                 launchSingleTop = true
             }
 
             else -> {
                 DisplayContext.entries.find { it.name == item.name }?.let(setDisplayContext)
-                navController.navigate(Pane.SettingsEditor) {
+                panelNavController.navigate(Pane.SettingsEditor) {
                     launchSingleTop = true
-                    popUpTo(navController.graph.id) {
-                        inclusive = true
-                    }
+                    popUpTo(panelNavController.graph.findStartDestination().id)
                 }
             }
         }
@@ -229,7 +228,7 @@ private fun NavigationUI(
         menu = menu,
     ) { navigationIcon ->
         NavHost(
-            navController,
+            panelNavController,
             startDestination = startDestination,
             modifier = modifier,
             contentAlignment = contentAlignment,
