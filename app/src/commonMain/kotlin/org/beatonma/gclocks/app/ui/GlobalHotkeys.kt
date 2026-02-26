@@ -84,14 +84,14 @@ fun HotkeyRegistryProvider(modifier: Modifier = Modifier, content: @Composable (
 
 
 fun Modifier.globalHotkey(onKeyDown: (Key) -> Boolean): Modifier = composed {
-    val handler = LocalHotkeyRegistry.current
+    val hotkeys = LocalHotkeyRegistry.current
 
     DisposableEffect(onKeyDown) {
         val action: KeyAction = { event -> onKeyDown(event.key) }
-        handler.register(action)
+        hotkeys.register(action)
 
         onDispose {
-            handler.unregister(action)
+            hotkeys.unregister(action)
         }
     }
 

@@ -30,12 +30,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,7 +49,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.beatonma.gclocks.app.theme.AppTheme
+import org.beatonma.gclocks.app.theme.Theme
+import org.beatonma.gclocks.app.ui.AppContainer
 import org.beatonma.gclocks.compose.ComposePath
 import org.beatonma.gclocks.compose.VerticalBottomContentPadding
 import org.beatonma.gclocks.compose.animation.EnterVertical
@@ -59,6 +62,7 @@ import org.beatonma.gclocks.core.glyph.GlyphRole
 import org.beatonma.gclocks.core.glyph.GlyphState
 import org.beatonma.gclocks.core.glyph.GlyphVisibility
 import org.beatonma.gclocks.core.options.AnyOptions
+import org.beatonma.gclocks.core.options.TimeFormat
 import org.beatonma.gclocks.core.types.ProgressFloat
 import org.beatonma.gclocks.core.util.TimeOfDay
 import org.beatonma.gclocks.core.util.getCurrentTimeMillis
@@ -68,18 +72,23 @@ import org.beatonma.gclocks.core.util.nextSecond
 import org.beatonma.gclocks.core.util.timeOfDay
 import org.beatonma.gclocks.core.util.withTimeOfDay
 import org.beatonma.gclocks.form.FormGlyph
+import org.beatonma.gclocks.form.FormLayoutOptions
 import org.beatonma.gclocks.form.FormOptions
 import org.beatonma.gclocks.form.FormPaints
 import org.beatonma.gclocks.io16.Io16Glyph
 import org.beatonma.gclocks.io16.Io16GlyphRenderer
+import org.beatonma.gclocks.io16.Io16LayoutOptions
 import org.beatonma.gclocks.io16.Io16Options
 import org.beatonma.gclocks.io16.Io16Paints
 import org.beatonma.gclocks.io18.GlyphAnimations
 import org.beatonma.gclocks.io18.Io18Glyph
+import org.beatonma.gclocks.io18.Io18LayoutOptions
 import org.beatonma.gclocks.io18.Io18Options
 import org.beatonma.gclocks.io18.Io18Paints
+import java.time.Duration
 import kotlin.enums.enumEntries
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 import androidx.compose.ui.graphics.Color as ComposeColor
 
@@ -90,13 +99,24 @@ private val ItemModifier = Modifier.background(ComposeColor.Black)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DebugApp() {
-    val keys = remember { ClockGlyph.Key.entries.map { it.key } }.filter { it.length > 1 }
+    val keys = remember { ClockGlyph.Key.entries.map { it.key } }.filter { it.length > 1 }//.filter { ' ' in it }
     var animationPosition by remember { mutableStateOf<Float?>(null) }
     var timeFunc: () -> Instant by remember { mutableStateOf(::getInstant) }
+    var is24Hour by remember { mutableStateOf(false) }
+    var isZeroPadded by remember { mutableStateOf(false) }
+    var showSeconds by remember { mutableStateOf(true) }
     var state: GlyphState? by remember { mutableStateOf(null) }
     var visibility: GlyphVisibility? by remember { mutableStateOf(GlyphVisibility.Visible) }
 
-    AppTheme {
+    val timeFormat by derivedStateOf {
+        TimeFormat.build(
+            is24Hour = is24Hour,
+            isZeroPadded = isZeroPadded,
+            showSeconds = showSeconds
+        )
+    }
+
+    AppContainer(Theme.System) {
         Box(Modifier.fillMaxSize()) {
             LazyVerticalGrid(
                 GridCells.Adaptive(220.dp),
@@ -105,15 +125,27 @@ fun DebugApp() {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = WindowInsets.systemBars.asPaddingValues() + VerticalBottomContentPadding,
             ) {
-                clockPreview(FormOptions(), timeFunc, state, visibility)
-                clockPreview(Io16Options(), timeFunc, state, visibility)
-                clockPreview(Io18Options(), timeFunc, state, visibility)
+                clockPreview(
+                    FormOptions(
+                        layout = FormLayoutOptions(format = timeFormat)
+                    ), timeFunc, state, visibility
+                )
+                clockPreview(
+                    Io16Options(
+                        layout = Io16LayoutOptions(format = timeFormat)
+                    ), timeFunc, state, visibility
+                )
+                clockPreview(
+                    Io18Options(
+                        layout = Io18LayoutOptions(format = timeFormat)
+                    ), timeFunc, state, visibility
+                )
 
                 lineBreak()
 
-                FormGlyphs(keys, animationPosition, state, visibility)
-//                Io16Glyphs(keys, animationPosition, state)
-//                Io18Glyphs(keys, animationPosition, state)
+//                FormGlyphs(keys, animationPosition, state, visibility)
+                Io16Glyphs(keys, animationPosition, state, visibility)
+//                Io18Glyphs(keys, animationPosition, state, visibility)
             }
 
             Controls(
@@ -123,13 +155,16 @@ fun DebugApp() {
                 { visibility = it },
                 animationPosition,
                 { animationPosition = it },
+                is24Hour,
+                { is24Hour = it },
+                isZeroPadded,
+                { isZeroPadded = it },
                 { timeFunc = it },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .widthIn(max = 400.dp)
             )
         }
-
     }
 }
 
@@ -141,27 +176,27 @@ private fun Controls(
     setVisibility: (GlyphVisibility?) -> Unit,
     animationPosition: Float?,
     setAnimationPosition: (Float?) -> Unit,
+    is24Hour: Boolean,
+    setIs24Hour: (Boolean) -> Unit,
+    isZeroPadded: Boolean,
+    setIsZeroPadded: (Boolean) -> Unit,
     setTimeFunc: (() -> Instant) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var controlsVisible by remember { mutableStateOf(true) }
-    var customTimeStr by remember { mutableStateOf("") }
+    var customTimeStr by remember { mutableStateOf("12:59:59") }
 
     LaunchedEffect(customTimeStr, animationPosition) {
-        setTimeFunc(
-            {
-                val instant = parseTime(
-                    customTimeStr,
-                    interpolate(animationPosition ?: 0f, 0f, 1000f).roundToInt()
-                )
-
+        setTimeFunc {
+            parseTime(
+                customTimeStr,
+                interpolate(animationPosition ?: 0f, 0f, 1000f).roundToInt()
+            ).also { instant ->
                 animationPosition?.let {
                     customTimeStr = instant.timeOfDay.toString()
                 }
-
-                instant
             }
-        )
+        }
     }
 
     Surface(modifier) {
@@ -184,6 +219,9 @@ private fun Controls(
                         Dropdown<GlyphState>("State", state, setState)
                         Dropdown<GlyphVisibility>("Visibility", visibility, setVisibility)
                     }
+
+                    Checkbox("24 hour", is24Hour, setIs24Hour)
+                    Checkbox("Zero-pad", isZeroPadded, setIsZeroPadded)
 
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -254,7 +292,7 @@ private fun LazyGridScope.FormGlyphs(
     keys: List<String>,
     animationPosition: Float?,
     state: GlyphState?,
-    visibility: GlyphVisibility?
+    visibility: GlyphVisibility?,
 ) {
     items(
         keys,
@@ -288,7 +326,7 @@ private fun LazyGridScope.Io16Glyphs(
     keys: List<String>,
     animationPosition: Float?,
     state: GlyphState?,
-    visibility: GlyphVisibility?
+    visibility: GlyphVisibility?,
 ) {
     items(
         keys,
@@ -335,7 +373,7 @@ private fun LazyGridScope.Io18Glyphs(
     keys: List<String>,
     animationPosition: Float?,
     state: GlyphState?,
-    visibility: GlyphVisibility?
+    visibility: GlyphVisibility?,
 ) {
     items(
         keys,
@@ -374,6 +412,9 @@ private fun parseTime(str: String, millis: Int?): Instant {
             val m = it.groups[2]?.value?.toInt() ?: 0
             val s = it.groups[3]?.value?.toInt() ?: 0
 
+            // Add one day to parsed result to ensure time is always in the future relative to initial time
+            // Otherwise some animations resolve negative time deltas and I don't want to run checks for that
+            // during the normal animation loop.
             millis?.let { millis ->
                 if (millis < 1000) {
                     return instant.withTimeOfDay(
@@ -383,10 +424,10 @@ private fun parseTime(str: String, millis: Int?): Instant {
                             second = s,
                             millisecond = millis,
                         )
-                    )
+                    ).plus(1.days)
                 }
             }
-            return instant.withTimeOfDay(TimeOfDay(h, m, s).nextSecond())
+            return instant.withTimeOfDay(TimeOfDay(h, m, s).nextSecond()).plus(1.days)
         }
     } catch (e: IllegalArgumentException) {
         // Invalid time string
@@ -447,6 +488,14 @@ private fun FastForward(block: () -> Unit) {
         )
     ) {
         Icon(Icons.Default.FastForward, "")
+    }
+}
+
+@Composable
+private fun Checkbox(title: String, isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(title)
+        Switch(isChecked, onCheckedChange)
     }
 }
 

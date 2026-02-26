@@ -22,37 +22,47 @@ fun App(
 ) {
     var theme: Theme by remember { mutableStateOf(Theme.System) }
 
+    AppContainer(
+        theme = theme,
+        modifier = Modifier.debugHotkey { key ->
+            when (key) {
+                Key.T -> {
+                    theme = when (theme) {
+                        Theme.System -> Theme.Light
+                        Theme.Light -> Theme.Dark
+                        Theme.Dark -> Theme.System
+                    }
+                    true
+                }
+
+                Key.R -> {
+                    viewModel.restoreDefaultSettings()
+                    true
+                }
+
+                else -> false
+            }
+        }
+    ) {
+        CompositionLocalProvider(LocalSystemBars provides systemBarsController) {
+            AppNavigation(
+                viewModel,
+                settingsEditor = settingsEditor ?: { navigation, navigationIcon ->
+                    SettingsEditorScreen(viewModel, navigation, navigationIcon = navigationIcon)
+                }
+            )
+        }
+    }
+}
+
+
+@Composable
+fun AppContainer(theme: Theme, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     HotkeyRegistryProvider {
         AppTheme(
             theme = theme,
-            modifier = Modifier.debugHotkey { key ->
-                when (key) {
-                    Key.T -> {
-                        theme = when (theme) {
-                            Theme.System -> Theme.Light
-                            Theme.Light -> Theme.Dark
-                            Theme.Dark -> Theme.System
-                        }
-                        true
-                    }
-
-                    Key.R -> {
-                        viewModel.restoreDefaultSettings()
-                        true
-                    }
-
-                    else -> false
-                }
-            }
-        ) {
-            CompositionLocalProvider(LocalSystemBars provides systemBarsController) {
-                AppNavigation(
-                    viewModel,
-                    settingsEditor = settingsEditor ?: { navigation, navigationIcon ->
-                        SettingsEditorScreen(viewModel, navigation, navigationIcon = navigationIcon)
-                    }
-                )
-            }
-        }
+            modifier = modifier,
+            content = content
+        )
     }
 }

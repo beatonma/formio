@@ -30,7 +30,7 @@ abstract class BaseGlyphVisibilityController(
 
     override fun setVisibility(
         newVisibility: GlyphVisibility,
-        currentTimeMillis: Long
+        currentTimeMillis: Long,
     ) {
         val isChanged = visibility != newVisibility
         visibility = newVisibility
@@ -41,6 +41,10 @@ abstract class BaseGlyphVisibilityController(
 }
 
 
+/**
+ * Visibility changes are handled by path animations and must be synchronised to start
+ * only when the glyph key can be updated.
+ */
 class SynchronizedVisibilityController(
     onVisibilityChanged: OnVisibilityChanged? = null,
 ) : BaseGlyphVisibilityController(onVisibilityChanged) {
@@ -62,7 +66,7 @@ class SynchronizedVisibilityController(
 
     override fun tick(
         options: GlyphOptions,
-        currentTimeMillis: Long
+        currentTimeMillis: Long,
     ): GlyphVisibility? {
         // no-op - time changes handled by onSecondChange()
         return null
@@ -71,7 +75,7 @@ class SynchronizedVisibilityController(
     override fun setState(
         newVisibility: GlyphVisibility,
         force: Boolean,
-        currentTimeMillis: Long
+        currentTimeMillis: Long,
     ) {
         if (force) {
             applyVisibility(newVisibility)
@@ -129,6 +133,9 @@ class SynchronizedVisibilityController(
 }
 
 
+/**
+ * Visibility changes are independent of the path and can start and stop at any time.
+ */
 class DesynchronizedGlyphVisibilityController(
     currentTimeMillis: Long = getCurrentTimeMillis(),
     onVisibilityChanged: OnVisibilityChanged? = null,
@@ -139,7 +146,7 @@ class DesynchronizedGlyphVisibilityController(
     override fun setState(
         newVisibility: GlyphVisibility,
         force: Boolean,
-        currentTimeMillis: Long
+        currentTimeMillis: Long,
     ) {
         if (force) {
             if (newVisibility != visibility) {
@@ -163,12 +170,11 @@ class DesynchronizedGlyphVisibilityController(
     override fun tick(options: GlyphOptions, currentTimeMillis: Long): GlyphVisibility? {
         val millisSinceVisibilityChange = currentTimeMillis - visibilityChangedAt
         val visibilityChangeDurationMillis = options.visibilityChangeDurationMillis
-        visibilityChangedProgress =
-            progress(
-                millisSinceVisibilityChange.toFloat(),
-                0f,
-                visibilityChangeDurationMillis.toFloat()
-            )
+        visibilityChangedProgress = progress(
+            millisSinceVisibilityChange.toFloat(),
+            0f,
+            visibilityChangeDurationMillis.toFloat()
+        )
 
         val isVisibilityTransitionExpired: Boolean =
             millisSinceVisibilityChange > visibilityChangeDurationMillis

@@ -49,14 +49,14 @@ internal class Glyphs<G : ClockGlyph>(
             val fromChar = now[index]
             val nextChar = next[index]
 
-            val glyph = mutableGlyphs[index]
+            val glyphStatus = mutableGlyphs[index]
             val currentTimeMillis = instant.currentTimeMillis
 
             if (isNewSecond) {
-                glyph.glyph.onSecondChange(currentTimeMillis)
+                glyphStatus.glyph.onSecondChange(currentTimeMillis)
             }
 
-            updateGlyph(glyph, Glyph.createKey(fromChar, nextChar), currentTimeMillis)
+            updateGlyph(glyphStatus, Glyph.createKey(fromChar, nextChar), currentTimeMillis)
         }
     }
 
@@ -65,7 +65,7 @@ internal class Glyphs<G : ClockGlyph>(
         state: GlyphState,
         visibility: GlyphVisibility,
         force: Boolean,
-        currentTimeMillis: Long
+        currentTimeMillis: Long,
     ) {
         glyphs.fastForEach { it.glyph.setState(state, visibility, force, currentTimeMillis) }
     }
@@ -81,7 +81,7 @@ internal class Glyphs<G : ClockGlyph>(
     private fun updateGlyph(
         status: MutableGlyphStatus<G>,
         key: String,
-        currentTimeMillis: Long
+        currentTimeMillis: Long,
     ): GlyphStatus<G> {
         val glyph = status.glyph
         glyph.setKey(key)

@@ -29,9 +29,9 @@ sealed class BaseClockGlyph(
     final override var clockKey: ClockGlyph.Key = resolveClockKey(key)
         private set
 
-    final override var canonicalStartGlyph: Char = ' '
+    final override var canonicalStartGlyph: Char = Glyph.Empty
         protected set
-    final override var canonicalEndGlyph: Char = ' '
+    final override var canonicalEndGlyph: Char = Glyph.Empty
         protected set
 
     override val stateController: GlyphStateController =
@@ -64,8 +64,8 @@ abstract class ClockGlyphSynchronizedVisibility(
     override fun setKey(value: String, force: Boolean) {
         key = when {
             force -> value
-            visibility == GlyphVisibility.Appearing -> Glyph.createKey(' ', value.last())
-            visibility == GlyphVisibility.Disappearing -> Glyph.createKey(value.first(), ' ')
+            visibility == GlyphVisibility.Appearing -> Glyph.createKey(Glyph.Empty, value.last())
+            visibility == GlyphVisibility.Disappearing -> Glyph.createKey(value.first(), Glyph.Empty)
             else -> value
         }
     }
@@ -113,7 +113,7 @@ interface ClockGlyph : Glyph, SecondChangedObserver {
         canvas: Canvas,
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         if (this.visibility == GlyphVisibility.Hidden) return
 
@@ -163,13 +163,13 @@ interface ClockGlyph : Glyph, SecondChangedObserver {
     fun Canvas.drawEmptySeparator(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     )
 
     fun Canvas.drawSeparatorEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     )
 
     fun Canvas.drawSpace(glyphProgress: Float, paints: Paints, renderGlyph: RenderGlyph?)

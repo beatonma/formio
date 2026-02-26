@@ -74,7 +74,7 @@ interface Glyph {
         canvas: Canvas,
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph? = null
+        renderGlyph: RenderGlyph? = null,
     )
 
     fun getWidthAtProgress(glyphProgress: Float): Float
@@ -82,7 +82,7 @@ interface Glyph {
         newState: GlyphState,
         newVisibility: GlyphVisibility,
         force: Boolean = false,
-        currentTimeMillis: Long
+        currentTimeMillis: Long,
     ) {
         setState(newState, force, currentTimeMillis)
         setState(newVisibility, force, currentTimeMillis)
@@ -91,18 +91,20 @@ interface Glyph {
     fun setState(
         newState: GlyphState,
         force: Boolean = false,
-        currentTimeMillis: Long
+        currentTimeMillis: Long,
     )
 
     fun setState(
         newVisibility: GlyphVisibility,
         force: Boolean = false,
-        currentTimeMillis: Long
+        currentTimeMillis: Long,
     )
 
     fun tick(options: GlyphOptions, currentTimeMillis: Long)
 
     companion object {
+        const val Empty: Char = ' '
+
         fun createKey(start: Char, end: Char = start): String {
             if (start == end) return start.toString()
             return "${start}_$end"

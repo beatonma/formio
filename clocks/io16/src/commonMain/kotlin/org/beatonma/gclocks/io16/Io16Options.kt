@@ -41,7 +41,7 @@ fun Io16LayoutOptions(
 data class Io16GlyphOptions(
     override val activeStateDurationMillis: Int = 5000,
     override val stateChangeDurationMillis: Int = 1200,
-    override val visibilityChangeDurationMillis: Int = 1000,
+    override val visibilityChangeDurationMillis: Int = 600,
     override val glyphMorphMillis: Int = 600,
     // How long a path segment takes to complete a circuit
     val colorCycleDurationMillis: Int = 5000,

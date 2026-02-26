@@ -32,7 +32,7 @@ class Io16ClockRenderer<P : Path>(
 class Io16GlyphRenderer<P : Path>(
     segmentPath: P,
     options: Io16Options,
-    initTimeMillis: Long = getCurrentTimeMillis()
+    initTimeMillis: Long = getCurrentTimeMillis(),
 ) : GlyphRenderer<Io16Glyph> {
     private val options: Io16GlyphOptions = options.glyph
     private var previousNow: Long = initTimeMillis
@@ -72,8 +72,10 @@ class Io16GlyphRenderer<P : Path>(
     }
 
     override fun draw(glyph: Io16Glyph, canvas: Canvas, paints: Paints) {
-        val disappearedSegmentSize =
-            getDisappearedSegmentLength(glyph, ease(glyph.visibilityChangedProgress).pf)
+        val disappearedSegmentSize = getDisappearedSegmentLength(
+            glyph,
+            ease(glyph.visibilityChangedProgress).pf
+        )
         if (disappearedSegmentSize.isOne) {
             // Nothing to render
             return
@@ -124,13 +126,23 @@ class Io16GlyphRenderer<P : Path>(
     private fun getDisappearedSegmentLength(
         glyph: Glyph,
         transitionProgress: ProgressFloat,
-    ): ProgressFloat =
-        when (glyph.visibility) {
+    ): ProgressFloat {
+        if (Glyph.Empty in glyph.key && glyph.key.length > 1) {
+            if (glyph.key.startsWith(Glyph.Empty)) {
+                return transitionProgress.reversed
+            }
+            if (glyph.key.endsWith(Glyph.Empty)) {
+                return transitionProgress
+            }
+        }
+
+        return when (glyph.visibility) {
             GlyphVisibility.Hidden -> ProgressFloat.One
             GlyphVisibility.Visible -> ProgressFloat.Zero
             GlyphVisibility.Appearing -> transitionProgress.reversed
             GlyphVisibility.Disappearing -> transitionProgress
         }
+    }
 }
 
 
@@ -170,7 +182,7 @@ class Io16PathRenderer(
 
             State.Disappearing -> {
                 inactiveOffset = offset + invisible.value
-                activeOffset = offset + invisible.value + inactive.value
+                activeOffset = inactiveOffset + inactive.value
             }
         }
 
@@ -188,7 +200,7 @@ class Io16PathRenderer(
 
             // Split the remaining length between the 'active' colors.
             val activePaints = paints.active
-            val segmentSize: ProgressFloat = activeLength / activePaints.size
+            val segmentSize: ProgressFloat = activeLength / 4
             activePaints.forEachIndexed { index, color ->
                 drawSegment(
                     pm,
