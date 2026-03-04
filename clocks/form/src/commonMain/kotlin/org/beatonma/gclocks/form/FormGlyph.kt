@@ -2,7 +2,6 @@ package org.beatonma.gclocks.form
 
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.glyph.ClockGlyph
-import org.beatonma.gclocks.core.glyph.ClockGlyphSynchronizedVisibility
 import org.beatonma.gclocks.core.glyph.GlyphCompanion
 import org.beatonma.gclocks.core.glyph.GlyphRole
 import org.beatonma.gclocks.core.glyph.GlyphState
@@ -68,8 +67,8 @@ private fun easeProgress(value: Float, min: Float, max: Float) = ease(value.prog
 class FormGlyph(
     role: GlyphRole,
     scale: Float = 1f,
-    lock: GlyphState? = null
-) : ClockGlyphSynchronizedVisibility(role, scale, lock) {
+    lock: GlyphState? = null,
+) : ClockGlyph.SynchronizedVisibility(role, scale, lock) {
     companion object : GlyphCompanion {
         override val maxSize = NativeSize(
             x = 192f,
@@ -81,7 +80,7 @@ class FormGlyph(
     override fun Canvas.drawZeroOne(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         ZeroOne.plot(this, glyphProgress, { drawPath(paints[it]) })
     }
@@ -89,7 +88,7 @@ class FormGlyph(
     override fun Canvas.drawOneTwo(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         OneTwo.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -97,7 +96,7 @@ class FormGlyph(
     override fun Canvas.drawTwoThree(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         TwoThree.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -105,7 +104,7 @@ class FormGlyph(
     override fun Canvas.drawThreeFour(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         ThreeFour.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -113,7 +112,7 @@ class FormGlyph(
     override fun Canvas.drawFourFive(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         FourFive.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -121,7 +120,7 @@ class FormGlyph(
     override fun Canvas.drawFiveSix(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         FiveSix.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -129,7 +128,7 @@ class FormGlyph(
     override fun Canvas.drawSixSeven(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         SixSeven.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -137,7 +136,7 @@ class FormGlyph(
     override fun Canvas.drawSevenEight(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         SevenEight.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -145,7 +144,7 @@ class FormGlyph(
     override fun Canvas.drawEightNine(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         EightNine.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -153,7 +152,7 @@ class FormGlyph(
     override fun Canvas.drawNineZero(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         NineZero.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -161,7 +160,7 @@ class FormGlyph(
     override fun Canvas.drawOneZero(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         OneZero.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -169,7 +168,7 @@ class FormGlyph(
     override fun Canvas.drawTwoZero(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         TwoZero.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -177,7 +176,7 @@ class FormGlyph(
     override fun Canvas.drawTwoOne(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         TwoOne.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -185,7 +184,7 @@ class FormGlyph(
     override fun Canvas.drawThreeZero(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         ThreeZero.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -193,7 +192,7 @@ class FormGlyph(
     override fun Canvas.drawFiveZero(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         FiveZero.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -201,7 +200,7 @@ class FormGlyph(
     override fun Canvas.drawZeroEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         ZeroEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -209,7 +208,7 @@ class FormGlyph(
     override fun Canvas.drawOneEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         OneEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -217,7 +216,7 @@ class FormGlyph(
     override fun Canvas.drawTwoEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         TwoEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -225,7 +224,7 @@ class FormGlyph(
     override fun Canvas.drawThreeEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         ThreeEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -233,7 +232,7 @@ class FormGlyph(
     override fun Canvas.drawFourEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         FourEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -241,7 +240,7 @@ class FormGlyph(
     override fun Canvas.drawFiveEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         FiveEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -249,7 +248,7 @@ class FormGlyph(
     override fun Canvas.drawSixEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         SixEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -257,7 +256,7 @@ class FormGlyph(
     override fun Canvas.drawSevenEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         SevenEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -265,7 +264,7 @@ class FormGlyph(
     override fun Canvas.drawEightEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         EightEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -273,7 +272,7 @@ class FormGlyph(
     override fun Canvas.drawNineEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         NineEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -281,7 +280,7 @@ class FormGlyph(
     override fun Canvas.drawEmptyZero(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         EmptyZero.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -289,7 +288,7 @@ class FormGlyph(
     override fun Canvas.drawEmptyOne(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         EmptyOne.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -297,7 +296,7 @@ class FormGlyph(
     override fun Canvas.drawEmptyTwo(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         EmptyTwo.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -305,7 +304,7 @@ class FormGlyph(
     override fun Canvas.drawEmptyThree(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         EmptyThree.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -313,7 +312,7 @@ class FormGlyph(
     override fun Canvas.drawEmptyFour(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         EmptyFour.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -321,7 +320,7 @@ class FormGlyph(
     override fun Canvas.drawEmptyFive(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         EmptyFive.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -329,7 +328,7 @@ class FormGlyph(
     override fun Canvas.drawEmptySix(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         EmptySix.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -337,7 +336,7 @@ class FormGlyph(
     override fun Canvas.drawEmptySeven(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         EmptySeven.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -345,7 +344,7 @@ class FormGlyph(
     override fun Canvas.drawEmptyEight(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         EmptyEight.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -353,7 +352,7 @@ class FormGlyph(
     override fun Canvas.drawEmptyNine(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         EmptyNine.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -361,7 +360,7 @@ class FormGlyph(
     override fun Canvas.drawSeparator(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Separator.plot(this) { drawPath(paints[it]) }
     }
@@ -369,7 +368,7 @@ class FormGlyph(
     override fun Canvas.drawEmptySeparator(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         EmptySeparator.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -377,7 +376,7 @@ class FormGlyph(
     override fun Canvas.drawSeparatorEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         SeparatorEmpty.plot(this, glyphProgress) { drawPath(paints[it]) }
     }
@@ -450,7 +449,8 @@ class FormGlyph(
 
             ClockGlyph.Key.Separator,
             ClockGlyph.Key.SeparatorEmpty,
-            ClockGlyph.Key.EmptySeparator -> when (role) {
+            ClockGlyph.Key.EmptySeparator,
+                -> when (role) {
                 GlyphRole.SeparatorHoursMinutes -> 48f
                 else -> 0f
             }

@@ -9,6 +9,7 @@ import org.beatonma.gclocks.android.AndroidCanvasHost
 import org.beatonma.gclocks.app.data.settingsRepository
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.util.debug
+import org.beatonma.gclocks.core.util.warn
 import android.graphics.Canvas as AndroidCanvas
 
 
@@ -56,9 +57,16 @@ class ClockWallpaperService : WallpaperService() {
                     return
                 }
                 canvasHost.withCanvas(surfaceCanvas, block)
+            } catch (e: Exception) {
+                error("withCanvasHost error: $e")
             } finally {
                 if (surfaceCanvas != null) {
-                    surfaceHolder.unlockCanvasAndPost(surfaceCanvas)
+                    try {
+                        surfaceHolder.unlockCanvasAndPost(surfaceCanvas)
+                    } catch (e: IllegalArgumentException) {
+                        // Occasionally occurs when closing out of the wallpaper preview.
+                        warn("withCanvasHost error: $e")
+                    }
                 }
             }
         }
@@ -67,7 +75,7 @@ class ClockWallpaperService : WallpaperService() {
             holder: SurfaceHolder?,
             format: Int,
             width: Int,
-            height: Int
+            height: Int,
         ) {
             super.onSurfaceChanged(holder, format, width, height)
             delegate.onSurfaceChanged(width, height)
@@ -84,7 +92,7 @@ class ClockWallpaperService : WallpaperService() {
             xOffsetStep: Float,
             yOffsetStep: Float,
             xPixelOffset: Int,
-            yPixelOffset: Int
+            yPixelOffset: Int,
         ) {
             super.onOffsetsChanged(
                 xOffset,

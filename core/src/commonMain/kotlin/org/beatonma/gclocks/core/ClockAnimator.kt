@@ -1,5 +1,10 @@
 package org.beatonma.gclocks.core
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import org.beatonma.gclocks.core.geometry.ConstrainedLayout
 import org.beatonma.gclocks.core.geometry.MeasureConstraints
 import org.beatonma.gclocks.core.geometry.ScaledSize
@@ -13,6 +18,7 @@ import org.beatonma.gclocks.core.util.currentTimeMillis
 import org.beatonma.gclocks.core.util.fastForEach
 import org.beatonma.gclocks.core.util.getInstant
 import kotlin.math.max
+import kotlin.random.Random
 import kotlin.time.Instant
 
 interface ClockAnimator<G : ClockGlyph> : ConstrainedLayout {
@@ -45,17 +51,47 @@ interface ClockAnimator<G : ClockGlyph> : ConstrainedLayout {
         state: GlyphState,
         visibility: GlyphVisibility,
         force: Boolean,
-        currentTimeMillis: Long
+        currentTimeMillis: Long,
     ) {
-        layout.setState(state, visibility, force, currentTimeMillis)
+        layout.forEachGlyph { it.setState(state, visibility, force, currentTimeMillis) }
     }
 
     fun setState(state: GlyphState, force: Boolean, currentTimeMillis: Long) {
-        layout.setState(state, force, currentTimeMillis)
+        layout.forEachGlyph { it.setState(state, force, currentTimeMillis) }
     }
 
     fun setState(visibility: GlyphVisibility, force: Boolean, currentTimeMillis: Long) {
-        layout.setState(visibility, force, currentTimeMillis)
+        layout.forEachGlyph { it.setState(visibility, force, currentTimeMillis) }
+    }
+
+    fun setStateWithVariance(
+        scope: CoroutineScope,
+        visibility: GlyphVisibility,
+        force: Boolean,
+        varianceMillis: Long,
+        getCurrentTimeMillis: () -> Long,
+        random: Random = Random.Default,
+    ): Job? {
+        if (layout.isSynchronizedVisibility) {
+            layout.forEachGlyph { it.setState(visibility, force, getCurrentTimeMillis()) }
+            return null
+        } else {
+            val glyphCount = layout.length
+            val varianceStep = varianceMillis / glyphCount
+            val variancePerGlyph: List<Long> = (0 until glyphCount).mapIndexed { index, _ ->
+                if (index == 0) 0L
+                else random.nextLong(varianceStep * index)
+            }
+
+            return scope.launch {
+                layout.mapGlyphs { index, glyph ->
+                    scope.launch {
+                        delay(variancePerGlyph[index])
+                        glyph.setState(visibility, force, getCurrentTimeMillis())
+                    }
+                }.joinAll()
+            }
+        }
     }
 
     fun getGlyphAt(x: Float, y: Float): G? =
@@ -81,8 +117,7 @@ private interface SingleRendererClockAnimator<G : ClockGlyph> :
     }
 }
 
-private interface MultiRendererClockAnimator<G : ClockGlyph> :
-    ClockAnimator<G> {
+private interface MultiRendererClockAnimator<G : ClockGlyph> : ClockAnimator<G> {
     val renderers: List<ClockRenderer<G>>
 
     override fun tick(instant: Instant) {
@@ -98,8 +133,8 @@ private interface MultiRendererClockAnimator<G : ClockGlyph> :
     }
 }
 
-fun <O : AnyOptions, G : ClockGlyph> createAnimator(
-    options: O,
+fun <G : ClockGlyph> createAnimator(
+    options: AnyOptions,
     font: ClockFont<G>,
     renderer: ClockRenderer<G>,
     onScheduleNextFrame: (delayMillis: Int) -> Unit,
@@ -113,8 +148,8 @@ fun <O : AnyOptions, G : ClockGlyph> createAnimator(
     }
 }
 
-fun <O : AnyOptions, G : ClockGlyph> createAnimator(
-    options: O,
+fun <G : ClockGlyph> createAnimator(
+    options: AnyOptions,
     font: ClockFont<G>,
     renderers: List<ClockRenderer<G>>,
     onScheduleNextFrame: (delayMillis: Int) -> Unit,

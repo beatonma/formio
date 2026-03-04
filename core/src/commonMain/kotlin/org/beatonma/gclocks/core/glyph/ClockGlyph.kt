@@ -43,65 +43,6 @@ sealed class BaseClockGlyph(
     override val visibility: GlyphVisibility get() = visibilityController.visibility
 }
 
-/**
- * A [Glyph] with specific animations for transitioning between [GlyphVisibility] states.
- * These transitions replace the typical second-to-second animations entirely,
- * and so must be synchronized with the current time to avoid visual jumps.
- */
-abstract class ClockGlyphSynchronizedVisibility(
-    role: GlyphRole,
-    scale: Float = 1f,
-    lock: GlyphState? = null,
-    currentTimeMillis: Long = getCurrentTimeMillis(),
-) : BaseClockGlyph(role, scale, lock, currentTimeMillis) {
-    override val visibilityController: GlyphVisibilityController =
-        SynchronizedVisibilityController { newVisibility, currentTimeMillis ->
-            if (newVisibility == GlyphVisibility.Visible || newVisibility == GlyphVisibility.Appearing) {
-                setState(GlyphState.Active, force = true, currentTimeMillis = currentTimeMillis)
-            }
-        }
-
-    override fun setKey(value: String, force: Boolean) {
-        key = when {
-            force -> value
-            visibility == GlyphVisibility.Appearing -> Glyph.createKey(Glyph.Empty, value.last())
-            visibility == GlyphVisibility.Disappearing -> Glyph.createKey(value.first(), Glyph.Empty)
-            else -> value
-        }
-    }
-
-    override fun onSecondChange(currentTimeMillis: Long) {
-        visibilityController.onSecondChange(currentTimeMillis)
-    }
-}
-
-/**
- * A [Glyph] which applies [GlyphVisibility] transitions on top of the existing
- * second-to-second animations, instead of replacing those animations entirely.
- */
-abstract class ClockGlyphDesynchronizedVisibility(
-    role: GlyphRole,
-    scale: Float = 1f,
-    lock: GlyphState? = null,
-    currentTimeMillis: Long = getCurrentTimeMillis(),
-) : BaseClockGlyph(role, scale, lock, currentTimeMillis) {
-    override val visibilityController =
-        DesynchronizedGlyphVisibilityController { newVisibility, currentTimeMillis ->
-            if (newVisibility == GlyphVisibility.Visible || newVisibility == GlyphVisibility.Appearing) {
-                setState(GlyphState.Active, force = true, currentTimeMillis = currentTimeMillis)
-            }
-        }
-    val visibilityChangedProgress get() = visibilityController.visibilityChangedProgress
-
-    override fun setKey(value: String, force: Boolean) {
-        key = value
-    }
-
-    override fun onSecondChange(currentTimeMillis: Long) {
-        // no-op
-    }
-}
-
 
 interface ClockGlyph : Glyph, SecondChangedObserver {
     val clockKey: Key
@@ -303,5 +244,64 @@ interface ClockGlyph : Glyph, SecondChangedObserver {
         SeparatorEmpty(":_ "),
         EmptySeparator(" _:"),
         ;
+    }
+
+    /**
+     * A [Glyph] with specific animations for transitioning between [GlyphVisibility] states.
+     * These transitions replace the typical second-to-second animations entirely,
+     * and so must be synchronized with the current time to avoid visual jumps.
+     */
+    abstract class SynchronizedVisibility(
+        role: GlyphRole,
+        scale: Float = 1f,
+        lock: GlyphState? = null,
+        currentTimeMillis: Long = getCurrentTimeMillis(),
+    ) : BaseClockGlyph(role, scale, lock, currentTimeMillis) {
+        override val visibilityController: GlyphVisibilityController =
+            SynchronizedVisibilityController { newVisibility, currentTimeMillis ->
+                if (newVisibility == GlyphVisibility.Visible || newVisibility == GlyphVisibility.Appearing) {
+                    setState(GlyphState.Active, force = true, currentTimeMillis = currentTimeMillis)
+                }
+            }
+
+        override fun setKey(value: String, force: Boolean) {
+            key = when {
+                force -> value
+                visibility == GlyphVisibility.Appearing -> Glyph.createKey(Glyph.Empty, value.last())
+                visibility == GlyphVisibility.Disappearing -> Glyph.createKey(value.first(), Glyph.Empty)
+                else -> value
+            }
+        }
+
+        override fun onSecondChange(currentTimeMillis: Long) {
+            visibilityController.onSecondChange(currentTimeMillis)
+        }
+    }
+
+    /**
+     * A [Glyph] which applies [GlyphVisibility] transitions on top of the existing
+     * second-to-second animations, instead of replacing those animations entirely.
+     */
+    abstract class DesynchronizedVisibility(
+        role: GlyphRole,
+        scale: Float = 1f,
+        lock: GlyphState? = null,
+        currentTimeMillis: Long = getCurrentTimeMillis(),
+    ) : BaseClockGlyph(role, scale, lock, currentTimeMillis) {
+        override val visibilityController =
+            DesynchronizedGlyphVisibilityController { newVisibility, currentTimeMillis ->
+                if (newVisibility == GlyphVisibility.Visible || newVisibility == GlyphVisibility.Appearing) {
+                    setState(GlyphState.Active, force = true, currentTimeMillis = currentTimeMillis)
+                }
+            }
+        val visibilityChangedProgress get() = visibilityController.visibilityChangedProgress
+
+        override fun setKey(value: String, force: Boolean) {
+            key = value
+        }
+
+        override fun onSecondChange(currentTimeMillis: Long) {
+            // no-op
+        }
     }
 }

@@ -2,7 +2,6 @@ package org.beatonma.gclocks.io16
 
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.glyph.ClockGlyph
-import org.beatonma.gclocks.core.glyph.ClockGlyphDesynchronizedVisibility
 import org.beatonma.gclocks.core.glyph.GlyphCompanion
 import org.beatonma.gclocks.core.glyph.GlyphRole
 import org.beatonma.gclocks.core.glyph.GlyphState
@@ -34,7 +33,7 @@ class Io16Glyph(
     scale: Float = 1f,
     lock: GlyphState? = null,
     val animationOffset: ProgressFloat,
-) : ClockGlyphDesynchronizedVisibility(role, scale, lock) {
+) : ClockGlyph.DesynchronizedVisibility(role, scale, lock) {
     companion object : GlyphCompanion {
         override val maxSize = NativeSize(
             x = Io16GlyphPath.Zero.canonical.width,
@@ -182,7 +181,7 @@ class Io16Glyph(
     override fun Canvas.drawZeroEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Zero.plot(this, glyphProgress)
     }
@@ -206,7 +205,7 @@ class Io16Glyph(
     override fun Canvas.drawThreeEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Three.plot(this, glyphProgress)
     }
@@ -214,7 +213,7 @@ class Io16Glyph(
     override fun Canvas.drawFourEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Four.plot(this, glyphProgress)
     }
@@ -222,7 +221,7 @@ class Io16Glyph(
     override fun Canvas.drawFiveEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Five.plot(this, glyphProgress)
     }
@@ -230,7 +229,7 @@ class Io16Glyph(
     override fun Canvas.drawSixEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Six.plot(this, glyphProgress)
     }
@@ -238,7 +237,7 @@ class Io16Glyph(
     override fun Canvas.drawSevenEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Seven.plot(this, glyphProgress)
     }
@@ -246,7 +245,7 @@ class Io16Glyph(
     override fun Canvas.drawEightEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Eight.plot(this, glyphProgress)
     }
@@ -254,7 +253,7 @@ class Io16Glyph(
     override fun Canvas.drawNineEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Nine.plot(this, glyphProgress)
     }
@@ -262,7 +261,7 @@ class Io16Glyph(
     override fun Canvas.drawEmptyZero(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Zero.plot(this, glyphProgress)
     }
@@ -278,7 +277,7 @@ class Io16Glyph(
     override fun Canvas.drawEmptyTwo(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Two.plot(this, glyphProgress)
     }
@@ -286,7 +285,7 @@ class Io16Glyph(
     override fun Canvas.drawEmptyThree(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Three.plot(this, glyphProgress)
     }
@@ -294,7 +293,7 @@ class Io16Glyph(
     override fun Canvas.drawEmptyFour(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Four.plot(this, glyphProgress)
     }
@@ -302,7 +301,7 @@ class Io16Glyph(
     override fun Canvas.drawEmptyFive(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Five.plot(this, glyphProgress)
     }
@@ -310,7 +309,7 @@ class Io16Glyph(
     override fun Canvas.drawEmptySix(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Six.plot(this, glyphProgress)
     }
@@ -318,7 +317,7 @@ class Io16Glyph(
     override fun Canvas.drawEmptySeven(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Seven.plot(this, glyphProgress)
     }
@@ -326,7 +325,7 @@ class Io16Glyph(
     override fun Canvas.drawEmptyEight(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Eight.plot(this, glyphProgress)
     }
@@ -334,7 +333,7 @@ class Io16Glyph(
     override fun Canvas.drawEmptyNine(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         Io16GlyphPath.Nine.plot(this, glyphProgress)
     }
@@ -350,7 +349,7 @@ class Io16Glyph(
     override fun Canvas.drawEmptySeparator(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         // Page intentionally blank
     }
@@ -358,7 +357,7 @@ class Io16Glyph(
     override fun Canvas.drawSeparatorEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         // Page intentionally blank
     }
@@ -415,7 +414,8 @@ class Io16Glyph(
             ClockGlyph.Key.FiveZero -> interpolate(p, Width5, Width0)
             ClockGlyph.Key.Separator,
             ClockGlyph.Key.SeparatorEmpty,
-            ClockGlyph.Key.EmptySeparator -> when (role) {
+            ClockGlyph.Key.EmptySeparator,
+                -> when (role) {
                 GlyphRole.SeparatorMinutesSeconds -> 0f
                 else -> WidthSeparator
             }

@@ -2,7 +2,6 @@ package org.beatonma.gclocks.io18
 
 import org.beatonma.gclocks.core.geometry.NativeSize
 import org.beatonma.gclocks.core.glyph.ClockGlyph
-import org.beatonma.gclocks.core.glyph.ClockGlyphSynchronizedVisibility
 import org.beatonma.gclocks.core.glyph.GlyphCompanion
 import org.beatonma.gclocks.core.glyph.GlyphRole
 import org.beatonma.gclocks.core.glyph.GlyphState
@@ -40,7 +39,7 @@ class Io18Glyph(
     lock: GlyphState? = null,
     colorsOffset: Int = 0,
     shuffleColors: Boolean = true,
-) : ClockGlyphSynchronizedVisibility(role, scale, lock) {
+) : ClockGlyph.SynchronizedVisibility(role, scale, lock) {
     companion object : GlyphCompanion {
         override val maxSize: NativeSize = NativeSize(
             GlyphCharacter.DefaultWidth,
@@ -79,7 +78,8 @@ class Io18Glyph(
         return when (clockKey) {
             ClockGlyph.Key.Separator,
             ClockGlyph.Key.SeparatorEmpty,
-            ClockGlyph.Key.EmptySeparator -> 24f
+            ClockGlyph.Key.EmptySeparator,
+                -> 24f
 
             ClockGlyph.Key.Zero,
             ClockGlyph.Key.ZeroOne,
@@ -255,7 +255,7 @@ class Io18Glyph(
     override fun Canvas.drawZeroEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, zero, null)
     }
@@ -263,7 +263,7 @@ class Io18Glyph(
     override fun Canvas.drawOneEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, one, null)
     }
@@ -271,7 +271,7 @@ class Io18Glyph(
     override fun Canvas.drawTwoEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, two, null)
     }
@@ -279,7 +279,7 @@ class Io18Glyph(
     override fun Canvas.drawThreeEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, three, null)
     }
@@ -287,7 +287,7 @@ class Io18Glyph(
     override fun Canvas.drawFourEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, four, null)
     }
@@ -295,7 +295,7 @@ class Io18Glyph(
     override fun Canvas.drawFiveEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, five, null)
     }
@@ -303,7 +303,7 @@ class Io18Glyph(
     override fun Canvas.drawSixEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, six, null)
     }
@@ -311,7 +311,7 @@ class Io18Glyph(
     override fun Canvas.drawSevenEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, seven, null)
     }
@@ -319,7 +319,7 @@ class Io18Glyph(
     override fun Canvas.drawEightEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, eight, null)
     }
@@ -327,7 +327,7 @@ class Io18Glyph(
     override fun Canvas.drawNineEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, nine, null)
     }
@@ -335,7 +335,7 @@ class Io18Glyph(
     override fun Canvas.drawEmptyZero(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, null, zero)
     }
@@ -343,7 +343,7 @@ class Io18Glyph(
     override fun Canvas.drawEmptyOne(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, null, one)
     }
@@ -351,7 +351,7 @@ class Io18Glyph(
     override fun Canvas.drawEmptyTwo(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, null, two)
     }
@@ -359,7 +359,7 @@ class Io18Glyph(
     override fun Canvas.drawEmptyThree(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, null, three)
     }
@@ -367,7 +367,7 @@ class Io18Glyph(
     override fun Canvas.drawEmptyFour(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, null, four)
     }
@@ -375,7 +375,7 @@ class Io18Glyph(
     override fun Canvas.drawEmptyFive(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, null, five)
     }
@@ -383,7 +383,7 @@ class Io18Glyph(
     override fun Canvas.drawEmptySix(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, null, six)
     }
@@ -391,7 +391,7 @@ class Io18Glyph(
     override fun Canvas.drawEmptySeven(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, null, seven)
     }
@@ -399,7 +399,7 @@ class Io18Glyph(
     override fun Canvas.drawEmptyEight(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, null, eight)
     }
@@ -407,7 +407,7 @@ class Io18Glyph(
     override fun Canvas.drawEmptyNine(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         transition(glyphProgress, null, nine)
     }
@@ -423,7 +423,7 @@ class Io18Glyph(
     override fun Canvas.drawEmptySeparator(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         // Intentionally blank
     }
@@ -431,7 +431,7 @@ class Io18Glyph(
     override fun Canvas.drawSeparatorEmpty(
         glyphProgress: Float,
         paints: Paints,
-        renderGlyph: RenderGlyph?
+        renderGlyph: RenderGlyph?,
     ) {
         // Intentionally blank
     }

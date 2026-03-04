@@ -4,10 +4,10 @@ import org.beatonma.gclocks.core.ClockFont
 import org.beatonma.gclocks.core.glyph.ClockGlyph
 import org.beatonma.gclocks.core.glyph.Glyph
 import org.beatonma.gclocks.core.glyph.GlyphState
-import org.beatonma.gclocks.core.glyph.GlyphVisibility
 import org.beatonma.gclocks.core.options.AnyOptions
 import org.beatonma.gclocks.core.util.currentTimeMillis
 import org.beatonma.gclocks.core.util.fastForEach
+import org.beatonma.gclocks.core.util.fastForEachIndexed
 import org.beatonma.gclocks.core.util.nextSecond
 import org.beatonma.gclocks.core.util.progress
 import org.beatonma.gclocks.core.util.timeOfDay
@@ -30,6 +30,7 @@ internal class Glyphs<G : ClockGlyph>(
         )
     }
     val glyphs: List<GlyphStatus<G>> get() = mutableGlyphs
+    val isSynchronizedVisibility: Boolean = glyphs.first().glyph is ClockGlyph.SynchronizedVisibility
 
     private val options = options.glyph
     private val format = options.layout.format
@@ -60,23 +61,15 @@ internal class Glyphs<G : ClockGlyph>(
         }
     }
 
-
-    fun setState(
-        state: GlyphState,
-        visibility: GlyphVisibility,
-        force: Boolean,
-        currentTimeMillis: Long,
-    ) {
-        glyphs.fastForEach { it.glyph.setState(state, visibility, force, currentTimeMillis) }
+    inline fun forEach(block: (G) -> Unit) {
+        glyphs.fastForEach { block(it.glyph) }
     }
 
-    fun setState(state: GlyphState, force: Boolean, currentTimeMillis: Long) {
-        glyphs.fastForEach { it.glyph.setState(state, force, currentTimeMillis) }
+    inline fun forEachIndexed(block: (Int, G) -> Unit) {
+        glyphs.fastForEachIndexed { n, status -> block(n, status.glyph) }
     }
 
-    fun setState(visibility: GlyphVisibility, force: Boolean, currentTimeMillis: Long) {
-        glyphs.fastForEach { it.glyph.setState(visibility, force, currentTimeMillis) }
-    }
+    inline fun <R> map(block: (Int, G) -> R) = glyphs.mapIndexed { n, status -> block(n, status.glyph) }
 
     private fun updateGlyph(
         status: MutableGlyphStatus<G>,

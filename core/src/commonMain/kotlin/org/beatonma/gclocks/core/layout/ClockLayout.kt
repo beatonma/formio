@@ -42,6 +42,9 @@ class ClockLayout<G : ClockGlyph>(
     var isDrawable: Boolean = false
         private set
 
+    val isSynchronizedVisibility: Boolean = glyphs.isSynchronizedVisibility
+    val length: Int get() = glyphs.glyphs.size
+
     private fun onOptionsChange(value: AnyOptions) {
         layout = getLayout(
             value.layout,
@@ -77,22 +80,11 @@ class ClockLayout<G : ClockGlyph>(
         layout.measureFrame(glyphs.glyphs, callback)
     }
 
-    fun setState(
-        state: GlyphState,
-        visibility: GlyphVisibility,
-        force: Boolean = true,
-        currentTimeMillis: Long
-    ) {
-        glyphs.setState(state, visibility, force, currentTimeMillis)
+    internal fun forEachGlyph(block: (glyph: G) -> Unit) {
+        glyphs.forEach(block)
     }
 
-    fun setState(state: GlyphState, force: Boolean = true, currentTimeMillis: Long) {
-        glyphs.setState(state, force, currentTimeMillis)
-    }
-
-    fun setState(visibility: GlyphVisibility, force: Boolean = true, currentTimeMillis: Long) {
-        glyphs.setState(visibility, force, currentTimeMillis)
-    }
+    internal fun <R> mapGlyphs(block: (index: Int, glyph: G) -> R) = glyphs.map(block)
 
     fun getGlyphAt(x: Float, y: Float): G? {
         var g: G? = null

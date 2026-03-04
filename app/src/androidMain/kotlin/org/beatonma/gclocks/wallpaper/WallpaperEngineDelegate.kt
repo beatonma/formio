@@ -9,11 +9,14 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.beatonma.gclocks.android.AndroidCanvasHost
@@ -35,20 +38,18 @@ import org.beatonma.gclocks.core.options.AnyOptions
 import org.beatonma.gclocks.core.util.debug
 import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 import org.jetbrains.annotations.VisibleForTesting
-import kotlin.coroutines.CoroutineContext
+import kotlin.collections.ifEmpty
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 
 interface WallpaperEngineDelegate {
     fun onSurfaceChanged(width: Int, height: Int)
-    fun onVisibilityChanged(visible: Boolean, getIsKeyguardLocked: () -> Boolean)
+    fun onVisibilityChanged(isVisible: Boolean, getIsKeyguardLocked: () -> Boolean)
     fun onOffsetsChanged(
-        xOffset: Float,
-        yOffset: Float,
-        xOffsetStep: Float,
-        yOffsetStep: Float,
-        xPixelOffset: Int,
-        yPixelOffset: Int,
+        xOffset: Float, yOffset: Float,
+        xOffsetStep: Float, yOffsetStep: Float,
+        xPixelOffset: Int, yPixelOffset: Int,
     )
 
     fun onTouchEvent(event: MotionEvent): Boolean
@@ -57,7 +58,6 @@ interface WallpaperEngineDelegate {
     fun draw(canvas: Canvas)
     fun clear(canvas: Canvas)
 }
-
 
 @OptIn(ExperimentalCoroutinesApi::class)
 fun WallpaperEngineDelegate(
@@ -77,10 +77,9 @@ fun WallpaperEngineDelegate(
     onClearCanvas = onClearCanvas,
 )
 
-
 @VisibleForTesting
 internal class WallpaperEngineDelegateImpl(
-    private val isPreview: Boolean,
+    isPreview: Boolean,
     isWallpaperVisible: Boolean,
     private val displayMetrics: Flow<DisplayMetrics>,
     private val wallpaperSettings: Flow<DisplayContext.Options.Wallpaper>,
@@ -90,131 +89,123 @@ internal class WallpaperEngineDelegateImpl(
     private val onDraw: (AndroidCanvasHost) -> Unit,
     private val onClearCanvas: (AndroidCanvasHost) -> Unit,
     private val getCurrentTimeMillis: () -> Long = ::getCurrentTimeMillis,
+    private val random: Random = Random.Default,
 ) : WallpaperEngineDelegate {
     private val canvasHost: AndroidCanvasHost = AndroidCanvasHost()
-    var animator: ClockAnimator<*>? = null
-        private set
-    private var backgroundColor: Color = Color(0xff000000.toInt())
-    private var relativeBounds: RectF = RectF(0f, 0f, 1f, 1f)
-    private var absoluteBounds: RectF = RectF(0f, 0f, 0f, 0f)
-    private var width: Int = 0
-    private var height: Int = 0
-    private var frameDelayMillis: Long = (1000f / 60f).toLong()
+    private var _animator: ClockAnimator<*>? = null
+    private val animator: ClockAnimator<*> get() = _animator!!
     private var previousClockOptions: AnyOptions? = null
+    private var backgroundColor: Color = Color(0xff000000.toInt())
+    private val engineScope: CoroutineScope = CoroutineScope(mainDispatcher + SupervisorJob())
 
-    internal val visibilityManager = VisibilityManager(isWallpaperVisible)
+    @VisibleForTesting
+    internal val visibilityManager: VisibilityManager = VisibilityManager(
+        isPreview,
+        engineScope,
+        ioDispatcher,
+        isWallpaperVisible = isWallpaperVisible,
+    )
+    private val layoutManager: LayoutManager = LayoutManager()
+    private var frameDelayMillis: Long = (1000f / 60f).toLong()
+    private val invalidateDebouncer = Debouncer(ioDispatcher)
+    private var initJob: Job? = null
+    private var visibilityJob: Job? = null
 
-    private var engineScope: CoroutineScope = createCoroutineScope()
-    private fun requireEngineScope(): CoroutineScope {
-        if (!engineScope.isActive) {
-            engineScope = createCoroutineScope()
-        }
-        return engineScope
+    init {
+        initialize()
     }
 
-    private val deferredVisibilityDebouncer = Debouncer(ioDispatcher)
+    private fun initialize() {
+        debugEvent("initialize isPreview=${visibilityManager.isPreview}")
 
-    fun initialize() {
-        val scope = requireEngineScope()
-
-        scope.launch(ioDispatcher) {
-            clockSettings.collectLatest { clock ->
-                animator = createAnimator(clock).apply {
-                    setState(GlyphVisibility.Hidden, true, getCurrentTimeMillis())
-                }
-                // Ensure visibility state is applied to animator
-                visibilityManager.applyStateNow()
-                invalidate()
-            }
-        }
-
-        scope.launch(ioDispatcher) {
-            wallpaperSettings.collectLatest { wallpaper ->
-                backgroundColor = wallpaper.backgroundColor
-                relativeBounds = RectF(wallpaper.position)
-                updateConstraints()
-                visibilityManager.update {
-                    visibleOnLauncherPages = wallpaper.zeroIndexLauncherPages.ifEmpty { null }
-                }
-                invalidate()
-            }
-        }
-
-        scope.launch(ioDispatcher) {
-            displayMetrics.collectLatest { metrics ->
+        initJob?.cancel()
+        initJob = engineScope.launch(ioDispatcher) {
+            displayMetrics.first().let { metrics ->
                 frameDelayMillis = metrics.frameDelayMillis
             }
+
+            clockSettings.first().let { clock ->
+                _animator = createAnimator(clock)
+            }
+
+            wallpaperSettings.first().let { wallpaper ->
+                backgroundColor = wallpaper.backgroundColor
+                animator.setConstraints(layoutManager.setBounds(wallpaper.position))
+                visibilityManager.setLauncherPages(wallpaper.zeroIndexLauncherPages.ifEmpty { null })
+            }
+
+            postInvalidate()
+
+            visibilityManager.state.collectLatest { state ->
+                setAnimatorVisible(state.targetVisibility, force = false)
+                postInvalidate()
+            }
         }
     }
 
-    suspend fun invalidate() {
+    private fun setAnimatorVisible(visibility: GlyphVisibility, force: Boolean) {
+        visibilityJob?.cancel()
+        visibilityJob = _animator?.setStateWithVariance(
+            engineScope,
+            visibility,
+            force,
+            varianceMillis = 600L,
+            getCurrentTimeMillis = getCurrentTimeMillis,
+            random = random,
+        )
+    }
+
+    private suspend fun invalidate() {
         withContext(mainDispatcher) {
             onDraw(canvasHost)
         }
     }
 
-    private fun postInvalidate(delayMillis: Long) {
-        requireEngineScope().launch(mainDispatcher) {
-            delay(delayMillis)
+    private fun postInvalidate(delayMillis: Long = 0L) {
+        invalidateDebouncer(engineScope, delayMillis) {
             invalidate()
         }
     }
 
     override fun onSurfaceChanged(width: Int, height: Int) {
-        if (this.width == height && this.height == width && width != height) {
-            visibilityManager.startRotation()
+        if (layoutManager.width == height && layoutManager.height == width) {
+            engineScope.launch(ioDispatcher) {
+                visibilityManager.startRotation()
+            }
         }
 
-        this.width = width
-        this.height = height
-
-        updateConstraints()
+        val constraints = layoutManager.setSize(width, height)
+        _animator?.setConstraints(constraints)
     }
 
-    override fun onVisibilityChanged(visible: Boolean, getIsKeyguardLocked: () -> Boolean) {
-        visibilityManager.update {
-            isWallpaperVisible = visible
-            isKeyguardLocked = getIsKeyguardLocked()
-        }
+    override fun onVisibilityChanged(isVisible: Boolean, getIsKeyguardLocked: () -> Boolean) {
+        if (visibilityManager.isPreview) return visibilityManager.onVisibilityChanged(
+            isWallpaperVisible = true,
+            isKeyguardLocked = false
+        )
 
-        if (visible) {
-            deferredVisible(getIsKeyguardLocked)
+        val isKeyguardLocked: Boolean = getIsKeyguardLocked()
+        debugEvent("onVisibilityChanged($isVisible, ${isKeyguardLocked})")
+
+        if (isVisible) {
+            initialize()
         } else {
-            if (!visibilityManager.isRotating) {
-                cancelScope()
-            }
+            setAnimatorVisible(GlyphVisibility.Hidden, force = true)
+            cancelUpdates()
         }
-    }
 
-    /**
-     * During device rotation, [onVisibilityChanged] can be called many times
-     * and reacting to each of those events results in jarring animations being
-     * cancelled a moment after they start.
-     *
-     * By calling [deferredVisible] we allow a grace period for this to happen,
-     * and only make the animation visible once that period has passed
-     * without further [onVisibilityChanged] calls.
-     */
-    private fun deferredVisible(getIsKeyguardLocked: () -> Boolean) {
-        deferredVisibilityDebouncer.debounce(200) {
-            if (!visibilityManager.state.isWallpaperVisible) return@debounce
-
-            if (animator == null || !visibilityManager.isRotating) {
-                initialize()
-            } else {
-                invalidate()
-            }
-            val isLocked = getIsKeyguardLocked()
-            visibilityManager.update {
-                isWallpaperVisible = true
-                isKeyguardLocked = isLocked
-            }
-
-            if (isLocked) {
+        visibilityManager.onVisibilityChanged(
+            isWallpaperVisible = isVisible,
+            isKeyguardLocked = isKeyguardLocked
+        )
+        if (isVisible && isKeyguardLocked) {
+            // Poll until keyguard is unlocked
+            engineScope.launch(ioDispatcher) {
                 while (true) {
-                    delay(200)
-                    if (!getIsKeyguardLocked()) {
-                        visibilityManager.update { isKeyguardLocked = false }
+                    delay(50L)
+                    val isLocked = getIsKeyguardLocked()
+                    if (!isLocked) {
+                        visibilityManager.onVisibilityChanged(true, false)
                         break
                     }
                 }
@@ -236,231 +227,194 @@ internal class WallpaperEngineDelegateImpl(
         }
         val pageCount = 1f / xOffsetStep
         val currentPosition: Float = pageCount * xOffset
-        visibilityManager.update { currentLauncherPage = currentPosition.roundToInt() }
+        val currentPage: Int = currentPosition.roundToInt()
+        visibilityManager.onPageChanged(currentPage)
     }
 
-    /** @return true if the event is consumed, false otherwise */
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        val glyph = animator?.getGlyphAt(
-            event.x - absoluteBounds.left,
-            event.y - absoluteBounds.top
+        val glyph = animator.getGlyphAt(
+            event.x - layoutManager.left,
+            event.y - layoutManager.top
         )
         glyph?.setState(GlyphState.Active, currentTimeMillis = getCurrentTimeMillis())
 
         return glyph != null
     }
 
-    private fun createAnimator(options: AnyOptions): ClockAnimator<*> {
-        val constraints = updateConstraints()
+    override fun onDestroy() {
+        engineScope.cancel()
+    }
 
-        val animator = animator?.let {
+    override fun draw(canvas: Canvas) {
+        canvas.fill(backgroundColor)
+        animator.tick()
+        canvas.withTranslation(layoutManager.left, layoutManager.top) {
+            animator.render(canvas)
+        }
+    }
+
+    override fun clear(canvas: Canvas) {
+        canvas.fill(backgroundColor)
+        onClearCanvas(canvasHost)
+    }
+
+    private fun cancelUpdates() {
+        debugEvent("cancelUpdates()")
+        engineScope.coroutineContext.cancelChildren()
+    }
+
+    private fun createAnimator(options: AnyOptions): ClockAnimator<*> {
+        val animator = _animator?.let {
             if (options == previousClockOptions) it
-            else {
-                previousClockOptions = options
-                null
-            }
+            else null
         } ?: createAnimatorFromOptions(options, canvasHost.path, allowVariance = true) {
             postInvalidate(frameDelayMillis)
         }
-        animator.setConstraints(constraints)
+        animator.setConstraints(layoutManager.constraints)
+        previousClockOptions = options
         return animator
+    }
+}
+
+
+@VisibleForTesting
+internal data class VisibilityState(
+    val isPreview: Boolean,
+    val isWallpaperVisible: Boolean,
+    val isKeyguardLocked: Boolean = false,
+    val visibleOnPages: List<Int>? = null,
+    val currentPage: Int = 0,
+) {
+    val isPageAllowed: Boolean
+        get() = visibleOnPages?.let { currentPage in it } ?: true
+
+    val shouldBeVisible: Boolean
+        get() {
+            if (isPreview) return true
+            if (isKeyguardLocked) return false
+            if (!isPageAllowed) return false
+            return isWallpaperVisible
+        }
+
+    val targetVisibility: GlyphVisibility
+        get() = if (shouldBeVisible) GlyphVisibility.Visible else GlyphVisibility.Hidden
+}
+
+@VisibleForTesting
+internal class VisibilityManager(
+    val isPreview: Boolean,
+    private val scope: CoroutineScope,
+    dispatcher: CoroutineDispatcher,
+    isWallpaperVisible: Boolean,
+) {
+    private var isRotating: Boolean = false
+
+    private val visibilityChangeDebouncer = Debouncer(dispatcher)
+    private val pageChangedDebouncer = Debouncer(dispatcher)
+    val state = MutableStateFlow(VisibilityState(isPreview = isPreview, isWallpaperVisible = isWallpaperVisible))
+
+    suspend fun startRotation() {
+        debugEvent("startRotation")
+        isRotating = true
+        delay(500L)
+        isRotating = false
+        debugEvent("endRotation")
+    }
+
+    fun onVisibilityChanged(isWallpaperVisible: Boolean, isKeyguardLocked: Boolean) {
+        debugEvent("onVisibilityChanged($isWallpaperVisible, $isKeyguardLocked)")
+        visibilityChangeDebouncer(scope) {
+            if (isRotating) {
+                delay(250L)
+            }
+            state.update { previous ->
+                previous.copy(isWallpaperVisible = isWallpaperVisible, isKeyguardLocked = isKeyguardLocked)
+            }
+        }
+    }
+
+    fun onPageChanged(page: Int) {
+        debugEvent("onPageChanged($page)")
+        pageChangedDebouncer(scope, 60L) {
+            state.update { previous ->
+                previous.copy(currentPage = page)
+            }
+        }
+    }
+
+    fun setLauncherPages(pages: List<Int>?) {
+        debugEvent("setLauncherPages($pages)")
+        state.update { previous ->
+            previous.copy(visibleOnPages = pages)
+        }
+    }
+}
+
+private class Debouncer(private val dispatcher: CoroutineDispatcher) {
+    private var job: Job? = null
+
+    operator inline fun invoke(
+        scope: CoroutineScope,
+        debounceMillis: Long = 0L,
+        crossinline block: suspend CoroutineScope.() -> Unit,
+    ) {
+        job?.cancel()
+        job = scope.launch(dispatcher) {
+            delay(debounceMillis)
+            block()
+        }
+    }
+}
+
+private class LayoutManager {
+    var width: Int = 0
+        private set
+    var height: Int = 0
+        private set
+    private var relativeBounds: RectF = RectF.Invalid
+    private var absoluteBounds: RectF = RectF(0f, 0f, 0f, 0f)
+    val top get() = absoluteBounds.top
+    val left get() = absoluteBounds.left
+
+    var constraints: MeasureConstraints = MeasureConstraints(0f, 0f)
+        private set
+
+    fun setSize(width: Int, height: Int): MeasureConstraints {
+        this.width = width
+        this.height = height
+        return updateConstraints()
+    }
+
+    fun setBounds(bounds: RectF): MeasureConstraints {
+        relativeBounds = RectF(bounds)
+        return updateConstraints()
     }
 
     private fun updateConstraints(): MeasureConstraints {
         val w = width.toFloat()
         val h = height.toFloat()
 
-        absoluteBounds = RectF(
-            relativeBounds.left * w,
-            relativeBounds.top * h,
-            relativeBounds.right * w,
-            relativeBounds.bottom * h
-        )
-        val constraints = MeasureConstraints(
+        if (relativeBounds.isValid) {
+            absoluteBounds = RectF(
+                relativeBounds.left * w,
+                relativeBounds.top * h,
+                relativeBounds.right * w,
+                relativeBounds.bottom * h
+            )
+        }
+        constraints = MeasureConstraints(
             absoluteBounds.width,
             absoluteBounds.height
         )
-
-        animator?.setConstraints(constraints)
         return constraints
     }
-
-    override fun draw(canvas: Canvas) {
-        canvas.fill(backgroundColor)
-        animator?.let { animator ->
-            animator.tick()
-            canvas.withTranslation(absoluteBounds.left, absoluteBounds.top) {
-                animator.render(canvas)
-            }
-        }
-    }
-
-    override fun clear(canvas: Canvas) {
-        canvas.fill(backgroundColor)
-    }
-
-    override fun onDestroy() {
-        cancelScope()
-    }
-
-    private fun createCoroutineScope() = CoroutineScope(mainDispatcher + SupervisorJob())
-    private fun cancelScope() {
-        visibilityManager.forceHide()
-        engineScope.cancel()
-    }
-
-    internal inner class VisibilityManager(isWallpaperVisible: Boolean) {
-        private val debouncer = Debouncer(ioDispatcher)
-
-        // May need further tuning - if this is too short, state changes can
-        // be incorrectly triggered during device rotation (which calls
-        // onVisibilityChanged many times); if too long, changes
-        // may feel sluggish. Probably device-dependent.
-        private val debounceDuration = 300L
-
-        internal var state: VisibilityState = VisibilityState(
-            isWallpaperVisible = isWallpaperVisible,
-            isKeyguardLocked = false,
-            visibleOnLauncherPages = null,
-            currentLauncherPage = 0
-        )
-            private set
-        var isRotating: Boolean = false
-            private set
-        private var appliedState: VisibilityState? = null
-
-        fun startRotation() {
-            isRotating = true
-            applyState()
-        }
-
-        fun update(block: MutableVisibilityState.() -> Unit) {
-            val newState = state.mutable().apply(block).immutable()
-
-            state = newState
-            applyState()
-        }
-
-        private fun applyState() {
-            debouncer.debounce(debounceDuration) {
-                withContext(mainDispatcher) {
-                    updateVisibility()
-                }
-            }
-        }
-
-        fun applyStateNow() {
-            isRotating = false
-            val state = state
-            appliedState = state
-            if (shouldBeVisible(state)) {
-                show()
-            } else {
-                hide(force = !state.isWallpaperVisible)
-            }
-        }
-
-        fun forceHide() {
-            hide(force = true)
-            appliedState = null
-            onClearCanvas(canvasHost)
-        }
-
-        fun shouldBeVisible(state: VisibilityState): Boolean {
-            if (isPreview) return true
-
-            return state.shouldBeVisible
-        }
-
-        private fun updateVisibility() {
-            isRotating = false
-            val state = state
-            if (state == appliedState) {
-                return debug("updateVisibility: state has not changed")
-            }
-            applyStateNow()
-        }
-
-        private fun show(force: Boolean = false) {
-            animator?.setState(
-                GlyphVisibility.Visible,
-                force,
-                currentTimeMillis = getCurrentTimeMillis()
-            )
-        }
-
-        private fun hide(force: Boolean = false) {
-            animator?.setState(
-                GlyphVisibility.Hidden,
-                force,
-                currentTimeMillis = getCurrentTimeMillis()
-            )
-        }
-    }
-
-    /**
-     * Wallpaper events can be fired in quick succession so reacting to each one
-     * immediately can cause glitchy animations. By using [debounce],
-     * we allow a grace period for events to fire, and only apply the update
-     * once that period has passed without further events. As a result, only
-     * the latest requested update will actually be applied.
-     */
-    private inner class Debouncer(private val dispatcher: CoroutineContext) {
-        private var job: Job? = null
-
-        fun debounce(gracePeriodMillis: Long = 200L, block: suspend () -> Unit) {
-            job?.cancel()
-            job = requireEngineScope().launch(dispatcher) {
-                delay(gracePeriodMillis)
-                block()
-            }
-        }
-    }
 }
 
+private const val SHOW_DEBUG_EVENTS = false
 
-internal interface _VisibilityState {
-    val isWallpaperVisible: Boolean
-    val isKeyguardLocked: Boolean
-
-    val visibleOnLauncherPages: List<Int>?
-    val currentLauncherPage: Int
-
-    val isPageAllowed: Boolean
-        get() = visibleOnLauncherPages?.let { currentLauncherPage in it } ?: true
-
-    val shouldBeVisible: Boolean
-        get() {
-            if (isKeyguardLocked) return false
-            if (!isPageAllowed) return false
-            return isWallpaperVisible
-        }
-}
-
-internal data class VisibilityState(
-    override val isWallpaperVisible: Boolean,
-    override val isKeyguardLocked: Boolean,
-    override val visibleOnLauncherPages: List<Int>?,
-    override val currentLauncherPage: Int,
-) : _VisibilityState {
-    fun mutable() = MutableVisibilityState(
-        isWallpaperVisible = isWallpaperVisible,
-        isKeyguardLocked = isKeyguardLocked,
-        visibleOnLauncherPages = visibleOnLauncherPages,
-        currentLauncherPage = currentLauncherPage
-    )
-}
-
-internal data class MutableVisibilityState(
-    override var isWallpaperVisible: Boolean,
-    override var isKeyguardLocked: Boolean,
-    override var visibleOnLauncherPages: List<Int>?,
-    override var currentLauncherPage: Int,
-) : _VisibilityState {
-    fun immutable() = VisibilityState(
-        isWallpaperVisible = isWallpaperVisible,
-        isKeyguardLocked = isKeyguardLocked,
-        visibleOnLauncherPages = visibleOnLauncherPages,
-        currentLauncherPage = currentLauncherPage
-    )
+@Suppress("NOTHING_TO_INLINE")
+private inline fun debugEvent(msg: String) {
+    debug(enabled = SHOW_DEBUG_EVENTS) {
+        debug(content = msg)
+    }
 }

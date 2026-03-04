@@ -95,6 +95,10 @@ data class RectF(
     constructor(other: Rect<Float>) : this(other.left, other.top, other.right, other.bottom)
 
     fun toMutable(): MutableRectF = MutableRectF(this)
+
+    companion object {
+        val Invalid = RectF(Float.NaN, Float.NaN, Float.NaN, Float.NaN)
+    }
 }
 
 
