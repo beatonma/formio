@@ -10,8 +10,8 @@ inline fun debug(enabled: Boolean = true, block: () -> Unit) {
     }
 }
 
-inline fun <T> debugValue(debugValue: () -> T, normalValue: () -> T): T {
-    return if (Build.isDebug) debugValue() else normalValue()
+inline fun <T> debugValue(debugValue: () -> T, normalValue: () -> T, enabled: Boolean = true): T {
+    return if (enabled && Build.isDebug) debugValue() else normalValue()
 }
 
 

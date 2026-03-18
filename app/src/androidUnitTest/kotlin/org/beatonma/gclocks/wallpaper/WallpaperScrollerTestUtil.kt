@@ -53,7 +53,7 @@ class WallpaperScroller(private val engine: WallpaperEngineDelegate, totalPages:
 
 class WallpaperScrollerTest {
     @Test
-    fun `meta -- WallpaperScroller test-helper class is correct`() = runTest {
+    fun `Test helper class behaviour is correct`() = runTest {
         createEngineDelegate(visibleOnLauncherPages = listOf()).let { engine ->
             WallpaperScroller(engine, totalPages = 1).let { scroller ->
                 scroller.xOffsetStep shouldbe 0f

@@ -81,7 +81,7 @@ interface ClockAnimator<G : ClockGlyph> : ConstrainedLayout {
             val variancePerGlyph: List<Long> = (0 until glyphCount).mapIndexed { index, _ ->
                 if (index == 0) 0L
                 else random.nextLong(varianceStep * index)
-            }
+            }.shuffled()
 
             return scope.launch {
                 layout.mapGlyphs { index, glyph ->

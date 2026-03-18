@@ -40,12 +40,12 @@ class ClockWallpaperService : WallpaperService() {
             delegate = WallpaperEngineDelegate(
                 this,
                 settingsRepository,
-                onDraw = {
-                    withCanvasHost(it, delegate::draw)
+                onDraw = { canvasHost ->
+                    withCanvasHost(canvasHost, delegate::draw)
                 },
-                onClearCanvas = {
-                    withCanvasHost(it, delegate::clear)
-                }
+                onClearCanvas = { canvasHost ->
+                    withCanvasHost(canvasHost, delegate::clear)
+                },
             )
         }
 

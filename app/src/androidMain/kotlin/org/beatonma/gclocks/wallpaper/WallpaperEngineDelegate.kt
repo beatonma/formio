@@ -8,7 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -35,7 +34,7 @@ import org.beatonma.gclocks.core.glyph.GlyphVisibility
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.options.AnyOptions
-import org.beatonma.gclocks.core.util.debug
+import org.beatonma.gclocks.core.util.debug as coreDebug
 import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 import org.jetbrains.annotations.VisibleForTesting
 import kotlin.collections.ifEmpty
@@ -96,30 +95,65 @@ internal class WallpaperEngineDelegateImpl(
     private val animator: ClockAnimator<*> get() = _animator!!
     private var previousClockOptions: AnyOptions? = null
     private var backgroundColor: Color = Color(0xff000000.toInt())
-    private val engineScope: CoroutineScope = CoroutineScope(mainDispatcher + SupervisorJob())
 
     @VisibleForTesting
     internal val visibilityManager: VisibilityManager = VisibilityManager(
         isPreview,
-        engineScope,
-        ioDispatcher,
         isWallpaperVisible = isWallpaperVisible,
     )
     private val layoutManager: LayoutManager = LayoutManager()
     private var frameDelayMillis: Long = (1000f / 60f).toLong()
-    private val invalidateDebouncer = Debouncer(ioDispatcher)
-    private var initJob: Job? = null
-    private var visibilityJob: Job? = null
+
+    private val supervisorJob = SupervisorJob()
+    private val engineScope: CoroutineScope = CoroutineScope(mainDispatcher + SupervisorJob(supervisorJob))
+    private val visibilityScope: CoroutineScope = CoroutineScope(mainDispatcher + SupervisorJob(supervisorJob))
+
+    private val observeSettingsJob = SingleJob(engineScope, ioDispatcher)
+    private val observeStateJob = SingleJob(engineScope, mainDispatcher)
+    private val stateDispatchDebouncer = Debouncer(engineScope, ioDispatcher)
+
+    private val invalidateDebouncer = Debouncer(visibilityScope, ioDispatcher)
+    private val visibilityAnimatorJob = SingleJob(visibilityScope, ioDispatcher)
+    private val keyguardPollingJob = SingleJob(visibilityScope, ioDispatcher)
 
     init {
-        initialize()
+        observeSettings()
+        observeState()
     }
 
-    private fun initialize() {
-        debugEvent("initialize isPreview=${visibilityManager.isPreview}")
+    private fun observeState() {
+        debug("observeState")
 
-        initJob?.cancel()
-        initJob = engineScope.launch(ioDispatcher) {
+        observeStateJob {
+            visibilityManager.state.collectLatest { state ->
+                stateDispatchDebouncer(Timing.StateDebounce) {
+                    debug(state.toString())
+                    if (!state.isWallpaperVisible) {
+                        onClearCanvas(canvasHost)
+                        visibilityScope.coroutineContext.cancelChildren()
+                        _animator?.setState(GlyphVisibility.Hidden, force = true, getCurrentTimeMillis())
+                    } else {
+                        visibilityAnimatorJob.launch {
+                            _animator?.setStateWithVariance(
+                                engineScope,
+                                state.targetVisibility,
+                                false,
+                                varianceMillis = Timing.GlyphVariance,
+                                getCurrentTimeMillis = getCurrentTimeMillis,
+                                random = random,
+                            )
+                        }
+                        postInvalidate()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun observeSettings() {
+        debug("observeSettings")
+
+        observeSettingsJob {
             displayMetrics.first().let { metrics ->
                 frameDelayMillis = metrics.frameDelayMillis
             }
@@ -135,45 +169,19 @@ internal class WallpaperEngineDelegateImpl(
             }
 
             postInvalidate()
-
-            visibilityManager.state.collectLatest { state ->
-                setAnimatorVisible(state.targetVisibility, force = false)
-                postInvalidate()
-            }
-        }
-    }
-
-    private fun setAnimatorVisible(visibility: GlyphVisibility, force: Boolean) {
-        visibilityJob?.cancel()
-        visibilityJob = _animator?.setStateWithVariance(
-            engineScope,
-            visibility,
-            force,
-            varianceMillis = 600L,
-            getCurrentTimeMillis = getCurrentTimeMillis,
-            random = random,
-        )
-    }
-
-    private suspend fun invalidate() {
-        withContext(mainDispatcher) {
-            onDraw(canvasHost)
         }
     }
 
     private fun postInvalidate(delayMillis: Long = 0L) {
-        invalidateDebouncer(engineScope, delayMillis) {
-            invalidate()
+        invalidateDebouncer(delayMillis) {
+            withContext(mainDispatcher) {
+                onDraw(canvasHost)
+            }
         }
     }
 
     override fun onSurfaceChanged(width: Int, height: Int) {
-        if (layoutManager.width == height && layoutManager.height == width) {
-            engineScope.launch(ioDispatcher) {
-                visibilityManager.startRotation()
-            }
-        }
-
+        debug("onSurfaceChanged($width, $height)")
         val constraints = layoutManager.setSize(width, height)
         _animator?.setConstraints(constraints)
     }
@@ -184,15 +192,12 @@ internal class WallpaperEngineDelegateImpl(
             isKeyguardLocked = false
         )
 
-        val isKeyguardLocked: Boolean = getIsKeyguardLocked()
-        debugEvent("onVisibilityChanged($isVisible, ${isKeyguardLocked})")
-
         if (isVisible) {
-            initialize()
-        } else {
-            setAnimatorVisible(GlyphVisibility.Hidden, force = true)
-            cancelUpdates()
+            observeSettings()
         }
+
+        val isKeyguardLocked: Boolean = getIsKeyguardLocked()
+        debug("onVisibilityChanged($isVisible, ${isKeyguardLocked})")
 
         visibilityManager.onVisibilityChanged(
             isWallpaperVisible = isVisible,
@@ -200,12 +205,12 @@ internal class WallpaperEngineDelegateImpl(
         )
         if (isVisible && isKeyguardLocked) {
             // Poll until keyguard is unlocked
-            engineScope.launch(ioDispatcher) {
+            keyguardPollingJob {
                 while (true) {
-                    delay(50L)
+                    delay(Timing.KeyguardLockedPoll)
                     val isLocked = getIsKeyguardLocked()
                     if (!isLocked) {
-                        visibilityManager.onVisibilityChanged(true, false)
+                        visibilityManager.onVisibilityChanged(isWallpaperVisible = true, isKeyguardLocked = false)
                         break
                     }
                 }
@@ -232,7 +237,7 @@ internal class WallpaperEngineDelegateImpl(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        val glyph = animator.getGlyphAt(
+        val glyph = _animator?.getGlyphAt(
             event.x - layoutManager.left,
             event.y - layoutManager.top
         )
@@ -242,7 +247,7 @@ internal class WallpaperEngineDelegateImpl(
     }
 
     override fun onDestroy() {
-        engineScope.cancel()
+        supervisorJob.cancel()
     }
 
     override fun draw(canvas: Canvas) {
@@ -255,17 +260,11 @@ internal class WallpaperEngineDelegateImpl(
 
     override fun clear(canvas: Canvas) {
         canvas.fill(backgroundColor)
-        onClearCanvas(canvasHost)
-    }
-
-    private fun cancelUpdates() {
-        debugEvent("cancelUpdates()")
-        engineScope.coroutineContext.cancelChildren()
     }
 
     private fun createAnimator(options: AnyOptions): ClockAnimator<*> {
-        val animator = _animator?.let {
-            if (options == previousClockOptions) it
+        val animator = _animator?.let { existingAnimator ->
+            if (options == previousClockOptions) existingAnimator
             else null
         } ?: createAnimatorFromOptions(options, canvasHost.path, allowVariance = true) {
             postInvalidate(frameDelayMillis)
@@ -303,63 +302,57 @@ internal data class VisibilityState(
 @VisibleForTesting
 internal class VisibilityManager(
     val isPreview: Boolean,
-    private val scope: CoroutineScope,
-    dispatcher: CoroutineDispatcher,
     isWallpaperVisible: Boolean,
 ) {
-    private var isRotating: Boolean = false
-
-    private val visibilityChangeDebouncer = Debouncer(dispatcher)
-    private val pageChangedDebouncer = Debouncer(dispatcher)
     val state = MutableStateFlow(VisibilityState(isPreview = isPreview, isWallpaperVisible = isWallpaperVisible))
 
-    suspend fun startRotation() {
-        debugEvent("startRotation")
-        isRotating = true
-        delay(500L)
-        isRotating = false
-        debugEvent("endRotation")
-    }
-
     fun onVisibilityChanged(isWallpaperVisible: Boolean, isKeyguardLocked: Boolean) {
-        debugEvent("onVisibilityChanged($isWallpaperVisible, $isKeyguardLocked)")
-        visibilityChangeDebouncer(scope) {
-            if (isRotating) {
-                delay(250L)
-            }
-            state.update { previous ->
-                previous.copy(isWallpaperVisible = isWallpaperVisible, isKeyguardLocked = isKeyguardLocked)
-            }
+        debug("onVisibilityChanged($isWallpaperVisible, $isKeyguardLocked)")
+        state.update { previous ->
+            previous.copy(isWallpaperVisible = isWallpaperVisible, isKeyguardLocked = isKeyguardLocked)
         }
     }
 
     fun onPageChanged(page: Int) {
-        debugEvent("onPageChanged($page)")
-        pageChangedDebouncer(scope, 60L) {
-            state.update { previous ->
-                previous.copy(currentPage = page)
-            }
+        debug("onPageChanged($page)")
+        state.update { previous ->
+            previous.copy(currentPage = page)
         }
     }
 
     fun setLauncherPages(pages: List<Int>?) {
-        debugEvent("setLauncherPages($pages)")
+        debug("setLauncherPages($pages)")
         state.update { previous ->
             previous.copy(visibleOnPages = pages)
         }
     }
 }
 
-private class Debouncer(private val dispatcher: CoroutineDispatcher) {
+
+private open class SingleJob(private val scope: CoroutineScope, private val dispatcher: CoroutineDispatcher) {
     private var job: Job? = null
 
-    operator inline fun invoke(
-        scope: CoroutineScope,
+    operator fun invoke(
+        block: suspend CoroutineScope.() -> Unit,
+    ): Job {
+        job?.cancel()
+        return scope.launch(dispatcher, block = block).also { job = it }
+    }
+
+    fun launch(
+        block: (CoroutineDispatcher) -> Job?,
+    ): Job? {
+        job?.cancel()
+        return block(dispatcher).also { job = it }
+    }
+}
+
+private class Debouncer(scope: CoroutineScope, dispatcher: CoroutineDispatcher) : SingleJob(scope, dispatcher) {
+    inline operator fun invoke(
         debounceMillis: Long = 0L,
         crossinline block: suspend CoroutineScope.() -> Unit,
     ) {
-        job?.cancel()
-        job = scope.launch(dispatcher) {
+        super.invoke {
             delay(debounceMillis)
             block()
         }
@@ -410,11 +403,27 @@ private class LayoutManager {
     }
 }
 
-private const val SHOW_DEBUG_EVENTS = false
+private object Timing {
+    /**
+     * Grace period after a state change requested before it is applied.
+     */
+    const val StateDebounce = 250L
 
-@Suppress("NOTHING_TO_INLINE")
-private inline fun debugEvent(msg: String) {
-    debug(enabled = SHOW_DEBUG_EVENTS) {
-        debug(content = msg)
+    /**
+     * How often to poll the isKeyguardLocked function passed to onVisibilityChanged.
+     */
+    const val KeyguardLockedPoll = 50L
+
+    /**
+     * Maximum variance of delays applied to per-glyph visibility animations.
+     */
+    const val GlyphVariance = 800L
+}
+
+
+private const val DebuggingEnabled = true
+private inline fun debug(msg: String) = coreDebug {
+    if (DebuggingEnabled) {
+        coreDebug(msg)
     }
 }

@@ -3,7 +3,7 @@
 package org.beatonma.gclocks.wallpaper
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -155,9 +155,35 @@ class WallpaperEngineTests {
             }
         }
     }
+
+    @Test
+    fun `onSurfaceChanged is correct`() = runTest {
+        val size = SurfaceSize(100, 200)
+
+        createEngineDelegate(surfaceSize = size.portrait).let { engine ->
+            expectWhenIdle({
+                engine.onSurfaceChanged(size.landscape)
+            }) {
+                engine.shouldBeVisible shouldbe true
+            }
+        }
+    }
 }
 
 
+internal data class SurfaceSize(val width: Int = 100, val height: Int = 200) {
+    private val min = minOf(width, height)
+    private val max = maxOf(width, height)
+
+    val landscape get() = SurfaceSize(max, min)
+    val portrait get() = SurfaceSize(min, max)
+}
+
+private fun WallpaperEngineDelegateImpl.onSurfaceChanged(size: SurfaceSize) = onSurfaceChanged(size.width, size.height)
+
+/**
+ * Returns
+ */
 internal fun TestScope.createEngineDelegate(
     displayMetrics: DisplayMetrics = DisplayMetrics(refreshRate = 60f),
     clockSettings: AnyOptions = FormOptions(),
@@ -167,23 +193,30 @@ internal fun TestScope.createEngineDelegate(
         backgroundColor = Color.Red,
         visibleOnLauncherPages = visibleOnLauncherPages,
     ),
+    isPreview: Boolean = false,
+    isWallpaperVisible: Boolean = true,
+    surfaceSize: SurfaceSize = SurfaceSize(),
     onDraw: (AndroidCanvasHost) -> Unit = {},
     onClearCanvas: (AndroidCanvasHost) -> Unit = {},
     getCurrentTimeMillis: () -> Long = ::getCurrentTimeMillis,
 ): WallpaperEngineDelegateImpl {
     val dispatcher = StandardTestDispatcher(testScheduler)
     val engine = WallpaperEngineDelegateImpl(
-        isPreview = false,
-        isWallpaperVisible = true,
-        displayMetrics = flow { emit(displayMetrics) },
-        clockSettings = flow { emit(clockSettings) },
-        wallpaperSettings = flow { emit(wallpaperSettings) },
+        isPreview = isPreview,
+        isWallpaperVisible = isWallpaperVisible,
+        displayMetrics = flowOf(displayMetrics),
+        clockSettings = flowOf(clockSettings),
+        wallpaperSettings = flowOf(wallpaperSettings),
         mainDispatcher = dispatcher,
         ioDispatcher = dispatcher,
         onDraw = onDraw,
         onClearCanvas = onClearCanvas,
         getCurrentTimeMillis = getCurrentTimeMillis
-    )
+    ).apply {
+        // Apply initial state
+        onSurfaceChanged(surfaceSize.width, surfaceSize.height)
+        onVisibilityChanged(isWallpaperVisible, { false })
+    }
     advanceUntilIdle()
     return engine
 }
