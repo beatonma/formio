@@ -8,11 +8,17 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
@@ -49,6 +55,7 @@ import org.beatonma.gclocks.compose.AppIcon
 import org.beatonma.gclocks.compose.isHeightAtLeastMedium
 import org.beatonma.gclocks.compose.isWidthAtLeastExpanded
 import org.beatonma.gclocks.compose.isWidthAtLeastMedium
+import org.beatonma.gclocks.compose.onlyIf
 import org.jetbrains.compose.resources.stringResource
 
 private val NavigationDrawerMaxWidth = 240.dp
@@ -85,7 +92,11 @@ fun NavigationScaffold(
             navigationSuite = { PrimaryNavigation(menu, navigationType, selected, onSelect) },
             layoutType = navigationType,
         ) {
-            Box {
+            Box(
+                Modifier.onlyIf(navigationType == NavigationSuiteType.NavigationBar) {
+                    consumeWindowInsets(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))
+                }
+            ) {
                 content {
                     // Pass navigationIcon to child content so it can be displayed in a context-suitable way
                     if (hasSecondaryNavigation(navigationType)) {
@@ -239,7 +250,7 @@ private fun getNavigationLayoutType(): NavigationSuiteType {
 private fun RowScope.BarItem(
     item: NavigationMenuItem,
     isSelected: Boolean,
-    onSelect: (NavigationMenuItem) -> Unit
+    onSelect: (NavigationMenuItem) -> Unit,
 ) {
     NavigationBarItem(
         label = { Text(stringResource(item.label)) },
@@ -253,7 +264,7 @@ private fun RowScope.BarItem(
 private fun ColumnScope.RailItem(
     item: NavigationMenuItem,
     isSelected: Boolean,
-    onSelect: (NavigationMenuItem) -> Unit
+    onSelect: (NavigationMenuItem) -> Unit,
 ) {
     RailItem(
         label = stringResource(item.label),
@@ -268,7 +279,7 @@ private fun ColumnScope.RailItem(
     label: String?,
     isSelected: Boolean,
     onClick: () -> Unit,
-    icon: @Composable () -> Unit
+    icon: @Composable () -> Unit,
 ) {
     NavigationRailItem(
         label = { label?.let { Text(it) } },
@@ -282,7 +293,7 @@ private fun ColumnScope.RailItem(
 private fun ColumnScope.DrawerItem(
     item: NavigationMenuItem,
     isSelected: Boolean,
-    onSelect: (NavigationMenuItem) -> Unit
+    onSelect: (NavigationMenuItem) -> Unit,
 ) {
     DrawerItem(
         label = stringResource(item.label),
@@ -297,7 +308,7 @@ private fun ColumnScope.DrawerItem(
     label: String?,
     isSelected: Boolean,
     onClick: () -> Unit,
-    icon: @Composable () -> Unit
+    icon: @Composable () -> Unit,
 ) {
     NavigationDrawerItem(
         label = { label?.let { Text(it) } },
@@ -317,7 +328,7 @@ private fun ColumnScope.Separator() {
 private fun NavigationColumn(
     contentPadding: PaddingValues,
     itemSpacing: Dp,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
         Modifier.fillMaxHeight().padding(contentPadding),
