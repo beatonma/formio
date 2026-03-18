@@ -106,12 +106,6 @@ fun SettingsEditorScreen(
     navigationIcon: (@Composable () -> Unit)? = null,
     toolbar: @Composable (RowScope.(DisplayContext) -> Unit)? = null,
 ) {
-    var isLoading by remember { mutableStateOf(true) }
-
-    AnimatedFade(isLoading, Modifier.zIndex(1000f)) {
-        LoadingSpinner(Modifier.fillMaxSize())
-    }
-
     val _settings by viewModel.appSettings.collectAsStateWithLifecycle()
     val _richSettings by viewModel.richSettings.collectAsStateWithLifecycle()
 
@@ -147,10 +141,6 @@ fun SettingsEditorScreen(
         },
         onSave = viewModel::save,
     )
-
-    LaunchedEffect(Unit) {
-        isLoading = false
-    }
 }
 
 
@@ -167,7 +157,6 @@ private fun ClockSettingsScaffold(
     toolbar: (@Composable RowScope.() -> Unit)?,
     onSave: () -> Unit,
 ) {
-
     Scaffold(
         modifier,
         snackbarHost = { snackbarHostState?.let { SnackbarHost(it) } },
