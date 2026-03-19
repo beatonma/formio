@@ -1,18 +1,28 @@
 package org.beatonma.gclocks.core.util
 
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.beatonma.gclocks.core.options.TimeFormat
 import kotlin.jvm.JvmName
+import kotlin.math.roundToInt
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
+private val DEBUG_TIME_SCALE = 1f
+private val debugInitInstant = getInstantRealTime()
+private fun getInstantRealTime() = Clock.System.now()
+
 
 @OptIn(ExperimentalTime::class)
-fun getInstant(): Instant = Clock.System.now()
+fun getInstant(): Instant = debugValue(
+    debugValue = { debugScaledTime() },
+    normalValue = { getInstantRealTime() }
+)
 
 
 @OptIn(ExperimentalTime::class)
@@ -105,4 +115,19 @@ fun Instant.withTimeOfDay(time: TimeOfDay): Instant {
     )
 
     return dateTime.toInstant(timezone)
+}
+
+private fun debugScaledTime(scale: Float = DEBUG_TIME_SCALE): Instant {
+    /*
+     * If scale != 1f, the returned instance will be 'scaled' relative to real time passed since initInstant.
+     * Useful to slow down time while debugging animations!
+     */
+    val realTime = getInstantRealTime()
+    if (scale == 1f) return realTime
+
+    val delta = realTime - debugInitInstant
+    val scaled = delta.inWholeMilliseconds * scale
+
+    val scaledInstant = debugInitInstant.plus(scaled.roundToInt(), DateTimeUnit.MILLISECOND)
+    return scaledInstant
 }
