@@ -43,8 +43,8 @@ private fun Editable() {
     val repository = remember { WebSettingsRepository() }
     val viewModel = settingsEditorViewModel(repository)
 
-    App(viewModel) { navigation ->
-        SettingsEditorScreen(viewModel, navigation)
+    App(viewModel) { navigation, navigationIcon ->
+        SettingsEditorScreen(viewModel, navigation, navigationIcon = navigationIcon)
     }
 }
 
