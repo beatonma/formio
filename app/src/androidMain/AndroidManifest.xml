@@ -16,7 +16,7 @@
     >
         <activity
             android:exported="true"
-            android:name=".gclocks.app.MainActivity">
+            android:name=".formio.app.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -24,7 +24,7 @@
         </activity>
 
         <service
-            android:name=".gclocks.wallpaper.ClockWallpaperService"
+            android:name=".formio.wallpaper.ClockWallpaperService"
             android:enabled="true"
             android:permission="android.permission.BIND_WALLPAPER"
             android:exported="true"
@@ -40,7 +40,7 @@
         </service>
 
         <service
-            android:name=".gclocks.screensaver.ClockDreamService"
+            android:name=".formio.screensaver.ClockDreamService"
             android:exported="true"
             android:permission="android.permission.BIND_DREAM_SERVICE"
         >
@@ -57,7 +57,7 @@
         </service>
 
         <receiver
-            android:name=".gclocks.widget.ClockWidgetProvider"
+            android:name=".formio.widget.ClockWidgetProvider"
             android:exported="true"
         >
             <intent-filter>

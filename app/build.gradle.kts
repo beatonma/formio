@@ -45,10 +45,10 @@ kotlin {
                         val timestamp: String =
                             LocalDateTime.now()
                                 .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
-                        "gclocks-${timestamp}.js"
+                        "formio-${timestamp}.js"
                     }
 
-                    KotlinWebpackConfig.Mode.DEVELOPMENT -> "gclocks.js"
+                    KotlinWebpackConfig.Mode.DEVELOPMENT -> "formio.js"
                 }
 
                 devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
@@ -126,7 +126,7 @@ android {
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "org.beatonma.gclocks"
+        applicationId = "org.beatonma.formio"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
@@ -154,11 +154,11 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "org.beatonma.gclocks.app.MainKt"
+        mainClass = "org.beatonma.formio.app.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "org.beatonma.gclocks"
+            packageName = "org.beatonma.formio"
             packageVersion = "1.0.0"
         }
     }

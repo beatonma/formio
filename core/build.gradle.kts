@@ -10,7 +10,7 @@ plugins {
 val isDebugBuild = project.hasProperty("debug")
         && project.properties["debug"]?.toString()?.lowercase() == "true"
 
-val pkg = "org.beatonma.gclocks.core"
+val pkg = "org.beatonma.formio.core"
 val generatedSrcDir =
     layout.buildDirectory.get().dir("generated/kmp/main/kotlin/${pkg.replace(".", "/")}")
 

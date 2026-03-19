@@ -1,0 +1,437 @@
+package org.beatonma.formio.compose
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextOverflow
+import org.beatonma.formio.core.geometry.Angle
+import org.beatonma.formio.core.geometry.FloatPoint
+import org.beatonma.formio.core.geometry.Point
+import org.beatonma.formio.core.geometry.Position
+import org.beatonma.formio.core.graphics.Canvas
+import org.beatonma.formio.core.graphics.Color
+import org.beatonma.formio.core.graphics.DrawStyle
+import org.beatonma.formio.core.graphics.Fill
+import org.beatonma.formio.core.graphics.Path
+import org.beatonma.formio.core.graphics.PathMeasure
+import org.beatonma.formio.core.graphics.PathMeasureScope
+import org.beatonma.formio.core.graphics.Stroke
+import org.beatonma.formio.core.graphics.StrokeCap
+import org.beatonma.formio.core.graphics.StrokeJoin
+import org.beatonma.formio.core.util.debug
+import androidx.compose.ui.geometry.Rect as PlatformRect
+import androidx.compose.ui.graphics.Color as PlatformColor
+import androidx.compose.ui.graphics.Path as PlatformPath
+import androidx.compose.ui.graphics.PathMeasure as PlatformPathMeasure
+import androidx.compose.ui.graphics.StrokeCap as PlatformStrokeCap
+import androidx.compose.ui.graphics.StrokeJoin as PlatformStrokeJoin
+import androidx.compose.ui.graphics.drawscope.DrawStyle as PlatformStyle
+import androidx.compose.ui.graphics.drawscope.Fill as PlatformFill
+import androidx.compose.ui.graphics.drawscope.Stroke as PlatformStroke
+
+private val DefaultPivot = Offset.Zero
+
+@Composable
+fun rememberCanvasHost(): ComposeCanvasHost {
+    val textMeasurer = rememberTextMeasurer()
+    val canvas = remember { ComposeCanvasHost(textMeasurer) }
+    return canvas
+}
+
+class ComposePath : Path {
+    internal val composePath: PlatformPath = PlatformPath()
+
+    override fun moveTo(x: Float, y: Float) {
+        composePath.moveTo(x, y)
+    }
+
+    override fun lineTo(x: Float, y: Float) {
+        composePath.lineTo(x, y)
+    }
+
+    override fun cubicTo(x1: Float, y1: Float, x2: Float, y2: Float, x3: Float, y3: Float) {
+        composePath.cubicTo(x1, y1, x2, y2, x3, y3)
+    }
+
+    override fun boundedArc(
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        startAngle: Angle,
+        sweepAngle: Angle,
+    ) {
+        composePath.addArc(
+            PlatformRect(left, top, right, bottom),
+            startAngle.asDegrees,
+            sweepAngle.asDegrees,
+        )
+    }
+
+    override fun arcTo(
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        startAngle: Angle,
+        sweepAngle: Angle,
+        forceMoveTo: Boolean,
+    ) {
+        composePath.arcTo(
+            PlatformRect(left, top, right, bottom),
+            startAngle.asDegrees,
+            sweepAngle.asDegrees,
+            forceMoveTo
+        )
+    }
+
+    override fun circle(
+        centerX: Float,
+        centerY: Float,
+        radius: Float,
+        direction: Path.Direction, // Ignored in Compose!
+    ) {
+        composePath.addOval(
+            PlatformRect(
+                centerX - radius,
+                centerY - radius,
+                centerX + radius,
+                centerY + radius
+            )
+        )
+    }
+
+    override fun rect(
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        direction: Path.Direction,
+    ) {
+        composePath.addRect(PlatformRect(left, top, right, bottom), direction.toCompose())
+    }
+
+    override fun transform(matrix: org.beatonma.formio.core.graphics.Matrix) {
+        composePath.transform(matrix.toCompose())
+    }
+
+    override fun closePath() {
+        composePath.close()
+    }
+
+    override fun beginPath() {
+        composePath.reset()
+    }
+}
+
+class ComposePathMeasure(
+    private val segmentPath: ComposePath,
+    private val pathMeasure: PlatformPathMeasure = PlatformPathMeasure(),
+) : PathMeasure {
+    override val length: Float get() = pathMeasure.length
+
+    override fun setPath(path: Path, forceClosed: Boolean) {
+        pathMeasure.setPath((path as ComposePath).composePath, forceClosed = forceClosed)
+    }
+
+    override fun getPosition(distance: Float): Position? {
+        return pathMeasure.getPosition(distance).toPosition()
+    }
+
+    override fun getTangent(distance: Float): Position? {
+        return pathMeasure.getTangent(distance).toPosition()
+    }
+
+    override fun getSegment(
+        startDistance: Float,
+        endDistance: Float,
+        startsWithMoveTo: Boolean,
+    ): Path {
+        if (startsWithMoveTo) {
+            segmentPath.beginPath()
+        }
+        debug(false) {
+            if (!segmentPath.composePath.isEmpty) {
+                debug("getSegment outPath is not empty!")
+            }
+        }
+        pathMeasure.getSegment(
+            startDistance,
+            endDistance,
+            segmentPath.composePath,
+            startsWithMoveTo
+        )
+        return segmentPath
+    }
+}
+
+private typealias CanvasAction = Canvas.() -> Unit
+
+class ComposeCanvasHost(
+    private val textMeasurer: TextMeasurer,
+    private val path: ComposePath = ComposePath(),
+    private val segmentPath: ComposePath = ComposePath(),
+) {
+    inline fun withScope(drawScope: DrawScope, block: (Canvas) -> Unit) {
+        block(ComposeCanvas(drawScope))
+    }
+
+    inner class ComposeCanvas(private val drawScope: DrawScope) : Canvas, Path by path {
+        private val pathMeasure: PathMeasure by lazy {
+            ComposePathMeasure(segmentPath).apply {
+                setPath(path)
+            }
+        }
+
+        override fun measurePath(block: PathMeasureScope.() -> Unit) {
+            pathMeasure.setPath(path)
+            pathMeasure.apply(block)
+        }
+
+        override fun fill(color: Color) {
+            drawRect(color, 0f, 0f, drawScope.size.width, drawScope.size.height, Fill)
+        }
+
+        override fun drawCircle(
+            color: Color,
+            centerX: Float,
+            centerY: Float,
+            radius: Float,
+            style: DrawStyle,
+            alpha: Float,
+        ) {
+            drawScope.drawCircle(
+                color = color.toCompose(),
+                radius = radius,
+                center = Offset(centerX, centerY),
+                style = style.toCompose(),
+            )
+        }
+
+        override fun drawLine(
+            color: Color,
+            x1: Float,
+            y1: Float,
+            x2: Float,
+            y2: Float,
+            style: Stroke,
+            alpha: Float,
+        ) {
+            drawScope.drawLine(
+                color = color.toCompose(),
+                start = Offset(x1, y1),
+                end = Offset(x2, y2),
+                strokeWidth = style.width,
+                cap = style.cap.toCompose(),
+            )
+        }
+
+        override fun drawPath(
+            color: Color,
+            style: DrawStyle,
+            alpha: Float,
+        ) {
+            drawPath(path, color, style, alpha)
+        }
+
+        override fun drawPath(path: Path, color: Color, style: DrawStyle, alpha: Float) {
+            drawScope.drawPath(
+                (path as ComposePath).composePath,
+                color = color.toCompose(),
+                alpha = alpha,
+                style = style.toCompose(),
+            )
+        }
+
+        override fun drawPoint(
+            x: Float,
+            y: Float,
+            radius: Float,
+            color: Color,
+            style: DrawStyle,
+            alpha: Float,
+        ) {
+            drawScope.drawCircle(
+                color.toCompose(),
+                radius = radius,
+                center = Offset(x, y),
+                style = style.toCompose(),
+                alpha = alpha,
+            )
+        }
+
+        override fun drawRoundRect(
+            color: Color,
+            left: Float,
+            top: Float,
+            right: Float,
+            bottom: Float,
+            radius: Float,
+            style: DrawStyle,
+            alpha: Float,
+        ) {
+            drawScope.drawRoundRect(
+                color = color.toCompose(),
+                topLeft = Offset(left, top),
+                size = Size(right - left, bottom - top),
+                cornerRadius = CornerRadius(radius),
+                style = style.toCompose(),
+                alpha = alpha,
+            )
+        }
+
+        override fun drawText(text: String) {
+            drawScope.drawText(
+                textMeasurer,
+                text,
+                Offset.Zero,
+                style = TextStyle(
+                    color = PlatformColor.White,
+                    background = PlatformColor.DarkGray.copy(alpha = 0.2f),
+                ),
+                overflow = TextOverflow.Visible,
+            )
+        }
+
+        override fun withRotation(
+            angle: Angle,
+            pivotX: Float,
+            pivotY: Float,
+            block: CanvasAction,
+        ) {
+            drawScope.rotate(angle.asDegrees, Offset(pivotX, pivotY)) {
+                block()
+            }
+        }
+
+        override fun withScale(
+            scale: Float,
+            block: CanvasAction,
+        ) {
+            drawScope.scale(scale, pivot = DefaultPivot) {
+                block()
+            }
+        }
+
+        override fun withScale(scaleX: Float, scaleY: Float, block: Canvas.() -> Unit) {
+            drawScope.scale(scaleX, scaleY, pivot = DefaultPivot) {
+                block()
+            }
+        }
+
+        override fun withScale(
+            scale: Float,
+            pivotX: Float,
+            pivotY: Float,
+            block: CanvasAction,
+        ) {
+            drawScope.scale(scale, pivot = Offset(pivotX, pivotY)) {
+                block()
+            }
+        }
+
+        override fun withScale(
+            scaleX: Float,
+            scaleY: Float,
+            pivotX: Float,
+            pivotY: Float,
+            block: CanvasAction,
+        ) {
+            drawScope.scale(scaleX, scaleY, pivot = Offset(pivotX, pivotY)) {
+                block()
+            }
+        }
+
+        override fun withTranslation(
+            x: Float,
+            y: Float,
+            block: CanvasAction,
+        ) {
+            drawScope.translate(x, y) {
+                block()
+            }
+        }
+
+        override fun withTranslationAndScale(
+            x: Float,
+            y: Float,
+            scale: Float,
+            block: CanvasAction,
+        ) {
+            drawScope.withTransform({
+                translate(x, y)
+                scale(scale, pivot = DefaultPivot)
+            }) {
+                block()
+            }
+        }
+
+        override fun save() {
+            drawScope.drawContext.canvas.save()
+        }
+
+        override fun restore() {
+            drawScope.drawContext.canvas.restore()
+        }
+
+        override fun clear() {}
+    }
+}
+
+
+fun Color.toCompose(): PlatformColor = PlatformColor(
+    red = red,
+    green = green,
+    blue = blue,
+    alpha = alpha,
+)
+
+fun PlatformColor.toColor(): Color = Color.argb(alpha, red, green, blue)
+
+private fun DrawStyle.toCompose(): PlatformStyle = when (this) {
+    Fill -> PlatformFill
+    is Stroke -> PlatformStroke(
+        width = width,
+        cap = cap.toCompose(),
+        join = join.toCompose()
+    )
+}
+
+private fun StrokeCap.toCompose(): PlatformStrokeCap = when (this) {
+    StrokeCap.Round -> PlatformStrokeCap.Round
+    StrokeCap.Square -> PlatformStrokeCap.Square
+    StrokeCap.Butt -> PlatformStrokeCap.Butt
+}
+
+private fun StrokeJoin.toCompose(): PlatformStrokeJoin = when (this) {
+    StrokeJoin.Miter -> PlatformStrokeJoin.Miter
+    StrokeJoin.Round -> PlatformStrokeJoin.Round
+    StrokeJoin.Bevel -> PlatformStrokeJoin.Bevel
+}
+
+private fun Offset.toPosition(): Point<Float> = FloatPoint(x, y)
+
+private val composeMatrix = Matrix()
+private fun org.beatonma.formio.core.graphics.Matrix.toCompose(): Matrix = composeMatrix.let {
+    for (index in values.indices) {
+        it.values[index] = values[index]
+    }
+    it
+}
+
+private fun Path.Direction.toCompose() = when (this) {
+    Path.Direction.Clockwise -> PlatformPath.Direction.Clockwise
+    Path.Direction.AntiClockwise -> PlatformPath.Direction.CounterClockwise
+}

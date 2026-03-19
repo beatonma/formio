@@ -1,4 +1,4 @@
-rootProject.name = "gclocks-multiplatform"
+rootProject.name = "formio"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

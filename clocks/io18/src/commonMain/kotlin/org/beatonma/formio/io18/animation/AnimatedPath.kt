@@ -1,0 +1,73 @@
+package org.beatonma.formio.io18.animation
+
+import org.beatonma.formio.core.graphics.Canvas
+import org.beatonma.formio.core.graphics.Color
+import org.beatonma.formio.core.graphics.paths.PathDefinition
+import org.beatonma.formio.core.types.ProgressFloat
+import org.beatonma.formio.core.types.pf
+import org.beatonma.formio.io18.Io18Paints
+
+
+internal class AnimatedPath : Io18Animation.InlineDraw {
+    private val style = Io18Paints.thickStroke
+
+    private inline fun draw(
+        canvas: Canvas,
+        start: ProgressFloat,
+        end: ProgressFloat,
+        color: Color,
+        block: Canvas.() -> Unit,
+    ) {
+        canvas.beginPath()
+        if (end != start) {
+            canvas.block()
+            canvas.measurePath { pm ->
+                canvas.drawPath(
+                    pm.getSegment(start * pm.length, end * pm.length),
+                    color,
+                    style
+                )
+            }
+        }
+    }
+
+    override fun drawEnter(
+        canvas: Canvas,
+        progress: Float,
+        color: Color,
+        block: Canvas.() -> Unit,
+    ) {
+        draw(canvas, ProgressFloat.Zero, easeIn(progress).pf, color, block)
+    }
+
+    override fun drawExit(
+        canvas: Canvas,
+        progress: Float,
+        color: Color,
+        block: Canvas.() -> Unit,
+    ) {
+        draw(canvas, easeOut(progress).pf, ProgressFloat.One, color, block)
+    }
+}
+
+internal fun AnimatedPath.drawEnter(
+    canvas: Canvas,
+    progress: Float,
+    color: Color,
+    path: PathDefinition,
+) {
+    drawEnter(canvas, progress, color) {
+        path.plot(canvas)
+    }
+}
+
+internal fun AnimatedPath.drawExit(
+    canvas: Canvas,
+    progress: Float,
+    color: Color,
+    path: PathDefinition,
+) {
+    drawExit(canvas, progress, color) {
+        path.plot(canvas)
+    }
+}

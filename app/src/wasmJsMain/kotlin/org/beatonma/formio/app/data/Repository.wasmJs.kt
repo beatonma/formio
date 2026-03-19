@@ -1,0 +1,58 @@
+package org.beatonma.formio.app.data
+
+import kotlinx.browser.localStorage
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import org.beatonma.formio.app.data.settings.AppSettings
+import org.beatonma.formio.app.data.settings.DefaultAppSettings
+import org.beatonma.formio.app.data.settings.DisplayContext
+import org.beatonma.formio.core.util.debug
+import org.w3c.dom.get
+import org.w3c.dom.set
+import kotlin.enums.enumEntries
+
+class WebSettingsRepository : AppSettingsRepository {
+    private val stateKey = AppSettingsRepository.Keys.AppState
+    private val globalOptionsKey = AppSettingsRepository.Keys.GlobalOptions
+    private fun contextKey(context: DisplayContext) = AppSettingsRepository.Keys.settingKey(context)
+
+    override fun loadAppSettings(): Flow<AppSettings> {
+        return flow {
+            emit(
+                try {
+                    AppSettings(
+                        state = deserialize(localStorage[stateKey]!!),
+                        settings = enumEntries<DisplayContext>().associateWith {
+                            deserialize(localStorage[contextKey(it)]!!)
+                        },
+                        globalOptions = deserialize(localStorage[globalOptionsKey]!!)
+
+                    )
+                } catch (e: Exception) {
+                    debug("Failed to load preferences: $e")
+                    DefaultAppSettings
+                }
+            )
+        }
+    }
+
+    override suspend fun save(appSettings: AppSettings) {
+        localStorage[stateKey] = serialize(appSettings.state)
+        localStorage[globalOptionsKey] = serialize(appSettings.globalOptions)
+        enumEntries<DisplayContext>().forEach {
+            localStorage[contextKey(it)] = serialize(appSettings.settings[it])
+        }
+    }
+
+    override suspend fun save(key: String, value: String) {
+        localStorage[key] = value
+    }
+
+    override fun loadString(key: String): Flow<String?> {
+        return flow { localStorage[key] }
+    }
+
+    override suspend fun forgetString(key: String) {
+        localStorage.removeItem(key)
+    }
+}
