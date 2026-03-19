@@ -3,19 +3,17 @@ package org.beatonma.gclocks.io18
 import org.beatonma.gclocks.core.ClockFont
 import org.beatonma.gclocks.core.glyph.GlyphRole
 import org.beatonma.gclocks.core.glyph.GlyphState
-import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.options.TimeFormat
 
 private val BaseWidth = Io18Glyph.maxSize.width
 
 class Io18Font(
-    path: Path,
     isAnimated: Boolean = true,
     private val shuffleColors: Boolean = true,
     private val offsetColors: Boolean = true,
 ) : ClockFont<Io18Glyph> {
     override val measurements: ClockFont.Measurements = getMeasurements(isAnimated)
-    private val animations = GlyphAnimations(path)
+    private val animations = GlyphAnimations()
 
     override fun getGlyphAt(
         index: Int,

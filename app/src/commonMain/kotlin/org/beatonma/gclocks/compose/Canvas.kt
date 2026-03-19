@@ -87,7 +87,7 @@ class ComposePath : Path {
         bottom: Float,
         startAngle: Angle,
         sweepAngle: Angle,
-        forceMoveTo: Boolean
+        forceMoveTo: Boolean,
     ) {
         composePath.arcTo(
             PlatformRect(left, top, right, bottom),
@@ -137,32 +137,13 @@ class ComposePath : Path {
 }
 
 class ComposePathMeasure(
+    private val segmentPath: ComposePath,
     private val pathMeasure: PlatformPathMeasure = PlatformPathMeasure(),
 ) : PathMeasure {
     override val length: Float get() = pathMeasure.length
 
     override fun setPath(path: Path, forceClosed: Boolean) {
         pathMeasure.setPath((path as ComposePath).composePath, forceClosed = forceClosed)
-    }
-
-    override fun getSegment(
-        startDistance: Float,
-        endDistance: Float,
-        outPath: Path,
-        startsWithMoveTo: Boolean,
-    ): Path {
-        debug(false) {
-            if (!(outPath as ComposePath).composePath.isEmpty) {
-                debug("getSegment outPath is not empty!")
-            }
-        }
-        pathMeasure.getSegment(
-            startDistance,
-            endDistance,
-            (outPath as ComposePath).composePath,
-            startsWithMoveTo
-        )
-        return outPath
     }
 
     override fun getPosition(distance: Float): Position? {
@@ -172,6 +153,28 @@ class ComposePathMeasure(
     override fun getTangent(distance: Float): Position? {
         return pathMeasure.getTangent(distance).toPosition()
     }
+
+    override fun getSegment(
+        startDistance: Float,
+        endDistance: Float,
+        startsWithMoveTo: Boolean,
+    ): Path {
+        if (startsWithMoveTo) {
+            segmentPath.beginPath()
+        }
+        debug(false) {
+            if (!segmentPath.composePath.isEmpty) {
+                debug("getSegment outPath is not empty!")
+            }
+        }
+        pathMeasure.getSegment(
+            startDistance,
+            endDistance,
+            segmentPath.composePath,
+            startsWithMoveTo
+        )
+        return segmentPath
+    }
 }
 
 private typealias CanvasAction = Canvas.() -> Unit
@@ -179,15 +182,15 @@ private typealias CanvasAction = Canvas.() -> Unit
 class ComposeCanvasHost(
     private val textMeasurer: TextMeasurer,
     private val path: ComposePath = ComposePath(),
+    private val segmentPath: ComposePath = ComposePath(),
 ) {
     inline fun withScope(drawScope: DrawScope, block: (Canvas) -> Unit) {
         block(ComposeCanvas(drawScope))
     }
 
     inner class ComposeCanvas(private val drawScope: DrawScope) : Canvas, Path by path {
-
         private val pathMeasure: PathMeasure by lazy {
-            ComposePathMeasure().apply {
+            ComposePathMeasure(segmentPath).apply {
                 setPath(path)
             }
         }

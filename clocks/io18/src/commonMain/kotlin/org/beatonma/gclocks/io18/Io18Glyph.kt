@@ -27,9 +27,9 @@ import org.beatonma.gclocks.io18.characters.Three
 import org.beatonma.gclocks.io18.characters.Two
 import org.beatonma.gclocks.io18.characters.Zero
 
-class GlyphAnimations(path: Path) {
-    internal val animatedPath = AnimatedPath(path)
-    internal val tube = Tube(path)
+class GlyphAnimations {
+    internal val animatedPath = AnimatedPath()
+    internal val tube = Tube()
 }
 
 class Io18Glyph(

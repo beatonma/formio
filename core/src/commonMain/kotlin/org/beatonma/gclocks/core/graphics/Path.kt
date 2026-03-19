@@ -55,7 +55,7 @@ interface Path {
         bottom: Float,
         startAngle: Angle,
         sweepAngle: Angle,
-        forceMoveTo: Boolean
+        forceMoveTo: Boolean,
     )
 
     fun arcTo(
@@ -64,7 +64,7 @@ interface Path {
         radius: Float,
         startAngle: Angle,
         sweepAngle: Angle,
-        forceMoveTo: Boolean
+        forceMoveTo: Boolean,
     ) =
         arcTo(
             centerX - radius,
@@ -101,7 +101,7 @@ interface Path {
         top: Float,
         right: Float,
         bottom: Float,
-        direction: Direction = Direction.Clockwise
+        direction: Direction = Direction.Clockwise,
     )
 
     fun roundRect(
@@ -179,7 +179,7 @@ interface Path {
         scaleX: Float = 1f,
         scaleY: Float = 1f,
         pivotX: Float = 0f,
-        pivotY: Float = 0f
+        pivotY: Float = 0f,
     ) {
         transform(composeMatrix(rotation, translateX, translateY, scaleX, scaleY, pivotX, pivotY))
     }
@@ -230,21 +230,20 @@ interface Path {
 
 interface PathMeasureScope {
     val length: Float
-    fun getSegment(
-        startDistance: Float,
-        endDistance: Float,
-        outPath: Path,
-        startsWithMoveTo: Boolean = true,
-    ): Path
 
     fun getPosition(distance: Float): Position?
     fun getTangent(distance: Float): Position?
+
+    fun getSegment(
+        startDistance: Float,
+        endDistance: Float,
+        startsWithMoveTo: Boolean = true,
+    ): Path
 }
 
 interface PathMeasure : PathMeasureScope {
     fun setPath(path: Path, forceClosed: Boolean = false)
 }
-
 
 private fun composeMatrix(
     rotation: Angle = Angle.Zero,

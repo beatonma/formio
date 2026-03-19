@@ -10,12 +10,10 @@ import org.beatonma.gclocks.core.util.decelerate5
 import org.beatonma.gclocks.core.util.progress
 
 class Io16LoadingSpinner(
-    path: Path,
     override val paints: Paints = Io16Paints(),
 ) : LoadingSpinner {
     override val size: Float = 100f
     private val pathRenderer = Io16PathRenderer(
-        segmentPath = path,
         style = Stroke(2f)
     )
     private val totalDuration = 4000L

@@ -25,7 +25,7 @@ class ClockView @JvmOverloads constructor(
     private var constraints: MeasureConstraints = MeasureConstraints(0f, 0f)
 
     fun setOptions(options: AnyOptions) {
-        animator = createAnimatorFromOptions(options, canvasHost.path, allowVariance = true) {
+        animator = createAnimatorFromOptions(options, allowVariance = true) {
             postInvalidate()
         }.apply {
             setConstraints(constraints)

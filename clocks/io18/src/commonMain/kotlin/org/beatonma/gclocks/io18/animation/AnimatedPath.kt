@@ -6,12 +6,9 @@ import org.beatonma.gclocks.core.graphics.paths.PathDefinition
 import org.beatonma.gclocks.core.types.ProgressFloat
 import org.beatonma.gclocks.core.types.pf
 import org.beatonma.gclocks.io18.Io18Paints
-import org.beatonma.gclocks.core.graphics.Path as GraphicsPath
 
 
-internal class AnimatedPath(
-    private val path: GraphicsPath,
-) : Io18Animation.InlineDraw {
+internal class AnimatedPath : Io18Animation.InlineDraw {
     private val style = Io18Paints.thickStroke
 
     private inline fun draw(
@@ -22,12 +19,11 @@ internal class AnimatedPath(
         block: Canvas.() -> Unit,
     ) {
         canvas.beginPath()
-        path.beginPath()
         if (end != start) {
             canvas.block()
             canvas.measurePath { pm ->
                 canvas.drawPath(
-                    pm.getSegment(start * pm.length, end * pm.length, path),
+                    pm.getSegment(start * pm.length, end * pm.length),
                     color,
                     style
                 )

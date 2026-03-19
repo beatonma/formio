@@ -54,7 +54,7 @@ fun LoadingSpinner(
 private fun rememberLoadingSpinner(clock: ClockType): LoadingSpinner {
     return remember(clock) {
         when (clock) {
-            ClockType.Io16 -> Io16LoadingSpinner(ComposePath(), Io16Paints())
+            ClockType.Io16 -> Io16LoadingSpinner(Io16Paints())
             ClockType.Io18 -> Io18LoadingSpinner(Io18Paints())
             ClockType.Form -> FormLoadingSpinner(FormPaints())
         }

@@ -266,7 +266,7 @@ internal class WallpaperEngineDelegateImpl(
         val animator = _animator?.let { existingAnimator ->
             if (options == previousClockOptions) existingAnimator
             else null
-        } ?: createAnimatorFromOptions(options, canvasHost.path, allowVariance = true) {
+        } ?: createAnimatorFromOptions(options, allowVariance = true) {
             postInvalidate(frameDelayMillis)
         }
         animator.setConstraints(layoutManager.constraints)

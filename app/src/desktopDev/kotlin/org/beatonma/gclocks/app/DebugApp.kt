@@ -85,7 +85,6 @@ import org.beatonma.gclocks.io18.Io18Glyph
 import org.beatonma.gclocks.io18.Io18LayoutOptions
 import org.beatonma.gclocks.io18.Io18Options
 import org.beatonma.gclocks.io18.Io18Paints
-import java.time.Duration
 import kotlin.enums.enumEntries
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.days
@@ -99,7 +98,7 @@ private val ItemModifier = Modifier.background(ComposeColor.Black)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DebugApp() {
-    val keys = remember { ClockGlyph.Key.entries.map { it.key } }.filter { it.length > 1 }//.filter { ' ' in it }
+    val keys = remember { ClockGlyph.Key.entries.map { it.key } }
     var animationPosition by remember { mutableStateOf<Float?>(null) }
     var timeFunc: () -> Instant by remember { mutableStateOf(::getInstant) }
     var is24Hour by remember { mutableStateOf(false) }
@@ -143,9 +142,9 @@ fun DebugApp() {
 
                 lineBreak()
 
-//                FormGlyphs(keys, animationPosition, state, visibility)
+                FormGlyphs(keys, animationPosition, state, visibility)
                 Io16Glyphs(keys, animationPosition, state, visibility)
-//                Io18Glyphs(keys, animationPosition, state, visibility)
+                Io18Glyphs(keys, animationPosition, state, visibility)
             }
 
             Controls(
@@ -184,7 +183,7 @@ private fun Controls(
     modifier: Modifier = Modifier,
 ) {
     var controlsVisible by remember { mutableStateOf(true) }
-    var customTimeStr by remember { mutableStateOf("12:59:59") }
+    var customTimeStr by remember { mutableStateOf("") }
 
     LaunchedEffect(customTimeStr, animationPosition) {
         setTimeFunc {
@@ -294,6 +293,7 @@ private fun LazyGridScope.FormGlyphs(
     state: GlyphState?,
     visibility: GlyphVisibility?,
 ) {
+    val paints = FormPaints()
     items(
         keys,
         key = { key -> "form_$key" },
@@ -315,7 +315,7 @@ private fun LazyGridScope.FormGlyphs(
                         )
                 }
             },
-            remember { FormPaints() },
+            paints,
             ItemModifier.fillMaxSize(),
             animPosition = animationPosition,
         )
@@ -328,6 +328,7 @@ private fun LazyGridScope.Io16Glyphs(
     state: GlyphState?,
     visibility: GlyphVisibility?,
 ) {
+    val paints = Io16Paints()
     items(
         keys,
         key = { key -> "io16_$key" },
@@ -353,13 +354,10 @@ private fun LazyGridScope.Io16Glyphs(
                         )
                 }
             },
-            remember { Io16Paints() },
+            paints,
             ItemModifier.fillMaxSize(),
             renderer = remember {
-                Io16GlyphRenderer(
-                    ComposePath(),
-                    Io16Options(),
-                )
+                Io16GlyphRenderer(Io16Options(paints = paints))
             },
             animPosition = animationPosition,
         )
@@ -368,13 +366,14 @@ private fun LazyGridScope.Io16Glyphs(
 
 
 @Composable
-private fun rememberIo18Animations() = remember { GlyphAnimations(ComposePath()) }
+private fun rememberIo18Animations() = remember { GlyphAnimations() }
 private fun LazyGridScope.Io18Glyphs(
     keys: List<String>,
     animationPosition: Float?,
     state: GlyphState?,
     visibility: GlyphVisibility?,
 ) {
+    val paints = Io18Paints()
     items(
         keys,
         key = { key -> "io18_$key" },
@@ -397,7 +396,7 @@ private fun LazyGridScope.Io18Glyphs(
                         )
                 }
             },
-            remember { Io18Paints() },
+            paints,
             ItemModifier.fillMaxSize(),
             animPosition = animationPosition,
         )

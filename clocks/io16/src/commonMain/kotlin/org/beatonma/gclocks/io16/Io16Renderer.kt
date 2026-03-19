@@ -8,7 +8,6 @@ import org.beatonma.gclocks.core.glyph.GlyphVisibility
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Color
 import org.beatonma.gclocks.core.graphics.Paints
-import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.graphics.PathMeasureScope
 import org.beatonma.gclocks.core.graphics.Stroke
 import org.beatonma.gclocks.core.types.ProgressFloat
@@ -19,8 +18,8 @@ import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 import org.beatonma.gclocks.core.util.progress
 
 
-class Io16ClockRenderer<P : Path>(
-    override val renderer: Io16GlyphRenderer<P>,
+class Io16ClockRenderer(
+    override val renderer: Io16GlyphRenderer,
     override var paints: Paints,
 ) : ClockRenderer<Io16Glyph> {
     override fun update(currentTimeMillis: Long) {
@@ -29,8 +28,7 @@ class Io16ClockRenderer<P : Path>(
 }
 
 
-class Io16GlyphRenderer<P : Path>(
-    segmentPath: P,
+class Io16GlyphRenderer(
     options: Io16Options,
     initTimeMillis: Long = getCurrentTimeMillis(),
 ) : GlyphRenderer<Io16Glyph> {
@@ -55,7 +53,6 @@ class Io16GlyphRenderer<P : Path>(
     private var segmentOffsetProgress: ProgressFloat = ProgressFloat.Zero
 
     private val pathRenderer = Io16PathRenderer(
-        segmentPath,
         Stroke(
             options.paints.strokeWidth,
             cap = options.paints.strokeCap,
@@ -146,10 +143,7 @@ class Io16GlyphRenderer<P : Path>(
 }
 
 
-class Io16PathRenderer(
-    private val segmentPath: Path,
-    val style: Stroke,
-) {
+class Io16PathRenderer(val style: Stroke) {
     enum class State {
         /** Invisible/inactive segments will be rendered at the start of the path*/
         Appearing,
@@ -230,13 +224,11 @@ class Io16PathRenderer(
         val end = (segmentLength + start) % 1f
         val startDistance = start * length
         val endDistance = end * length
-        if (start < end) {
-            segmentPath.beginPath()
-            pathMeasure.getSegment(startDistance, endDistance, segmentPath)
+        val segmentPath = if (start < end) {
+            pathMeasure.getSegment(startDistance, endDistance)
         } else {
-            segmentPath.beginPath()
-            pathMeasure.getSegment(startDistance, length, segmentPath)
-            pathMeasure.getSegment(0f, endDistance, segmentPath)
+            pathMeasure.getSegment(startDistance, length, true)
+            pathMeasure.getSegment(0f, endDistance, false)
         }
 
         if (segmentLength < 0.01f) {

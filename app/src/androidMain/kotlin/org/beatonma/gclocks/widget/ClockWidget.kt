@@ -8,7 +8,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import androidx.core.app.AlarmManagerCompat.canScheduleExactAlarms
 import org.beatonma.gclocks.android.AndroidCanvasHost
-import org.beatonma.gclocks.android.AndroidPath
 import org.beatonma.gclocks.android.AppContext
 import org.beatonma.gclocks.android.alarmManager
 import org.beatonma.gclocks.android.appContext
@@ -98,7 +97,6 @@ interface ClockWidget {
         fun createBitmap(options: AnyOptions, width: Int, height: Int): Bitmap {
             val animator = createAnimatorFromOptions(
                 options,
-                AndroidPath(),
                 enableAnimation = false,
                 allowVariance = false,
                 onScheduleNextFrame = { /* no frame scheduling needed */ }

@@ -4,7 +4,6 @@ package org.beatonma.gclocks.clocks
 import org.beatonma.gclocks.core.ClockAnimator
 import org.beatonma.gclocks.core.createAnimator
 import org.beatonma.gclocks.core.glyph.GlyphState
-import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.options.AnyOptions
 import org.beatonma.gclocks.core.util.getCurrentTimeMillis
 import org.beatonma.gclocks.form.FormClockRenderer
@@ -21,7 +20,6 @@ import org.beatonma.gclocks.io18.Io18Renderer
  */
 fun createAnimatorFromOptions(
     options: AnyOptions,
-    path: Path,
     allowVariance: Boolean,
     forcedState: GlyphState? = null,
     enableAnimation: Boolean = true,
@@ -54,7 +52,7 @@ fun createAnimatorFromOptions(
                     randomiseSegmentOffset = allowVariance,
                 ),
                 Io16ClockRenderer(
-                    Io16GlyphRenderer(path, io16Options),
+                    Io16GlyphRenderer(io16Options),
                     io16Options.paints
                 ),
                 onScheduleNextFrame
@@ -64,7 +62,6 @@ fun createAnimatorFromOptions(
             createAnimator(
                 io18Options,
                 Io18Font(
-                    path,
                     isAnimated = enableAnimation,
                     shuffleColors = allowVariance,
                     offsetColors = true

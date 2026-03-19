@@ -7,7 +7,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.pointer.pointerInput
 import org.beatonma.gclocks.clocks.createAnimatorFromOptions
-import org.beatonma.gclocks.compose.ComposePath
 import org.beatonma.gclocks.compose.debugHotkey
 import org.beatonma.gclocks.compose.rememberCanvasHost
 import org.beatonma.gclocks.core.ClockAnimator
@@ -126,7 +125,6 @@ private fun rememberClockAnimator(
     return remember(options, forcedState) {
         createAnimatorFromOptions(
             options,
-            ComposePath(),
             allowVariance = allowVariance,
             forcedState = forcedState
         ) {

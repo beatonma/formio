@@ -2,7 +2,6 @@ package org.beatonma.gclocks.io18.animation
 
 import org.beatonma.gclocks.core.graphics.Canvas
 import org.beatonma.gclocks.core.graphics.Color
-import org.beatonma.gclocks.core.graphics.Path
 import org.beatonma.gclocks.core.graphics.StrokeCap
 import org.beatonma.gclocks.core.graphics.paths.PathDefinition
 import org.beatonma.gclocks.core.types.ProgressFloat
@@ -11,7 +10,7 @@ import org.beatonma.gclocks.core.util.progress
 import org.beatonma.gclocks.io18.Io18Paints
 
 
-internal class Tube(private val path: Path) : Io18Animation {
+internal class Tube : Io18Animation {
     private val buttStyle = Io18Paints.thickStroke
     private val roundedStyle = buttStyle.copy(cap = StrokeCap.Round)
     private val radius = buttStyle.width / 2
@@ -27,13 +26,12 @@ internal class Tube(private val path: Path) : Io18Animation {
         block: Canvas.() -> Unit,
     ) {
         canvas.beginPath()
-        path.beginPath()
         canvas.block()
         canvas.measurePath { pm ->
             val endDistance = end * pm.length
             if (end != start) {
                 canvas.drawPath(
-                    pm.getSegment(start * pm.length, endDistance, path),
+                    pm.getSegment(start * pm.length, endDistance),
                     lineColor,
                     when (cap) {
                         StrokeCap.Butt -> buttStyle

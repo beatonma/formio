@@ -77,7 +77,7 @@ class AndroidPath : Path {
         bottom: Float,
         startAngle: Angle,
         sweepAngle: Angle,
-        forceMoveTo: Boolean
+        forceMoveTo: Boolean,
     ) {
         path.arcTo(
             rectF.apply { set(left, top, right, bottom) },
@@ -131,33 +131,19 @@ class AndroidPath : Path {
 }
 
 class AndroidPathMeasure(
+    private val segmentPath: AndroidPath,
     private val pathMeasure: PlatformPathMeasure = PlatformPathMeasure(),
 ) : PathMeasure {
     private val coordinates = FloatArray(2)
     private fun FloatArray.toPosition() = FloatPoint(this[0], this[1])
+
+    override val length: Float get() = pathMeasure.length
 
     override fun setPath(
         path: Path,
         forceClosed: Boolean,
     ) {
         pathMeasure.setPath((path as AndroidPath).path, forceClosed)
-    }
-
-    override val length: Float get() = pathMeasure.length
-
-    override fun getSegment(
-        startDistance: Float,
-        endDistance: Float,
-        outPath: Path,
-        startsWithMoveTo: Boolean,
-    ): Path {
-        pathMeasure.getSegment(
-            startDistance,
-            endDistance,
-            (outPath as AndroidPath).path,
-            startsWithMoveTo
-        )
-        return outPath
     }
 
     override fun getPosition(distance: Float): Position {
@@ -169,16 +155,34 @@ class AndroidPathMeasure(
         pathMeasure.getPosTan(distance, null, coordinates)
         return coordinates.toPosition()
     }
+
+    override fun getSegment(
+        startDistance: Float,
+        endDistance: Float,
+        startsWithMoveTo: Boolean,
+    ): Path {
+        if (startsWithMoveTo) {
+            segmentPath.beginPath()
+        }
+        pathMeasure.getSegment(
+            startDistance,
+            endDistance,
+            segmentPath.path,
+            startsWithMoveTo
+        )
+        return segmentPath
+    }
 }
 
 private typealias CanvasAction = Canvas.() -> Unit
 
 class AndroidCanvasHost(
     val path: AndroidPath = AndroidPath(),
+    val segmentPath: AndroidPath = AndroidPath(),
     private val paint: Paint = Paint(),
 ) {
     private val pathMeasure: PathMeasure by lazy {
-        AndroidPathMeasure().apply {
+        AndroidPathMeasure(segmentPath).apply {
             setPath(path)
         }
     }
