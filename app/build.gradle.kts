@@ -8,6 +8,9 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 val wasmOutputDirectoryPath: String = "${layout.buildDirectory.get()}/outputs/wasmJs"
+val timestamp: String =
+    LocalDateTime.now()
+        .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -41,22 +44,14 @@ kotlin {
             val projectDirPath = project.projectDir.path
             commonWebpackConfig {
                 outputFileName = when (mode) {
-                    KotlinWebpackConfig.Mode.PRODUCTION -> {
-                        val timestamp: String =
-                            LocalDateTime.now()
-                                .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
-                        "formio-${timestamp}.js"
-                    }
-
-                    KotlinWebpackConfig.Mode.DEVELOPMENT -> "formio.js"
+                    KotlinWebpackConfig.Mode.PRODUCTION -> "formio-${timestamp}.js"
+                    KotlinWebpackConfig.Mode.DEVELOPMENT -> "formio-dev.js"
                 }
 
                 devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-                    static = (static ?: mutableListOf()).apply {
-                        // Serve sources to debug inside browser
-                        add(rootDirPath)
-                        add(projectDirPath)
-                    }
+                    // Serve sources to debug inside browser
+                    static(rootDirPath)
+                    static(projectDirPath)
                 }
             }
 
@@ -76,21 +71,23 @@ kotlin {
         val desktopMain by getting { dependsOn(jvmMain) }
 
         commonMain.dependencies {
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.material3AdaptiveNavigationSuite)
-            implementation(compose.materialIconsExtended)
-            implementation(compose.runtime)
-            implementation(compose.ui)
+            implementation(libs.jetbrains.compose.foundation)
+            implementation(libs.jetbrains.compose.material3)
+            implementation(libs.jetbrains.compose.material3NavSuite)
+            implementation(libs.jetbrains.compose.materialIconsExtended)
+            implementation(libs.jetbrains.compose.resources)
+            implementation(libs.jetbrains.compose.runtime)
+            implementation(libs.jetbrains.compose.ui)
+            implementation(libs.jetbrains.compose.uiBackhandler)
+            implementation(libs.jetbrains.compose.uiToolingPreview)
+
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.navigation)
             implementation(libs.compose.material3Adaptive)
             implementation(libs.kotlinx.serialization.json)
-            implementation(libs.ui.backhandler)
+
             implementation(project(":core"))
             implementation(project(":clocks:form"))
             implementation(project(":clocks:io16"))
@@ -100,7 +97,6 @@ kotlin {
             implementation(libs.androidx.datastore.preferences)
         }
         androidMain.dependencies {
-            implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.lifecycle.service)
         }
@@ -149,7 +145,7 @@ android {
 }
 
 dependencies {
-    debugImplementation(compose.uiTooling)
+    debugImplementation(libs.jetbrains.compose.uiTooling)
 }
 
 compose.desktop {
@@ -172,7 +168,7 @@ val wasmJsDistributionZip by tasks.registering(Zip::class) {
     dependsOn("wasmJsBrowserDistribution")
 
     destinationDirectory.set(layout.buildDirectory.dir("outputs"))
-    archiveFileName.set("wasmJs.zip")
+    archiveFileName.set("formio-$timestamp-wasmJs.zip")
     from(wasmOutputDirectoryPath) {
         exclude("*.html")
         exclude("*.css")
