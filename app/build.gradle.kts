@@ -13,12 +13,12 @@ val timestamp: String =
         .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.composeHotReload)
-    alias(libs.plugins.kotlinxSerialization)
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.compose.multiplatform)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.compose.hotReload)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -71,21 +71,21 @@ kotlin {
         val desktopMain by getting { dependsOn(jvmMain) }
 
         commonMain.dependencies {
-            implementation(libs.jetbrains.compose.foundation)
-            implementation(libs.jetbrains.compose.material3)
-            implementation(libs.jetbrains.compose.material3NavSuite)
-            implementation(libs.jetbrains.compose.materialIconsExtended)
-            implementation(libs.jetbrains.compose.resources)
-            implementation(libs.jetbrains.compose.runtime)
-            implementation(libs.jetbrains.compose.ui)
-            implementation(libs.jetbrains.compose.uiBackhandler)
-            implementation(libs.jetbrains.compose.uiToolingPreview)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.material3Adaptive)
+            implementation(libs.compose.material3NavSuite)
+            implementation(libs.compose.materialIconsExtended)
+            implementation(libs.compose.navigation)
+            implementation(libs.compose.resources)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.uiBackhandler)
+            implementation(libs.compose.uiToolingPreview)
 
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.navigation)
-            implementation(libs.compose.material3Adaptive)
             implementation(libs.kotlinx.serialization.json)
 
             implementation(project(":core"))
@@ -145,7 +145,7 @@ android {
 }
 
 dependencies {
-    debugImplementation(libs.jetbrains.compose.uiTooling)
+    debugImplementation(libs.compose.uiTooling)
 }
 
 compose.desktop {
