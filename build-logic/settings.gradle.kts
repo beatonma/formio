@@ -1,8 +1,6 @@
-rootProject.name = "formio"
-enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+rootProject.name = "build-logic"
 
 pluginManagement {
-    includeBuild("build-logic")
     repositories {
         google {
             mavenContent {
@@ -29,15 +27,9 @@ dependencyResolutionManagement {
         }
         mavenCentral()
     }
+    versionCatalogs {
+        create("libs") {
+            from(files("../gradle/libs.versions.toml"))
+        }
+    }
 }
-
-plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
-}
-
-include(":test")
-include(":core")
-include(":clocks:form")
-include(":clocks:io16")
-include(":clocks:io18")
-include(":app")
