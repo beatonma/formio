@@ -10,7 +10,7 @@ import android.widget.RemoteViews
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
-import org.beatonma.R
+import org.beatonma.formio.R
 import org.beatonma.formio.android.AppContext
 import org.beatonma.formio.android.appContext
 import org.beatonma.formio.app.data.AppSettingsRepository

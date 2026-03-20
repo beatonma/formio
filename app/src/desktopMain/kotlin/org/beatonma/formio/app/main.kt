@@ -13,14 +13,12 @@ import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import formio.app.generated.resources.Res
-import formio.app.generated.resources.app_name
 import org.beatonma.formio.app.data.DataStoreAppSettingsRepository
 import org.beatonma.formio.app.data.createDataStore
 import org.beatonma.formio.app.ui.App
 import org.beatonma.formio.app.ui.SystemBarsController
 import org.beatonma.formio.app.ui.screens.settingsEditorViewModel
-import org.jetbrains.compose.resources.stringResource
+import org.beatonma.formio.core.Build
 
 fun main() = application {
     var isWindowFullscreen by remember { mutableStateOf(false) }
@@ -46,7 +44,7 @@ fun main() = application {
     Window(
         state = windowState,
         onCloseRequest = ::exitApplication,
-        title = stringResource(Res.string.app_name),
+        title = Build.AppName,
     ) {
         val repository = remember { DataStoreAppSettingsRepository(createDataStore()) }
         val editorViewModel = settingsEditorViewModel(repository)

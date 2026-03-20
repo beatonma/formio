@@ -7,9 +7,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import formio.app.generated.resources.Res
-import formio.app.generated.resources.app_name
-import org.jetbrains.compose.resources.stringResource
+import org.beatonma.formio.core.Build
 
 fun main() = application {
     val windowState = rememberWindowState(
@@ -20,7 +18,7 @@ fun main() = application {
     Window(
         state = windowState,
         onCloseRequest = ::exitApplication,
-        title = stringResource(Res.string.app_name),
+        title = Build.AppName,
         alwaysOnTop = true,
     ) {
         DebugApp()

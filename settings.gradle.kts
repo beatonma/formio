@@ -5,6 +5,7 @@ pluginManagement {
     includeBuild("build-logic")
     repositories {
         google {
+            @Suppress("UnstableApiUsage")
             mavenContent {
                 includeGroupAndSubgroups("androidx")
                 includeGroupAndSubgroups("com.android")
@@ -19,6 +20,7 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
+    @Suppress("UnstableApiUsage")
     repositories {
         google {
             mavenContent {

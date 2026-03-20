@@ -4,21 +4,16 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalDistributionDsl
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 val wasmOutputDirectoryPath: String = "${layout.buildDirectory.get()}/outputs/wasmJs"
-val timestamp: String =
-    LocalDateTime.now()
-        .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
 
 plugins {
-    alias(libs.plugins.kotlin.multiplatform)
+    id("conventions.kmp")
+    id("extensions.project-globals")
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.compose.hotReload)
-    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -38,14 +33,14 @@ kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
-        outputModuleName.set("composeApp")
+        outputModuleName.set(projectGlobals.projectName)
         browser {
             val rootDirPath = project.rootDir.path
             val projectDirPath = project.projectDir.path
             commonWebpackConfig {
                 outputFileName = when (mode) {
-                    KotlinWebpackConfig.Mode.PRODUCTION -> "formio-${timestamp}.js"
-                    KotlinWebpackConfig.Mode.DEVELOPMENT -> "formio-dev.js"
+                    KotlinWebpackConfig.Mode.PRODUCTION -> projectGlobals.filename("js")
+                    KotlinWebpackConfig.Mode.DEVELOPMENT -> projectGlobals.filename("js", suffix = "dev")
                 }
 
                 devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
@@ -86,7 +81,6 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.kotlinx.serialization.json)
 
             implementation(project(":core"))
             implementation(project(":clocks:form"))
@@ -118,15 +112,18 @@ kotlin {
 }
 
 android {
-    namespace = "org.beatonma"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    namespace = projectGlobals.projectId
+    compileSdk = projectGlobals.androidCompileSdk
 
     defaultConfig {
-        applicationId = "org.beatonma.formio"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        applicationId = projectGlobals.projectId
+        minSdk = projectGlobals.androidMinSdk
+        targetSdk = projectGlobals.androidTargetSdk
+        versionCode = projectGlobals.projectVersionCode
+        versionName = projectGlobals.projectVersionName
+
+        manifestPlaceholders["app_name"] = projectGlobals.projectNameUI
+
     }
     packaging {
         resources {
@@ -139,8 +136,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = projectGlobals.javaVersion
+        targetCompatibility = projectGlobals.javaVersion
     }
 }
 
@@ -150,12 +147,12 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "org.beatonma.formio.app.MainKt"
+        mainClass = projectGlobals.projectPackage("app.MainKt")
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "org.beatonma.formio"
-            packageVersion = "1.0.0"
+            packageName = projectGlobals.projectId
+            packageVersion = projectGlobals.projectVersionName
         }
     }
 }
@@ -168,7 +165,8 @@ val wasmJsDistributionZip by tasks.registering(Zip::class) {
     dependsOn("wasmJsBrowserDistribution")
 
     destinationDirectory.set(layout.buildDirectory.dir("outputs"))
-    archiveFileName.set("formio-$timestamp-wasmJs.zip")
+    archiveFileName.set(projectGlobals.filename("zip", suffix = "wasmJs"))
+
     from(wasmOutputDirectoryPath) {
         exclude("*.html")
         exclude("*.css")

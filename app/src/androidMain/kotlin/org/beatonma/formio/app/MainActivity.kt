@@ -28,7 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.beatonma.R
+import org.beatonma.formio.R
 import org.beatonma.formio.android.alarmManager
 import org.beatonma.formio.android.appContext
 import org.beatonma.formio.android.componentNameOf

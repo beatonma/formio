@@ -34,7 +34,6 @@ import formio.app.generated.resources.about_form_markdown
 import formio.app.generated.resources.about_io16_markdown
 import formio.app.generated.resources.about_io18_markdown
 import formio.app.generated.resources.about_io_markdown
-import formio.app.generated.resources.app_name
 import org.beatonma.formio.app.theme.ClockColorScheme
 import org.beatonma.formio.compose.VerticalBottomContentPadding
 import org.beatonma.formio.compose.animation.AnimatedFade
@@ -42,6 +41,7 @@ import org.beatonma.formio.compose.components.Clock
 import org.beatonma.formio.compose.components.MarkdownText
 import org.beatonma.formio.compose.components.appBarVisibility
 import org.beatonma.formio.compose.plus
+import org.beatonma.formio.core.Build
 import org.beatonma.formio.core.geometry.HorizontalAlignment
 import org.beatonma.formio.core.geometry.VerticalAlignment
 import org.beatonma.formio.core.options.Layout
@@ -70,7 +70,7 @@ fun AboutScreen(navigationIcon: @Composable () -> Unit) {
         topBar = {
             @OptIn(ExperimentalMaterial3Api::class)
             TopAppBar(
-                title = { AnimatedFade(!appBarVisibility.isTransparent) { Text(stringResource(Res.string.app_name)) } },
+                title = { AnimatedFade(!appBarVisibility.isTransparent) { Text(Build.AppName) } },
                 navigationIcon = navigationIcon,
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = appBarVisibility.color),
             )

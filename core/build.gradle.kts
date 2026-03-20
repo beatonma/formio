@@ -1,8 +1,6 @@
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-
 plugins {
-    alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.kotlin.serialization)
+    id("conventions.kmp.build-targets")
+    id("extensions.project-globals")
 }
 
 
@@ -10,7 +8,7 @@ plugins {
 val isDebugBuild = project.hasProperty("debug")
         && project.properties["debug"]?.toString()?.lowercase() == "true"
 
-val pkg = "org.beatonma.formio.core"
+val pkg = projectGlobals.projectPackage("core")
 val generatedSrcDir =
     layout.buildDirectory.get().dir("generated/kmp/main/kotlin/${pkg.replace(".", "/")}")
 
@@ -27,6 +25,7 @@ val generateBuildConfig by tasks.registering(Sync::class) {
             
             object Build {
                 val isDebug: Boolean = $isDebugBuild
+                val AppName: String = "${projectGlobals.projectNameUI}"
             }
         """.trimIndent()
 
@@ -42,13 +41,6 @@ kotlin {
         optIn.add("kotlin.time.ExperimentalTime")
     }
 
-    jvm {}
-
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        browser {}
-    }
-
     sourceSets {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -59,9 +51,8 @@ kotlin {
             dependencies {
                 implementation(libs.kotlinx.coroutinesCore)
                 implementation(libs.kotlinx.datetime)
-                implementation(libs.kotlinx.serialization.json)
             }
-            kotlin.srcDir(generatedSrcDir)
+            kotlin.srcDir(generateBuildConfig)
         }
     }
 }

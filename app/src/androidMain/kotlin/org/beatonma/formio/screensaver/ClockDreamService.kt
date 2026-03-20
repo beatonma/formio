@@ -1,7 +1,7 @@
 package org.beatonma.formio.screensaver
 
 import android.service.dreams.DreamService
-import org.beatonma.R
+import org.beatonma.formio.R
 
 /**
  * LifecycleOwner implementation lifted from androidx.lifecycle.LifecycleService

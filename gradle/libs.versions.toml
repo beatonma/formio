@@ -1,10 +1,6 @@
 [versions]
 agp = "8.12.3"
-android-compileSdk = "36"
-android-minSdk = "30"
-android-targetSdk = "36"
 androidx-activity = "1.13.0"
-androidx-annotation = "1.9.1"
 androidx-collectionKtx = "1.6.0"
 androidx-datastore = "1.2.1"
 androidx-espresso = "3.7.0"
@@ -56,14 +52,18 @@ kotlinx-coroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-co
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+
+# Applied by gradle: KmpConvention.
+#noinspection UnusedVersionCatalogEntry
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 # Desktop
 skiko-awt-runtime-linux-x64 = { module = "org.jetbrains.skiko:skiko-awt-runtime-linux-x64", version.ref = "skiko-awt-linux-x64" }
 
 # Gradle
-android-gradle-plugin = { module = "com.android.tools.build:gradle-api", version.ref = "agp" }
-
+gradle-plugin-android = { module = "com.android.tools.build:gradle-api", version.ref = "agp" }
+gradle-plugin-compose = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
+gradle-plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

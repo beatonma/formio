@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">formio</string>
     <string name="wallpaper_description">Clocks wallpaper</string>
     <string name="widget_description">Clocks widget</string>
     <string name="permission_widget_alarms"><![CDATA[
