@@ -224,22 +224,29 @@ class Io16PathRenderer(val style: Stroke) {
         val end = (segmentLength + start) % 1f
         val startDistance = start * length
         val endDistance = end * length
-        val segmentPath = if (start < end) {
-            pathMeasure.getSegment(startDistance, endDistance)
-        } else {
-            pathMeasure.getSegment(startDistance, length, true)
-            pathMeasure.getSegment(0f, endDistance, false)
-        }
 
-        if (segmentLength < 0.01f) {
-            // Reduce 'radius' of paint when path is near zero in length
+        val style = if (segmentLength < 0.01f) style.copy(
+            width = style.width * progress(
+                segmentLength.value,
+                0f,
+                0.01f
+            )
+        ) else style
+
+        if (start < end) {
             canvas.drawPath(
-                segmentPath,
-                color,
-                style.copy(width = style.width * progress(segmentLength.value, 0f, 0.01f))
+                pathMeasure.getSegment(startDistance, endDistance),
+                color, style
             )
         } else {
-            canvas.drawPath(segmentPath, color, style)
+            canvas.drawPath(
+                pathMeasure.getSegment(startDistance, length),
+                color, style
+            )
+            canvas.drawPath(
+                pathMeasure.getSegment(0f, endDistance),
+                color, style
+            )
         }
     }
 }

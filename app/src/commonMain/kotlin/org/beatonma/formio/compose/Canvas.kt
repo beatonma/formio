@@ -30,7 +30,6 @@ import org.beatonma.formio.core.graphics.PathMeasureScope
 import org.beatonma.formio.core.graphics.Stroke
 import org.beatonma.formio.core.graphics.StrokeCap
 import org.beatonma.formio.core.graphics.StrokeJoin
-import org.beatonma.formio.core.util.debug
 import androidx.compose.ui.geometry.Rect as PlatformRect
 import androidx.compose.ui.graphics.Color as PlatformColor
 import androidx.compose.ui.graphics.Path as PlatformPath
@@ -146,11 +145,11 @@ class ComposePathMeasure(
         pathMeasure.setPath((path as ComposePath).composePath, forceClosed = forceClosed)
     }
 
-    override fun getPosition(distance: Float): Position? {
+    override fun getPosition(distance: Float): Position {
         return pathMeasure.getPosition(distance).toPosition()
     }
 
-    override fun getTangent(distance: Float): Position? {
+    override fun getTangent(distance: Float): Position {
         return pathMeasure.getTangent(distance).toPosition()
     }
 
@@ -161,11 +160,6 @@ class ComposePathMeasure(
     ): Path {
         if (startsWithMoveTo) {
             segmentPath.beginPath()
-        }
-        debug(false) {
-            if (!segmentPath.composePath.isEmpty) {
-                debug("getSegment outPath is not empty!")
-            }
         }
         pathMeasure.getSegment(
             startDistance,
