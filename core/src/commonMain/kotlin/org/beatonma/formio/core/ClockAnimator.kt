@@ -39,9 +39,10 @@ interface ClockAnimator<G : ClockGlyph> : ConstrainedLayout {
         width: Float,
         height: Float,
         state: GlyphState = GlyphState.Active,
+        visibility: GlyphVisibility = GlyphVisibility.Visible,
         instant: Instant = getInstant(),
     ) {
-        setState(state, force = true, currentTimeMillis = instant.currentTimeMillis)
+        setState(state, visibility, force = true, currentTimeMillis = instant.currentTimeMillis)
         setConstraints(MeasureConstraints(width, height))
         tick(instant)
         render(canvas)
