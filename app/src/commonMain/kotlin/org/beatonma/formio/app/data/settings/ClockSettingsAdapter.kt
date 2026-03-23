@@ -58,11 +58,10 @@ interface ClockSettingsAdapter<O : AnyOptions> {
         return richSettings.filter { setting ->
             when (setting.key) {
                 SettingKey.clockVerticalAlignment -> {
-                    // Vertical alignment only affects Layout.Horizontal
-                    when (options.layout.layout) {
-                        Layout.Horizontal -> setting
-                        else -> null
-                    }
+                    if (options.layout.layout == Layout.Horizontal && options.layout.format.showSeconds) {
+                        // Vertical alignment only affects Layout.Horizontal with seconds visible
+                        setting
+                    } else null
                 }
 
                 SettingKey.clockSecondsScale -> {
