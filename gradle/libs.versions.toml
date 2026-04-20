@@ -18,7 +18,7 @@ junit = "4.13.2"
 kotlin = "2.3.20"
 kotlinx-coroutines = "1.10.2"
 kotlinx-datetime = "0.7.1"
-kotlinx-serialization = "1.10.0"
+kotlinx-serialization = "1.11.0"
 skiko-awt-linux-x64 = "0.9.47"
 
 [libraries]
