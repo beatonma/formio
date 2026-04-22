@@ -2,11 +2,15 @@ package org.beatonma.formio.compose.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.pointer.pointerInput
 import org.beatonma.formio.clocks.createAnimatorFromOptions
+import org.beatonma.formio.compose.animation.currentFrameDelta
 import org.beatonma.formio.compose.debugHotkey
 import org.beatonma.formio.compose.rememberCanvasHost
 import org.beatonma.formio.core.ClockAnimator
@@ -15,12 +19,8 @@ import org.beatonma.formio.core.glyph.GlyphVisibility
 import org.beatonma.formio.core.options.AnyOptions
 import org.beatonma.formio.core.util.currentTimeMillis
 import org.beatonma.formio.core.util.getInstant
-import kotlin.time.Duration
 import kotlin.time.Instant
 
-
-@Composable
-expect fun currentFrameDelta(): Duration
 
 @Composable
 fun Clock(
@@ -31,7 +31,9 @@ fun Clock(
     forcedState: GlyphState? = null,
     visibility: GlyphVisibility? = null,
 ) {
-    val animator = rememberClockAnimator(options, allowVariance, forcedState)
+    val frameDelta = currentFrameDelta()
+    val animator = rememberClockAnimator(options, allowVariance, forcedState) {}
+    val canvasHost = rememberCanvasHost()
 
     LaunchedEffect(visibility) {
         if (visibility != null) {
@@ -39,75 +41,13 @@ fun Clock(
         }
     }
 
-    Clock(animator, modifier, getInstant)
-}
-
-@Composable
-fun Clock(
-    animator: ClockAnimator<*>,
-    modifier: Modifier = Modifier,
-    getInstant: () -> Instant = ::getInstant,
-) {
-    val frameDeltaMillis = currentFrameDelta()
-    val canvasHost = rememberCanvasHost()
-
     ConstrainedCanvas(
         animator,
         modifier
-            .debugHotkey { key ->
-                when (key) {
-                    Key.One -> {
-                        animator.setState(
-                            GlyphState.Inactive,
-                            false,
-                            getInstant().currentTimeMillis
-                        )
-                        true
-                    }
-
-                    Key.Two -> {
-                        animator.setState(GlyphState.Active, false, getInstant().currentTimeMillis)
-                        true
-                    }
-
-                    Key.Three -> {
-                        animator.setState(
-                            GlyphVisibility.Hidden,
-                            false,
-                            getInstant().currentTimeMillis
-                        )
-                        true
-                    }
-
-                    Key.Four -> {
-                        animator.setState(
-                            GlyphVisibility.Visible,
-                            false,
-                            getInstant().currentTimeMillis
-                        )
-                        true
-                    }
-
-                    else -> false
-                }
-            }
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent()
-
-                        val pointer = event.changes.firstOrNull() ?: continue
-                        val (x, y) = pointer.position
-
-                        animator.getGlyphAt(x, y)?.setState(
-                            GlyphState.Active,
-                            currentTimeMillis = getInstant().currentTimeMillis
-                        )
-                    }
-                }
-            }
+            .debugClockHotkeys(animator)
+            .clockPointerInput(animator)
     ) {
-        frameDeltaMillis
+        frameDelta.value // redraw when value changes
         animator.tick(getInstant())
 
         canvasHost.withScope(this) { canvas ->
@@ -138,4 +78,59 @@ private fun rememberClockAnimator(
     }
 
     return animator
+}
+
+
+private fun Modifier.debugClockHotkeys(animator: ClockAnimator<*>) = debugHotkey { key ->
+    when (key) {
+        Key.One -> {
+            animator.setState(
+                GlyphState.Inactive,
+                false,
+                getInstant().currentTimeMillis
+            )
+            true
+        }
+
+        Key.Two -> {
+            animator.setState(GlyphState.Active, false, getInstant().currentTimeMillis)
+            true
+        }
+
+        Key.Three -> {
+            animator.setState(
+                GlyphVisibility.Hidden,
+                false,
+                getInstant().currentTimeMillis
+            )
+            true
+        }
+
+        Key.Four -> {
+            animator.setState(
+                GlyphVisibility.Visible,
+                false,
+                getInstant().currentTimeMillis
+            )
+            true
+        }
+
+        else -> false
+    }
+}
+
+private fun Modifier.clockPointerInput(animator: ClockAnimator<*>) = pointerInput(Unit) {
+    awaitPointerEventScope {
+        while (true) {
+            val event = awaitPointerEvent()
+
+            val pointer = event.changes.firstOrNull() ?: continue
+            val (x, y) = pointer.position
+
+            animator.getGlyphAt(x, y)?.setState(
+                GlyphState.Active,
+                currentTimeMillis = getInstant().currentTimeMillis
+            )
+        }
+    }
 }
