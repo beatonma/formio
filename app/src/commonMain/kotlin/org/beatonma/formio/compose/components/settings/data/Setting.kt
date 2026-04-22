@@ -80,7 +80,7 @@ sealed interface RichSetting<T : Any> : Setting {
     val onValueChange: (T) -> Unit
 
     @Immutable
-    data class ClockColors(
+    class ClockColors(
         override val key: Key.ClockColors,
         override val name: StringResource,
         override val helpText: StringResource? = null,
@@ -91,27 +91,35 @@ sealed interface RichSetting<T : Any> : Setting {
     ) : RichSetting<ClockColorsData>
 
     @Immutable
-    data class SingleSelect<E : Enum<E>>(
+    class SingleSelect<E : Enum<E>>(
         override val key: Key.Enum<E>,
         override val name: StringResource,
         override val helpText: StringResource? = null,
         override val value: E,
         override val onValueChange: (E) -> Unit,
         val values: Set<E>,
-    ) : RichSetting<E>
+    ) : RichSetting<E> {
+        fun filterValues(predicate: (E) -> Boolean) = SingleSelect(
+            key, name, helpText, value, onValueChange, values.filter(predicate).toSet()
+        )
+    }
 
     @Immutable
-    data class MultiSelect<E : Enum<E>>(
+    class MultiSelect<E : Enum<E>>(
         override val key: Key.Enum<E>,
         override val name: StringResource,
         override val helpText: StringResource? = null,
         override val value: Set<E>,
         override val onValueChange: (Set<E>) -> Unit,
         val values: Set<E>,
-    ) : RichSetting<Set<E>>
+    ) : RichSetting<Set<E>> {
+        fun filterValues(predicate: (E) -> Boolean) = MultiSelect(
+            key, name, helpText, value, onValueChange, values.filter(predicate).toSet()
+        )
+    }
 
     @Immutable
-    data class Int(
+    class Int(
         override val key: Key.Int,
         override val name: StringResource,
         override val helpText: StringResource? = null,
@@ -124,7 +132,7 @@ sealed interface RichSetting<T : Any> : Setting {
     ) : RichSetting<kotlin.Int>
 
     @Immutable
-    data class Float(
+    class Float(
         override val key: Key.Float,
         override val name: StringResource,
         override val helpText: StringResource? = null,
@@ -137,7 +145,7 @@ sealed interface RichSetting<T : Any> : Setting {
     ) : RichSetting<kotlin.Float>
 
     @Immutable
-    data class Bool(
+    class Bool(
         override val key: Key.Bool,
         override val name: StringResource,
         override val helpText: StringResource? = null,
@@ -146,7 +154,7 @@ sealed interface RichSetting<T : Any> : Setting {
     ) : RichSetting<Boolean>
 
     @Immutable
-    data class ClockPosition(
+    class ClockPosition(
         override val key: Key.RectF,
         override val name: StringResource,
         override val helpText: StringResource? = null,
@@ -155,7 +163,7 @@ sealed interface RichSetting<T : Any> : Setting {
     ) : RichSetting<RectF>
 
     @Immutable
-    data class ClockType(
+    class ClockType(
         override val key: Key.Enum<ClockTypeData>,
         override val name: StringResource,
         override val helpText: StringResource? = null,
@@ -163,7 +171,8 @@ sealed interface RichSetting<T : Any> : Setting {
         override val onValueChange: (ClockTypeData) -> Unit,
     ) : RichSetting<ClockTypeData>
 
-    data class IntList(
+    @Immutable
+    class IntList(
         override val key: Key.IntList,
         override val name: StringResource,
         override val helpText: StringResource? = null,
@@ -187,9 +196,6 @@ sealed interface Key {
 
     @JvmInline
     value class IntList(override val value: String) : Key
-
-//    @JvmInline
-//    value class StringKey(override val value: String) : Key
 
     @JvmInline
     value class Float(override val value: String) : Key

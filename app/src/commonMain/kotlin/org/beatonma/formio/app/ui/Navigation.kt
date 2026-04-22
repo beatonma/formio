@@ -114,7 +114,7 @@ data class NavigationMenu(
 
 
 @Immutable
-data class AppNavigation(
+class AppNavigation(
     val onNavigateAbout: () -> Unit,
     val onNavigateClockPreview: (AnyContextClockOptions) -> Unit,
 )

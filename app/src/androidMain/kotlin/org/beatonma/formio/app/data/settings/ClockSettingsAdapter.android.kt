@@ -28,7 +28,7 @@ private interface AndroidClockSettingsAdapter<O : AnyOptions> :
     override fun filterRichSettings(
         richSettings: RichSettings,
         options: O,
-        displayContext: DisplayContext
+        displayContext: DisplayContext,
     ): RichSettings {
         val superFiltered = super.filterRichSettings(richSettings, options, displayContext)
         return filterSettings(displayContext, superFiltered)
@@ -68,7 +68,6 @@ private fun <E : Enum<E>> filterSingleSelect(
     setting: RichSetting<*>,
     filter: (E) -> Boolean,
 ): RichSetting.SingleSelect<E> {
-    @Suppress("UNCHECKED_CAST") return (setting as RichSetting.SingleSelect<E>).copy(
-        values = setting.values.filter(filter).toSet()
-    )
+    @Suppress("UNCHECKED_CAST")
+    return (setting as RichSetting.SingleSelect<E>).filterValues(filter)
 }

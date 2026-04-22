@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 
 val LocalSystemBars: ProvidableCompositionLocal<SystemBarsController?> = compositionLocalOf { null }
 
-data class SystemBarsController(
+class SystemBarsController(
     val onRequestHideSystemBars: () -> Unit,
     val onRequestShowSystemBars: () -> Unit,
 )
