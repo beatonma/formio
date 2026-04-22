@@ -1,5 +1,6 @@
 package org.beatonma.formio.app.ui
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.derivedStateOf
@@ -145,9 +146,7 @@ fun AppNavigation(
                 displayContext ?: return@composable LoadingSpinner(),
                 viewModel::setDisplayContext,
                 onNavigateClockPreview = dropUnlessResumed { preview ->
-                    fullscreenNavController.navigate(
-                        preview
-                    )
+                    fullscreenNavController.navigate(preview)
                 },
                 modifier = modifier,
                 contentAlignment = contentAlignment,
@@ -230,7 +229,7 @@ private fun NavigationUI(
         NavHost(
             panelNavController,
             startDestination = startDestination,
-            modifier = modifier,
+            modifier = modifier.fillMaxSize(),
             contentAlignment = contentAlignment,
         ) {
             composable<Pane.SettingsEditor> {
