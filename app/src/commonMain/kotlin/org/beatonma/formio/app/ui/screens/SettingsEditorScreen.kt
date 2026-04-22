@@ -60,6 +60,7 @@ import org.beatonma.formio.compose.AppIcon
 import org.beatonma.formio.compose.LoadingSpinner
 import org.beatonma.formio.compose.VerticalBottomContentPadding
 import org.beatonma.formio.compose.animation.AnimatedFade
+import org.beatonma.formio.compose.animation.fadeIn
 import org.beatonma.formio.compose.components.Clock
 import org.beatonma.formio.compose.components.IconToolbar
 import org.beatonma.formio.compose.components.settings.Setting
@@ -180,7 +181,7 @@ private fun ClockSettingsScaffold(
                 key,
                 richSettings,
                 contentPadding,
-                Modifier.fillMaxWidth(),
+                Modifier.fillMaxWidth().fadeIn(),
                 clockPreview = { modifier ->
                     CompositionLocalProvider(LocalContentColor provides foregroundColor) {
                         ClockPreview(

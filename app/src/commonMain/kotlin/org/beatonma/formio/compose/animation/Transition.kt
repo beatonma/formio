@@ -8,6 +8,7 @@ import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -18,7 +19,12 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.graphics.graphicsLayer
 
 private const val Scale: Float = 0.95f
 private const val Duration: Int = 300
@@ -106,7 +112,7 @@ fun AnimatedFade(
     visible: Boolean,
     modifier: Modifier = Modifier,
     label: String = "AnimatedFade",
-    content: @Composable AnimatedVisibilityScope.() -> Unit
+    content: @Composable AnimatedVisibilityScope.() -> Unit,
 ) {
     AnimatedVisibility(visible, modifier, EnterFade, ExitFade, label, content)
 }
@@ -116,7 +122,19 @@ fun AnimatedVertical(
     visible: Boolean,
     modifier: Modifier = Modifier,
     label: String = "AnimatedVertical",
-    content: @Composable AnimatedVisibilityScope.() -> Unit
+    content: @Composable AnimatedVisibilityScope.() -> Unit,
 ) {
     AnimatedVisibility(visible, modifier, EnterVertical, ExitVertical, label, content)
+}
+
+
+fun Modifier.fadeIn() = composed {
+    val target = remember { mutableStateOf(0f) }
+    val opacity = animateFloatAsState(target.value)
+
+    LaunchedEffect(Unit) { target.value = 1f }
+
+    graphicsLayer {
+        alpha = opacity.value
+    }
 }
