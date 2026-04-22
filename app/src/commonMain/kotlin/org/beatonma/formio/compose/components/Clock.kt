@@ -121,14 +121,21 @@ private fun rememberClockAnimator(
     options: AnyOptions,
     allowVariance: Boolean,
     forcedState: GlyphState?,
+    onScheduleNextFrame: (delayMillis: Int) -> Unit,
 ): ClockAnimator<*> {
-    return remember(options, forcedState) {
+    var previous: ClockAnimator<*>? by remember { mutableStateOf(null) }
+    val animator = remember(options, forcedState) {
         createAnimatorFromOptions(
             options,
             allowVariance = allowVariance,
-            forcedState = forcedState
-        ) {
-            // TODO schedule next frame
-        }
+            forcedState = forcedState,
+            previous = previous.also { previous = null },
+            onScheduleNextFrame = onScheduleNextFrame,
+        )
     }
+    LaunchedEffect(animator) {
+        previous = animator
+    }
+
+    return animator
 }

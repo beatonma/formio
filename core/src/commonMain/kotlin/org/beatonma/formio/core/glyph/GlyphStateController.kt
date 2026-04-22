@@ -13,9 +13,9 @@ sealed interface GlyphStateController {
     fun tick(options: GlyphOptions, currentTimeMillis: Long): GlyphState?
 }
 
-class DefaultGlyphStateController(lock: GlyphState?, currentTimeMillis: Long) :
+class DefaultGlyphStateController(initState: GlyphState?, lock: GlyphState?, currentTimeMillis: Long) :
     GlyphStateController {
-    override var state: GlyphState = lock ?: GlyphState.Active
+    override var state: GlyphState = initState ?: lock ?: GlyphState.Active
         private set
     override val lock: GlyphState? = when (lock) {
         null -> null
@@ -23,7 +23,7 @@ class DefaultGlyphStateController(lock: GlyphState?, currentTimeMillis: Long) :
         GlyphState.Deactivating, GlyphState.Inactive -> GlyphState.Inactive
     }
 
-    var stateChangedAt: Long = currentTimeMillis
+    private var stateChangedAt: Long = currentTimeMillis
     override var stateChangeProgress: Float = 0f
 
     override fun setState(newState: GlyphState, force: Boolean, currentTimeMillis: Long) {

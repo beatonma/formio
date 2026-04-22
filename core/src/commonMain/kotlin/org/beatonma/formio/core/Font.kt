@@ -14,7 +14,7 @@ interface ClockFont<G : Glyph> {
     /**
      * Create a new glyph instance for the given position.
      */
-    fun getGlyphAt(index: Int, format: TimeFormat, secondsGlyphScale: Float): G
+    fun getGlyphAt(index: Int, format: TimeFormat, secondsGlyphScale: Float, previous: G?, currentTimeMillis: Long): G
 
     fun measure(options: AnyOptions) = measure(
         format = options.layout.format,

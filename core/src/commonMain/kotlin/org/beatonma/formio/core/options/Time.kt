@@ -88,6 +88,8 @@ enum class TimeFormat {
         ).joinToString(":")
     }
 
+    fun getRole(index: Int): GlyphRole = roles.getOrNull(index) ?: GlyphRole.Default
+
     companion object {
         fun build(
             is24Hour: Boolean,

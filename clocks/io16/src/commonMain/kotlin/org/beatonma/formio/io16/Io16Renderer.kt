@@ -49,7 +49,7 @@ class Io16GlyphRenderer(
             field = value
         }
 
-    private var segmentAnimationMillis: Int = 0
+    private var segmentAnimationMillis: Int = (initTimeMillis % options.glyph.colorCycleDurationMillis).toInt()
     private var segmentOffsetProgress: ProgressFloat = ProgressFloat.Zero
 
     private val pathRenderer = Io16PathRenderer(

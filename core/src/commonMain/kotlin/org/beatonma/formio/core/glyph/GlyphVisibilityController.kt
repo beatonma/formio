@@ -23,9 +23,10 @@ sealed interface GlyphVisibilityController : SecondChangedObserver {
 }
 
 abstract class BaseGlyphVisibilityController(
+    default: GlyphVisibility?,
     override val onVisibilityChanged: OnVisibilityChanged? = null,
 ) : GlyphVisibilityController {
-    override var visibility: GlyphVisibility = GlyphVisibility.Appearing
+    override var visibility: GlyphVisibility = default ?: GlyphVisibility.Appearing
         protected set
 
     override fun setVisibility(
@@ -46,8 +47,9 @@ abstract class BaseGlyphVisibilityController(
  * only when the glyph key can be updated.
  */
 class SynchronizedVisibilityController(
+    default: GlyphVisibility?,
     onVisibilityChanged: OnVisibilityChanged? = null,
-) : BaseGlyphVisibilityController(onVisibilityChanged) {
+) : BaseGlyphVisibilityController(default, onVisibilityChanged) {
     private var pendingVisibility: GlyphVisibility? = null
 
     override fun onSecondChange(currentTimeMillis: Long) {
@@ -137,9 +139,10 @@ class SynchronizedVisibilityController(
  * Visibility changes are independent of the path and can start and stop at any time.
  */
 class DesynchronizedGlyphVisibilityController(
+    default: GlyphVisibility?,
     currentTimeMillis: Long = getCurrentTimeMillis(),
     onVisibilityChanged: OnVisibilityChanged? = null,
-) : BaseGlyphVisibilityController(onVisibilityChanged) {
+) : BaseGlyphVisibilityController(default, onVisibilityChanged) {
     var visibilityChangedAt: Long = currentTimeMillis
     var visibilityChangedProgress: Float = 0f
 

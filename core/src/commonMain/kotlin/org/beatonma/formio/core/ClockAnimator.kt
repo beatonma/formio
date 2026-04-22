@@ -138,10 +138,11 @@ fun <G : ClockGlyph> createAnimator(
     options: AnyOptions,
     font: ClockFont<G>,
     renderer: ClockRenderer<G>,
+    previous: ClockAnimator<G>? = null,
     onScheduleNextFrame: (delayMillis: Int) -> Unit,
 ): ClockAnimator<G> {
     return object : SingleRendererClockAnimator<G> {
-        override val layout = ClockLayout(font = font, options = options)
+        override val layout = ClockLayout(font = font, options = options, state = previous?.layout?.exportState())
         override val renderer: ClockRenderer<G> = renderer
         override fun scheduleNextFrame(delayMillis: Int) {
             onScheduleNextFrame(delayMillis)
@@ -153,14 +154,15 @@ fun <G : ClockGlyph> createAnimator(
     options: AnyOptions,
     font: ClockFont<G>,
     renderers: List<ClockRenderer<G>>,
+    previous: ClockAnimator<G>? = null,
     onScheduleNextFrame: (delayMillis: Int) -> Unit,
 ): ClockAnimator<G> {
     if (renderers.size == 1) {
-        return createAnimator(options, font, renderers.first(), onScheduleNextFrame)
+        return createAnimator(options, font, renderers.first(), previous, onScheduleNextFrame)
     }
 
     return object : MultiRendererClockAnimator<G> {
-        override val layout = ClockLayout(font = font, options = options)
+        override val layout = ClockLayout(font = font, options = options, state = previous?.layout?.exportState())
         override val renderers: List<ClockRenderer<G>> = renderers.toList()
         override fun scheduleNextFrame(delayMillis: Int) {
             onScheduleNextFrame(delayMillis)

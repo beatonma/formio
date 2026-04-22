@@ -1,19 +1,29 @@
 package org.beatonma.formio.form
 
 import org.beatonma.formio.core.ClockFont
+import org.beatonma.formio.core.glyph.BaseClockGlyph
 import org.beatonma.formio.core.glyph.GlyphRole
 import org.beatonma.formio.core.options.TimeFormat
 
 
 class FormFont(isAnimated: Boolean = true) : ClockFont<FormGlyph> {
     override val measurements: ClockFont.Measurements = getMeasurements(isAnimated)
-    override fun getGlyphAt(index: Int, format: TimeFormat, secondsGlyphScale: Float): FormGlyph {
-        val role = format.roles.getOrNull(index) ?: GlyphRole.Default
+    override fun getGlyphAt(
+        index: Int,
+        format: TimeFormat,
+        secondsGlyphScale: Float,
+        previous: FormGlyph?,
+        currentTimeMillis: Long,
+    ): FormGlyph {
+        val role = format.getRole(index)
         val scale = when (role) {
             GlyphRole.Second -> secondsGlyphScale
             else -> 1f
         }
-        return FormGlyph(role, scale)
+
+        val init = BaseClockGlyph.Init(role, scale, null, previous?.state, previous?.visibility, currentTimeMillis)
+
+        return FormGlyph(init)
     }
 
     companion object {

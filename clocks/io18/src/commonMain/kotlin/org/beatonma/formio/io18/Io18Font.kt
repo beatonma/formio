@@ -1,6 +1,7 @@
 package org.beatonma.formio.io18
 
 import org.beatonma.formio.core.ClockFont
+import org.beatonma.formio.core.glyph.BaseClockGlyph
 import org.beatonma.formio.core.glyph.GlyphRole
 import org.beatonma.formio.core.glyph.GlyphState
 import org.beatonma.formio.core.options.TimeFormat
@@ -19,8 +20,10 @@ class Io18Font(
         index: Int,
         format: TimeFormat,
         secondsGlyphScale: Float,
+        previous: Io18Glyph?,
+        currentTimeMillis: Long,
     ): Io18Glyph {
-        val role = format.roles.getOrNull(index) ?: GlyphRole.Default
+        val role = format.getRole(index)
         val lock = when (role.isSeparator) {
             true -> GlyphState.Inactive
             false -> null
@@ -29,16 +32,21 @@ class Io18Font(
             GlyphRole.Second -> secondsGlyphScale
             else -> 1f
         }
+        val paintIndices = when (previous) {
+            null -> getPaintIndices(shuffleColors, if (offsetColors) index else 0)
+            else -> previous.paintIndices
+        }
 
-        return Io18Glyph(
-            animations,
-            role,
-            scale,
-            lock,
-            shuffleColors = shuffleColors,
-            colorsOffset = if (offsetColors) index else 0
-        )
+        val init = BaseClockGlyph.Init(role, scale, lock, previous?.state, previous?.visibility, currentTimeMillis)
+
+        return Io18Glyph(init, animations, paintIndices)
     }
+
+    private fun getPaintIndices(shuffleColors: Boolean, offset: Int): IntArray =
+        when (shuffleColors) {
+            true -> Io18Paints.getRandomPaintIndices()
+            else -> IntArray(4) { index -> (index + offset) % 4 }
+        }
 
     companion object {
         /* All widths are at their maximum when progress==0, so static and animated measurements are the same */

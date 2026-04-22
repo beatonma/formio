@@ -1,6 +1,7 @@
 package org.beatonma.formio.io16
 
 import org.beatonma.formio.core.ClockFont
+import org.beatonma.formio.core.glyph.BaseClockGlyph
 import org.beatonma.formio.core.glyph.GlyphRole
 import org.beatonma.formio.core.glyph.GlyphState
 import org.beatonma.formio.core.options.TimeFormat
@@ -21,8 +22,15 @@ class Io16Font(
     private val randomiseSegmentOffset: Boolean = true,
 ) : ClockFont<Io16Glyph> {
     override val measurements: ClockFont.Measurements = getMeasurements(isAnimated)
-    override fun getGlyphAt(index: Int, format: TimeFormat, secondsGlyphScale: Float): Io16Glyph {
-        val role = format.roles.getOrNull(index) ?: GlyphRole.Default
+
+    override fun getGlyphAt(
+        index: Int,
+        format: TimeFormat,
+        secondsGlyphScale: Float,
+        previous: Io16Glyph?,
+        currentTimeMillis: Long,
+    ): Io16Glyph {
+        val role = format.getRole(index)
         val lock = when (role.isSeparator) {
             true -> GlyphState.Inactive
             false -> null
@@ -31,23 +39,26 @@ class Io16Font(
             GlyphRole.Second -> secondsGlyphScale
             else -> 1f
         }
-        val animationOffset: () -> ProgressFloat = when (randomiseSegmentOffset) {
-            true -> {
-                { Random.nextFloat().pf }
-            }
+        val animationOffset = previous?.animationOffset ?: getAnimationOffset(randomiseSegmentOffset)
 
-            false -> {
-                { ProgressFloat.Zero }
-            }
-        }
+        val init = BaseClockGlyph.Init(
+            role, scale, lock, previous?.state, previous?.visibility, currentTimeMillis
+        )
 
         debug {
-            val glyph = Io16Glyph(role, scale, lock, animationOffset())
+            val glyph = Io16Glyph(init, animationOffset)
             return debugGetGlyphAt?.invoke(glyph) ?: glyph
         }
 
-        return Io16Glyph(role, scale, lock, animationOffset())
+        return Io16Glyph(init, animationOffset)
     }
+
+    private fun getAnimationOffset(randomise: Boolean): ProgressFloat =
+        when {
+            randomise -> Random.nextFloat().pf
+            else -> ProgressFloat.Zero
+        }
+
 
     companion object {
         private val ZeroWidth = Io16GlyphPath.Zero.canonical.width

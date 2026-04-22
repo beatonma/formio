@@ -3,6 +3,7 @@ package org.beatonma.formio.clocks
 
 import org.beatonma.formio.core.ClockAnimator
 import org.beatonma.formio.core.createAnimator
+import org.beatonma.formio.core.glyph.ClockGlyph
 import org.beatonma.formio.core.glyph.GlyphState
 import org.beatonma.formio.core.options.AnyOptions
 import org.beatonma.formio.core.util.getCurrentTimeMillis
@@ -23,6 +24,7 @@ fun createAnimatorFromOptions(
     allowVariance: Boolean,
     forcedState: GlyphState? = null,
     enableAnimation: Boolean = true,
+    previous: ClockAnimator<*>? = null,
     onScheduleNextFrame: (delayMillis: Int) -> Unit,
 ): ClockAnimator<*> {
     return whenOptions(
@@ -32,6 +34,7 @@ fun createAnimatorFromOptions(
                 formOptions,
                 FormFont(isAnimated = enableAnimation),
                 FormClockRenderer(formOptions.paints),
+                castOrNull(previous),
                 onScheduleNextFrame
             )
         },
@@ -55,6 +58,7 @@ fun createAnimatorFromOptions(
                     Io16GlyphRenderer(io16Options),
                     io16Options.paints
                 ),
+                castOrNull(previous),
                 onScheduleNextFrame
             )
         },
@@ -67,8 +71,22 @@ fun createAnimatorFromOptions(
                     offsetColors = true
                 ),
                 Io18Renderer(io18Options.paints),
+                castOrNull(previous),
                 onScheduleNextFrame
             )
         }
     )
+}
+
+
+/**
+ * If the current type G matches the type used in [previousAnimator], cast and return [previousAnimator] safely.
+ * Otherwise return null.
+ */
+private inline fun <reified G : ClockGlyph> castOrNull(previousAnimator: ClockAnimator<*>?): ClockAnimator<G>? {
+    if (previousAnimator?.layout?.glyphClass == G::class) {
+        @Suppress("UNCHECKED_CAST")
+        return previousAnimator as? ClockAnimator<G>
+    }
+    return null
 }

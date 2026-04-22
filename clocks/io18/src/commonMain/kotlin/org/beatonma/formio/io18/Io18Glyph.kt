@@ -10,6 +10,7 @@ import org.beatonma.formio.core.graphics.Canvas
 import org.beatonma.formio.core.graphics.Color
 import org.beatonma.formio.core.graphics.Paints
 import org.beatonma.formio.core.util.decelerate2
+import org.beatonma.formio.core.util.getCurrentTimeMillis
 import org.beatonma.formio.core.util.interpolate
 import org.beatonma.formio.core.util.progress
 import org.beatonma.formio.io18.animation.AnimatedPath
@@ -26,40 +27,39 @@ import org.beatonma.formio.io18.characters.Three
 import org.beatonma.formio.io18.characters.Two
 import org.beatonma.formio.io18.characters.Zero
 
+private const val Io18ColorCount = 4
+
 class GlyphAnimations {
     internal val animatedPath = AnimatedPath()
     internal val tube = Tube()
 }
 
 class Io18Glyph(
+    init: Init,
     animations: GlyphAnimations,
-    role: GlyphRole,
-    scale: Float = 1f,
-    lock: GlyphState? = null,
-    colorsOffset: Int = 0,
-    shuffleColors: Boolean = true,
-) : ClockGlyph.SynchronizedVisibility(role, scale, lock) {
+    val paintIndices: IntArray = getDefaultIndices(),
+) : ClockGlyph.SynchronizedVisibility(init) {
+    constructor(
+        animations: GlyphAnimations,
+        role: GlyphRole,
+        scale: Float = 1f,
+        lock: GlyphState? = null,
+        paintIndices: IntArray = getDefaultIndices(),
+        currentTimeMillis: Long = getCurrentTimeMillis(),
+    ) : this(Init(role, scale, lock, null, null, currentTimeMillis), animations, paintIndices)
+
     companion object : GlyphCompanion {
         override val maxSize: NativeSize = NativeSize(
             GlyphCharacter.DefaultWidth,
             GlyphCharacter.DefaultHeight
         )
+
+        fun getDefaultIndices() = IntArray(Io18ColorCount) { it }
     }
 
     override val companion: GlyphCompanion = Companion
-    private val paintIndices: IntArray = when (shuffleColors) {
-        true -> Io18Paints.getRandomPaintIndices()
-        else -> {
-            val arr = intArrayOf(0, 1, 2, 3)
-            val size = arr.size
-            arr.forEachIndexed { index, value ->
-                arr[index] = (value + colorsOffset) % size
-            }
-            arr
-        }
-    }
 
-    private val colors: Array<Color> = Array(4) { Color.Red }
+    private lateinit var colors: Array<Color>
 
     private val zero = Zero(animations.animatedPath)
     private val one = One(animations.animatedPath)
@@ -124,8 +124,11 @@ class Io18Glyph(
         paints: Paints,
         renderGlyph: RenderGlyph?,
     ) {
-        paintIndices.forEachIndexed { index, value ->
-            colors[index] = paints[value]
+        if (!this::colors.isInitialized) {
+            colors = Array(Io18ColorCount) { paints[paintIndices[it]] }
+//            paintIndices.forEachIndexed { index, value ->
+//                colors[index] = paints[value]
+//            }
         }
         super.draw(canvas, glyphProgress, paints, renderGlyph)
     }

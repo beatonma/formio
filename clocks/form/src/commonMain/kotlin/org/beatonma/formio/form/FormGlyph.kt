@@ -9,6 +9,7 @@ import org.beatonma.formio.core.glyph.RenderGlyph
 import org.beatonma.formio.core.graphics.Canvas
 import org.beatonma.formio.core.graphics.Paints
 import org.beatonma.formio.core.util.decelerate5
+import org.beatonma.formio.core.util.getCurrentTimeMillis
 import org.beatonma.formio.core.util.lerp
 import org.beatonma.formio.core.util.progressIn
 import org.beatonma.formio.form.characters.canonical.EightWidth
@@ -64,11 +65,14 @@ import org.beatonma.formio.form.characters.transitional.ZeroOne
 private fun ease(f: Float) = decelerate5(f)
 private fun easeProgress(value: Float, min: Float, max: Float) = ease(value.progressIn(min, max))
 
-class FormGlyph(
-    role: GlyphRole,
-    scale: Float = 1f,
-    lock: GlyphState? = null,
-) : ClockGlyph.SynchronizedVisibility(role, scale, lock) {
+class FormGlyph(init: Init) : ClockGlyph.SynchronizedVisibility(init) {
+    constructor(
+        role: GlyphRole,
+        scale: Float = 1f,
+        lock: GlyphState? = null,
+        currentTimeMillis: Long = getCurrentTimeMillis(),
+    ) : this(Init(role, scale, lock, null, null, currentTimeMillis))
+
     companion object : GlyphCompanion {
         override val maxSize = NativeSize(
             x = 192f,

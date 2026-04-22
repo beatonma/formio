@@ -10,6 +10,7 @@ import org.beatonma.formio.core.graphics.Canvas
 import org.beatonma.formio.core.graphics.Paints
 import org.beatonma.formio.core.types.ProgressFloat
 import org.beatonma.formio.core.util.decelerate2
+import org.beatonma.formio.core.util.getCurrentTimeMillis
 import org.beatonma.formio.core.util.interpolate
 
 private val Width0 = Io16GlyphPath.Zero.canonical.width
@@ -29,11 +30,17 @@ private fun ease(t: Float) = decelerate2(overshoot(anticipate(t)))
 
 
 class Io16Glyph(
-    role: GlyphRole,
-    scale: Float = 1f,
-    lock: GlyphState? = null,
+    init: Init,
     val animationOffset: ProgressFloat,
-) : ClockGlyph.DesynchronizedVisibility(role, scale, lock) {
+) : ClockGlyph.DesynchronizedVisibility(init) {
+    constructor(
+        role: GlyphRole,
+        scale: Float = 1f,
+        lock: GlyphState? = null,
+        currentTimeMillis: Long = getCurrentTimeMillis(),
+        animationOffset: ProgressFloat,
+    ) : this(Init(role, scale, lock, null, null, currentTimeMillis), animationOffset)
+
     companion object : GlyphCompanion {
         override val maxSize = NativeSize(
             x = Io16GlyphPath.Zero.canonical.width,

@@ -2,7 +2,6 @@ package org.beatonma.formio.core.glyph
 
 import org.beatonma.formio.core.graphics.Canvas
 import org.beatonma.formio.core.graphics.Paints
-import org.beatonma.formio.core.util.getCurrentTimeMillis
 
 interface SecondChangedObserver {
     /**
@@ -12,13 +11,9 @@ interface SecondChangedObserver {
     fun onSecondChange(currentTimeMillis: Long)
 }
 
-
-sealed class BaseClockGlyph(
-    override val role: GlyphRole,
-    override val scale: Float = 1f,
-    lock: GlyphState? = null,
-    initialTimeMillis: Long = getCurrentTimeMillis(),
-) : BaseGlyph, ClockGlyph {
+sealed class BaseClockGlyph(init: Init) : BaseGlyph, ClockGlyph {
+    override val role: GlyphRole = init.role
+    override val scale: Float = init.scale
     final override var key: String = " "
         protected set(value) {
             field = value
@@ -35,12 +30,20 @@ sealed class BaseClockGlyph(
         protected set
 
     override val stateController: GlyphStateController =
-        DefaultGlyphStateController(lock, initialTimeMillis)
+        DefaultGlyphStateController(init.initialState, init.lock, init.timeMillis)
 
     override val lock: GlyphState? get() = stateController.lock
-
     override val state: GlyphState get() = stateController.state
     override val visibility: GlyphVisibility get() = visibilityController.visibility
+
+    class Init(
+        val role: GlyphRole,
+        val scale: Float,
+        val lock: GlyphState?,
+        val initialState: GlyphState?,
+        val initialVisibility: GlyphVisibility?,
+        val timeMillis: Long,
+    )
 }
 
 
@@ -251,14 +254,9 @@ interface ClockGlyph : Glyph, SecondChangedObserver {
      * These transitions replace the typical second-to-second animations entirely,
      * and so must be synchronized with the current time to avoid visual jumps.
      */
-    abstract class SynchronizedVisibility(
-        role: GlyphRole,
-        scale: Float = 1f,
-        lock: GlyphState? = null,
-        currentTimeMillis: Long = getCurrentTimeMillis(),
-    ) : BaseClockGlyph(role, scale, lock, currentTimeMillis) {
+    abstract class SynchronizedVisibility(init: Init) : BaseClockGlyph(init) {
         override val visibilityController: GlyphVisibilityController =
-            SynchronizedVisibilityController { newVisibility, currentTimeMillis ->
+            SynchronizedVisibilityController(init.initialVisibility) { newVisibility, currentTimeMillis ->
                 if (newVisibility == GlyphVisibility.Visible || newVisibility == GlyphVisibility.Appearing) {
                     setState(GlyphState.Active, force = true, currentTimeMillis = currentTimeMillis)
                 }
@@ -282,14 +280,9 @@ interface ClockGlyph : Glyph, SecondChangedObserver {
      * A [Glyph] which applies [GlyphVisibility] transitions on top of the existing
      * second-to-second animations, instead of replacing those animations entirely.
      */
-    abstract class DesynchronizedVisibility(
-        role: GlyphRole,
-        scale: Float = 1f,
-        lock: GlyphState? = null,
-        currentTimeMillis: Long = getCurrentTimeMillis(),
-    ) : BaseClockGlyph(role, scale, lock, currentTimeMillis) {
+    abstract class DesynchronizedVisibility(init: Init) : BaseClockGlyph(init) {
         override val visibilityController =
-            DesynchronizedGlyphVisibilityController { newVisibility, currentTimeMillis ->
+            DesynchronizedGlyphVisibilityController(init.initialVisibility) { newVisibility, currentTimeMillis ->
                 if (newVisibility == GlyphVisibility.Visible || newVisibility == GlyphVisibility.Appearing) {
                     setState(GlyphState.Active, force = true, currentTimeMillis = currentTimeMillis)
                 }

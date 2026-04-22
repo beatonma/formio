@@ -5,6 +5,8 @@ import org.beatonma.formio.core.glyph.ClockGlyph
 import org.beatonma.formio.core.glyph.Glyph
 import org.beatonma.formio.core.glyph.GlyphState
 import org.beatonma.formio.core.options.AnyOptions
+import org.beatonma.formio.core.options.GlyphOptions
+import org.beatonma.formio.core.options.TimeFormat
 import org.beatonma.formio.core.util.currentTimeMillis
 import org.beatonma.formio.core.util.fastForEach
 import org.beatonma.formio.core.util.fastForEachIndexed
@@ -14,9 +16,11 @@ import org.beatonma.formio.core.util.timeOfDay
 import kotlin.time.Instant
 
 
-internal class Glyphs<G : ClockGlyph>(
+internal class GlyphsController<G : ClockGlyph>(
     font: ClockFont<G>,
     options: AnyOptions,
+    other: GlyphsController<G>? = null,
+    currentTimeMillis: Long,
 ) {
     private val stringLength = options.layout.format.stringLength
     private var mutableGlyphs: List<MutableGlyphStatus<G>> = List(stringLength) { index ->
@@ -24,16 +28,18 @@ internal class Glyphs<G : ClockGlyph>(
             font.getGlyphAt(
                 index,
                 options.layout.format,
-                options.layout.secondsGlyphScale
+                options.layout.secondsGlyphScale,
+                other?.mutableGlyphs?.getOrNull(index)?.glyph,
+                currentTimeMillis
             ),
             index
         )
     }
+    val isSynchronizedVisibility: Boolean = mutableGlyphs.first().glyph is ClockGlyph.SynchronizedVisibility
     val glyphs: List<GlyphStatus<G>> get() = mutableGlyphs
-    val isSynchronizedVisibility: Boolean = glyphs.first().glyph is ClockGlyph.SynchronizedVisibility
 
-    private val options = options.glyph
-    private val format = options.layout.format
+    private val options: GlyphOptions = options.glyph
+    private val format: TimeFormat = options.layout.format
 
     var animationTimeMillis = 0f
         private set
