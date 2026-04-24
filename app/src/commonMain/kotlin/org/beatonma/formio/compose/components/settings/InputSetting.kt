@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
-import androidx.compose.material3.InputChip
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +22,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import org.beatonma.formio.app.ui.resolve
 import org.beatonma.formio.compose.AppIcon
+import org.beatonma.formio.compose.components.InputChip
 import org.beatonma.formio.compose.components.settings.components.DropdownSettingLayout
 import org.beatonma.formio.compose.components.settings.data.RichSetting
 import org.beatonma.formio.compose.components.settings.data.SettingValidator
@@ -72,9 +72,9 @@ fun IntListSetting(
         ) {
             value.forEach { n ->
                 InputChip(
-                    false,
-                    onClick = { onValueChange(value.filter { it != n }) }, label = { Text("$n") },
-                    trailingIcon = { Icon(AppIcon.Close, null) }
+                    { onValueChange(value.filter { it != n }) },
+                    label = "$n",
+                    trailingIcon = AppIcon.Close
                 )
             }
             OutlinedTextField(
@@ -158,7 +158,7 @@ private fun parseInt(
     text: String,
     validator: SettingValidator<Int>,
     onSuccess: (Int?) -> Unit,
-    onError: (() -> Unit)? = null
+    onError: (() -> Unit)? = null,
 ) {
     if (text.isBlank()) {
         onSuccess(null)
