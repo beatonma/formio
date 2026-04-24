@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -58,6 +57,7 @@ import org.beatonma.formio.app.ui.resolve
 import org.beatonma.formio.app.ui.screens.LocalClockPreview
 import org.beatonma.formio.compose.AppIcon
 import org.beatonma.formio.compose.components.Clock
+import org.beatonma.formio.compose.components.Column
 import org.beatonma.formio.compose.components.FullScreenOverlay
 import org.beatonma.formio.compose.components.settings.components.CheckableSettingLayout
 import org.beatonma.formio.compose.components.settings.components.SettingName
@@ -285,7 +285,7 @@ private fun ToolButtons(
 ) {
     Column(
         modifier,
-        verticalArrangement = Arrangement.spacedBy(DesignSpec.TouchTargetPadding),
+        verticalArrangement = Column.MediumSpacingArrangement,
         horizontalAlignment = Alignment.End,
     ) {
         AnimatedVisibility(bounds.height > containerSize.height * .8f || bounds.width > containerSize.width * .8f) {

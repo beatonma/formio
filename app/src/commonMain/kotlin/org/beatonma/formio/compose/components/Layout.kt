@@ -1,15 +1,11 @@
-package org.beatonma.formio.compose.components.settings.components;
+package org.beatonma.formio.compose.components
 
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -19,13 +15,41 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.beatonma.formio.app.theme.tokens.ColumnTokens
+import org.beatonma.formio.app.theme.tokens.RowTokens
 
-private val DefaultColumnSpacing = 16.dp
-private val DefaultRowSpacing = 16.dp
+internal object Row {
+    val SmallSpacingArrangement = Arrangement.spacedBy(RowTokens.SmallSpacing)
+    val MediumSpacingArrangement = Arrangement.spacedBy(RowTokens.MediumSpacing)
+    val LargeSpacingArrangement = Arrangement.spacedBy(RowTokens.LargeSpacing)
+
+    internal fun smallSpacingArrangement(alignment: Alignment.Horizontal) =
+        Arrangement.spacedBy(RowTokens.SmallSpacing, alignment)
+
+    internal fun mediumSpacingArrangement(alignment: Alignment.Horizontal) =
+        Arrangement.spacedBy(RowTokens.MediumSpacing, alignment)
+
+    internal fun largeSpacingArrangement(alignment: Alignment.Horizontal) =
+        Arrangement.spacedBy(RowTokens.LargeSpacing, alignment)
+}
+
+internal object Column {
+    val SmallSpacingArrangement = Arrangement.spacedBy(ColumnTokens.SmallSpacing)
+    val MediumSpacingArrangement = Arrangement.spacedBy(ColumnTokens.MediumSpacing)
+    val LargeSpacingArrangement = Arrangement.spacedBy(ColumnTokens.LargeSpacing)
+
+    internal fun smallSpacingArrangement(alignment: Alignment.Vertical) =
+        Arrangement.spacedBy(ColumnTokens.SmallSpacing, alignment)
+
+    internal fun mediumSpacingArrangement(alignment: Alignment.Vertical) =
+        Arrangement.spacedBy(ColumnTokens.MediumSpacing, alignment)
+
+    internal fun largeSpacingArrangement(alignment: Alignment.Vertical) =
+        Arrangement.spacedBy(ColumnTokens.LargeSpacing, alignment)
+}
+
 
 /**
  * A LazyRow which can be scrolled with a mouse on desktop environments.
@@ -57,26 +81,6 @@ internal fun ScrollingRow(
     )
 }
 
-@Composable
-internal fun SpacedRow(
-    modifier: Modifier = Modifier,
-    spacing: Dp = DefaultRowSpacing,
-    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(
-        spacing,
-        horizontalAlignment
-    ),
-    verticalAlignment: Alignment.Vertical = Alignment.Top,
-    content: @Composable RowScope.() -> Unit,
-) {
-    Row(
-        modifier,
-        horizontalArrangement,
-        verticalAlignment,
-        content,
-    )
-}
-
 /**
  * A LazyColumn which can be scrolled with a mouse on desktop environments.
  */
@@ -104,25 +108,5 @@ internal fun ScrollingColumn(
         verticalArrangement = verticalArrangement,
         horizontalAlignment = horizontalAlignment,
         content = content
-    )
-}
-
-@Composable
-internal fun SpacedColumn(
-    modifier: Modifier = Modifier,
-    spacing: Dp = DefaultColumnSpacing,
-    verticalAlignment: Alignment.Vertical = Alignment.Top,
-    verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(
-        spacing,
-        verticalAlignment
-    ),
-    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    Column(
-        modifier,
-        verticalArrangement,
-        horizontalAlignment,
-        content,
     )
 }

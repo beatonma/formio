@@ -1,6 +1,5 @@
 package org.beatonma.formio.compose.components
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
@@ -23,7 +22,7 @@ fun IconToolbar(
 ) {
     Row(
         modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp, alignment),
+        horizontalArrangement = Row.mediumSpacingArrangement(alignment),
         verticalAlignment = Alignment.CenterVertically,
         content = content,
     )

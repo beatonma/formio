@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import org.beatonma.formio.app.theme.getForegroundColor
 import org.beatonma.formio.app.theme.tokens.ButtonGroupTokens
-import org.beatonma.formio.compose.components.settings.components.ScrollingRow
 
 enum class ButtonGroupSize {
     Small,

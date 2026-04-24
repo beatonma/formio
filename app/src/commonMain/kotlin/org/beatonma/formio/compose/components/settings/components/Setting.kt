@@ -44,6 +44,7 @@ import org.beatonma.formio.compose.animation.EnterFade
 import org.beatonma.formio.compose.animation.EnterVertical
 import org.beatonma.formio.compose.animation.ExitFade
 import org.beatonma.formio.compose.animation.ExitVertical
+import org.beatonma.formio.compose.components.Row
 import org.jetbrains.compose.resources.stringResource
 
 
@@ -157,13 +158,13 @@ internal fun CheckableSettingLayout(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Row.SmallSpacingArrangement,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 text()
             }
             Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Row.SmallSpacingArrangement,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 checkable()

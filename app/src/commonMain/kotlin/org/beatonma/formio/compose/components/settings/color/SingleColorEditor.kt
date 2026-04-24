@@ -34,6 +34,7 @@ import org.beatonma.formio.compose.AppIcon
 import org.beatonma.formio.compose.LoadingSpinner
 import org.beatonma.formio.compose.components.ButtonGroup
 import org.beatonma.formio.compose.components.ButtonGroupSize
+import org.beatonma.formio.compose.components.Column
 import org.beatonma.formio.compose.components.settings.components.LabelledSlider
 import org.beatonma.formio.compose.toCompose
 import org.beatonma.formio.core.graphics.Color
@@ -67,7 +68,7 @@ fun SingleColorEditor(
     LazyColumn(
         modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Column.LargeSpacingArrangement,
     ) {
         item {
             ButtonGroup(
@@ -229,7 +230,7 @@ private fun ColorComponents(
 ) {
     Column(
         modifier,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Column.SmallSpacingArrangement,
         content = content
     )
 }

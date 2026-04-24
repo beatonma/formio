@@ -62,6 +62,7 @@ import org.beatonma.formio.compose.VerticalBottomContentPadding
 import org.beatonma.formio.compose.animation.AnimatedFade
 import org.beatonma.formio.compose.animation.fadeIn
 import org.beatonma.formio.compose.components.Clock
+import org.beatonma.formio.compose.components.Column
 import org.beatonma.formio.compose.components.IconToolbar
 import org.beatonma.formio.compose.components.settings.Setting
 import org.beatonma.formio.compose.components.settings.data.RichSetting
@@ -244,7 +245,7 @@ private fun WideAndTall(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Column.LargeSpacingArrangement
     ) {
         clockPreview(Modifier)
 

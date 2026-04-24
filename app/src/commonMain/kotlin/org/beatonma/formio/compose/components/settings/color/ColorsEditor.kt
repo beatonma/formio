@@ -54,8 +54,10 @@ import org.beatonma.formio.app.ui.screens.LocalClockPreview
 import org.beatonma.formio.compose.AppIcon
 import org.beatonma.formio.compose.components.AssistChip
 import org.beatonma.formio.compose.components.Clock
+import org.beatonma.formio.compose.components.Column
 import org.beatonma.formio.compose.components.FullScreenOverlay
-import org.beatonma.formio.compose.components.settings.components.ScrollingRow
+import org.beatonma.formio.compose.components.Row
+import org.beatonma.formio.compose.components.ScrollingRow
 import org.beatonma.formio.compose.isHeightAtLeastMedium
 import org.beatonma.formio.compose.isHeightSmall
 import org.beatonma.formio.compose.isWidthSmall
@@ -183,7 +185,7 @@ private fun EditorCard(
                 .widthIn(max = 500.dp)
                 .padding(CardTokens.ContentPadding)
                 .animateContentSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Column.LargeSpacingArrangement,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             when (editMode) {
@@ -219,7 +221,7 @@ private fun EditorCardToolbar(
 ) {
     Row(
         modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Row.MediumSpacingArrangement,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         onBack?.let { onBack ->
@@ -288,7 +290,7 @@ private fun ActiveColorsRow(
     ScrollingRow(
         modifier.heightIn(min = ColorItemTokens.EditablePatchSize),
         state,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Row.MediumSpacingArrangement
     ) {
         itemsIndexed(colors) { index, color ->
             val isSelected = index == editingIndex

@@ -1,7 +1,6 @@
 package org.beatonma.formio.compose.components.settings
 
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -23,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import org.beatonma.formio.app.ui.resolve
 import org.beatonma.formio.compose.AppIcon
 import org.beatonma.formio.compose.components.InputChip
+import org.beatonma.formio.compose.components.Row
 import org.beatonma.formio.compose.components.settings.components.DropdownSettingLayout
 import org.beatonma.formio.compose.components.settings.data.RichSetting
 import org.beatonma.formio.compose.components.settings.data.SettingValidator
@@ -67,8 +67,8 @@ fun IntListSetting(
 
         FlowRow(
             Modifier.fillMaxWidth().padding(top = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Row.MediumSpacingArrangement,
+            verticalArrangement = Row.MediumSpacingArrangement,
         ) {
             value.forEach { n ->
                 InputChip(
