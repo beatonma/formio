@@ -1,22 +1,19 @@
-package org.beatonma.formio.compose.components.settings.components
+package org.beatonma.formio.compose.components.settings.color
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import org.beatonma.formio.core.graphics.Color
 
 @Composable
-fun rememberMaterialColorSwatch(
-    scope: CoroutineScope = rememberCoroutineScope(),
-): List<Color>? {
+fun rememberMaterialColorSwatch(): List<Color>? {
     var swatch: List<Color>? by remember { mutableStateOf(null) }
-    LaunchedEffect(Unit) { scope.launch { swatch = MaterialColorSwatch.map(::Color) } }
+    LaunchedEffect(Unit) {
+        swatch = MinimalMaterialColorSwatch.map(::Color)
+    }
     return swatch
 }
 
@@ -581,7 +578,7 @@ val MaterialColors
         *MaterialBlueGrey,
     )
 
-val MaterialColorSwatch
+val MinimalMaterialColorSwatch
     get() = arrayOf(
         MaterialRed500,
         MaterialPink500,
@@ -603,5 +600,25 @@ val MaterialColorSwatch
         0xff000000_UL, // Black
         0xffffffff_UL, // White
         MaterialGrey400,
-//        MaterialBlueGrey500,
+    )
+val FullMaterialColorSwatch: Array<ULong>
+    get() = arrayOf(
+        *(MaterialRed),
+        *(MaterialPink),
+        *(MaterialPurple),
+        *(MaterialDeepPurple),
+        *(MaterialIndigo),
+        *(MaterialBlue),
+        *(MaterialLightBlue),
+        *(MaterialCyan),
+        *(MaterialTeal),
+        *(MaterialGreen),
+        *(MaterialLightGreen),
+        *(MaterialLime),
+        *(MaterialYellow),
+        *(MaterialAmber),
+        *(MaterialOrange),
+        *(MaterialDeepOrange),
+        *(MaterialBrown),
+        *(MaterialGrey),
     )

@@ -47,10 +47,10 @@ import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.size
 import androidx.compose.ui.unit.width
 import formio.app.generated.resources.Res
-import formio.app.generated.resources.cd_align_horizontal_center
-import formio.app.generated.resources.cd_align_reset
-import formio.app.generated.resources.cd_align_vertical_center
 import formio.app.generated.resources.cd_save_changes
+import formio.app.generated.resources.setting_position_align_horizontal_center_cd
+import formio.app.generated.resources.setting_position_align_reset_cd
+import formio.app.generated.resources.setting_position_align_vertical_center_cd
 import org.beatonma.formio.app.theme.DesignSpec
 import org.beatonma.formio.app.theme.DesignSpec.floatingActionButton
 import org.beatonma.formio.app.theme.rememberContentColor
@@ -292,7 +292,7 @@ private fun ToolButtons(
             OutlinedIconButton({ onChange(shrink(containerSize)) }) {
                 Icon(
                     AppIcon.Reset,
-                    stringResource(Res.string.cd_align_reset)
+                    stringResource(Res.string.setting_position_align_reset_cd)
                 )
             }
         }
@@ -300,11 +300,11 @@ private fun ToolButtons(
         FilledTonalIconButton({ onChange(centerHorizontal(bounds, containerSize)) }) {
             Icon(
                 AppIcon.AlignCenterHorizontal,
-                stringResource(Res.string.cd_align_horizontal_center)
+                stringResource(Res.string.setting_position_align_horizontal_center_cd)
             )
         }
         FilledTonalIconButton({ onChange(centerVertical(bounds, containerSize)) }) {
-            Icon(AppIcon.AlignCenterVertical, stringResource(Res.string.cd_align_vertical_center))
+            Icon(AppIcon.AlignCenterVertical, stringResource(Res.string.setting_position_align_vertical_center_cd))
         }
         FloatingActionButton(onSave) {
             Icon(AppIcon.Checkmark, stringResource(Res.string.cd_save_changes))

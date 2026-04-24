@@ -23,7 +23,7 @@ import formio.app.generated.resources.setting_help_time_format_hh_MM_12
 import formio.app.generated.resources.setting_help_time_format_hh_MM_24
 import formio.app.generated.resources.setting_help_time_format_hh_MM_SS_12
 import formio.app.generated.resources.setting_help_time_format_hh_MM_SS_24
-import org.beatonma.formio.compose.components.settings.ColorEditorMode
+import org.beatonma.formio.compose.components.settings.color.ColorEditorMode
 import org.beatonma.formio.core.geometry.HorizontalAlignment
 import org.beatonma.formio.core.geometry.VerticalAlignment
 import org.beatonma.formio.core.options.Layout

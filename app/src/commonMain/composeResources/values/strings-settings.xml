@@ -21,6 +21,12 @@
     <string name="setting_clock_layout_vertical">Vertical</string>
     <string name="setting_clock_layout_wrapped">Wrapped</string>
 
+    <!-- Size/position editor -->
+    <string name="setting_position_align_vertical_center_cd">Center vertically</string>
+    <string name="setting_position_align_horizontal_center_cd">Center horizontally</string>
+    <string name="setting_position_align_reset_cd">Reset size and position</string>
+    <string name="setting_position_drag_handle_resize_cd">Drag to resize</string>
+
     <!-- Time format -->
     <string name="setting_time_is_24_hour">24 hour</string>
     <string name="setting_time_is_zero_padded">Zero-padding</string>
@@ -40,8 +46,8 @@
 
     <!-- Colors -->
     <string name="setting_colors">Colors</string>
-    <string name="setting_color_contentdescription_selected">Selected color</string>
-    <string name="setting_color_contentdescription_edited">This color is being edited</string>
+    <string name="setting_color_cd_selected">Selected color</string>
+    <string name="setting_color_cd_edited">This color is being edited</string>
     <string name="setting_color_label_hsl_hue_initial">H</string>
     <string name="setting_color_label_hsl_saturation_initial">S</string>
     <string name="setting_color_label_hsl_lightness_initial">L</string>
@@ -52,6 +58,12 @@
     <string name="setting_color_label_hsl">HSL</string>
     <string name="setting_color_label_rgb">RGB</string>
     <string name="setting_color_label_hex">Hex</string>
+    <string name="setting_color_palettes_save_palette_cd">Save this palette</string>
+    <string name="setting_color_palettes_delete_palette_cd">Delete this palette</string>
+    <string name="setting_color_palettes_restore_default_palettes">Restore default palettes</string>
+    <string name="setting_color_palettes_manage_palettes">Palettes</string>
+    <string name="setting_color_palettes_saved_palettes_label">Saved</string>
+    <string name="setting_color_palettes_current_palette_label">Current</string>
 
     <!-- Other -->
     <string name="setting_stroke_width">Stroke width</string>

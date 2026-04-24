@@ -8,7 +8,6 @@ import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -16,15 +15,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.graphics.graphicsLayer
 
 private const val Scale: Float = 0.95f
 private const val Duration: Int = 300
@@ -32,9 +24,6 @@ private const val DurationShort: Int = (Duration * 1f / 3f).toInt()
 private const val DurationHalf: Int = (Duration * 1f / 2f).toInt()
 private const val DurationMedium: Int = (Duration * 2f / 3f).toInt()
 private val EaseInOut = CubicBezierEasing(0.4f, 0f, 0.8f, 1f)
-
-val EnterImmediate: EnterTransition = slideInVertically(animationSpec = tween(0)) { 0 }
-val ExitImmediate: ExitTransition = slideOutVertically(animationSpec = tween(0)) { 0 }
 
 
 val EnterFade: EnterTransition = fadeIn(
@@ -125,16 +114,4 @@ fun AnimatedVertical(
     content: @Composable AnimatedVisibilityScope.() -> Unit,
 ) {
     AnimatedVisibility(visible, modifier, EnterVertical, ExitVertical, label, content)
-}
-
-
-fun Modifier.fadeIn() = composed {
-    val target = remember { mutableStateOf(0f) }
-    val opacity = animateFloatAsState(target.value)
-
-    LaunchedEffect(Unit) { target.value = 1f }
-
-    graphicsLayer {
-        alpha = opacity.value
-    }
 }

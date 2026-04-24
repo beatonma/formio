@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloseFullscreen
+import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material.icons.filled.CropFree
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DragHandle
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.OpenInFull
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Settings
@@ -38,6 +40,9 @@ object AppIcon {
     val MoreVert = Icons.Default.MoreVert
     val Save = Icons.Default.Save
     val Settings = Icons.Default.Settings
+
+    val Color = Icons.Default.Colorize
+    val Palette = Icons.Default.Palette
 
     val AlignCenterVertical = Icons.Default.AlignVerticalCenter
     val AlignCenterHorizontal = Icons.Default.AlignHorizontalCenter
