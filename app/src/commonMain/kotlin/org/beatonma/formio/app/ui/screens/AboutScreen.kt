@@ -3,12 +3,10 @@ package org.beatonma.formio.app.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
@@ -35,6 +33,8 @@ import formio.app.generated.resources.about_io16_markdown
 import formio.app.generated.resources.about_io18_markdown
 import formio.app.generated.resources.about_io_markdown
 import org.beatonma.formio.app.theme.ClockColorScheme
+import org.beatonma.formio.app.theme.tokens.CardTokens
+import org.beatonma.formio.app.theme.tokens.WindowTokens
 import org.beatonma.formio.compose.VerticalBottomContentPadding
 import org.beatonma.formio.compose.animation.AnimatedFade
 import org.beatonma.formio.compose.components.Clock
@@ -59,21 +59,23 @@ private fun clockPreviewModifier(color: Color) =
         .background(color)
         .padding(32.dp)
 
-private val CardContentModifier = Modifier.padding(16.dp)
+private val CardContentModifier = Modifier.padding(CardTokens.ContentPadding)
 
 @Composable
-fun AboutScreen(navigationIcon: @Composable () -> Unit) {
+fun AboutScreen(navigationIcon: @Composable (() -> Unit)?) {
     val gridState = rememberLazyStaggeredGridState()
     val appBarVisibility = appBarVisibility(gridState)
 
     Scaffold(
         topBar = {
-            @OptIn(ExperimentalMaterial3Api::class)
-            TopAppBar(
-                title = { AnimatedFade(!appBarVisibility.isTransparent) { Text(Build.AppName) } },
-                navigationIcon = navigationIcon,
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = appBarVisibility.color),
-            )
+            navigationIcon?.let { navigationIcon ->
+                @OptIn(ExperimentalMaterial3Api::class)
+                TopAppBar(
+                    title = { AnimatedFade(!appBarVisibility.isTransparent) { Text(Build.AppName) } },
+                    navigationIcon = navigationIcon,
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = appBarVisibility.color),
+                )
+            }
         }
     ) { insets ->
         val itemSpacing = 16.dp
@@ -81,7 +83,7 @@ fun AboutScreen(navigationIcon: @Composable () -> Unit) {
             StaggeredGridCells.Adaptive(minSize = 300.dp),
             Modifier.consumeWindowInsets(insets).consumeWindowInsets(WindowInsets.safeDrawing),
             state = gridState,
-            contentPadding = insets + PaddingValues(16.dp) + VerticalBottomContentPadding,
+            contentPadding = insets + WindowTokens.ContentPadding + VerticalBottomContentPadding,
             horizontalArrangement = Arrangement.spacedBy(itemSpacing),
             verticalItemSpacing = itemSpacing,
         ) {
@@ -119,7 +121,7 @@ private fun AboutForm(modifier: Modifier = Modifier) {
 
 @Composable
 private fun AboutIo(modifier: Modifier = Modifier) {
-    OutlinedCard(modifier.widthIn(max = 600.dp)) {
+    OutlinedCard(modifier) {
         MarkdownText(stringResource(Res.string.about_io_markdown), CardContentModifier)
     }
 }
@@ -164,7 +166,7 @@ private fun AboutCard(
     colors: CardColors = CardDefaults.cardColors(),
     header: (@Composable () -> Unit)? = null,
 ) {
-    Card(modifier.widthIn(max = 600.dp), colors = colors) {
+    Card(modifier, colors = colors) {
         header?.invoke()
         MarkdownText(rawMarkdown, CardContentModifier)
     }

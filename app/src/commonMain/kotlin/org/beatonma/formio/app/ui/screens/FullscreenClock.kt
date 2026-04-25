@@ -1,10 +1,7 @@
 package org.beatonma.formio.app.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -12,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
@@ -26,12 +22,10 @@ import kotlinx.coroutines.launch
 import org.beatonma.formio.app.data.settings.AnyContextClockOptions
 import org.beatonma.formio.app.data.settings.DisplayContext
 import org.beatonma.formio.app.data.settings.DisplayContextDefaults
-import org.beatonma.formio.app.theme.DesignSpec.floatingActionButton
 import org.beatonma.formio.app.ui.EdgeToEdge
 import org.beatonma.formio.compose.AppIcon
-import org.beatonma.formio.compose.animation.EnterFade
-import org.beatonma.formio.compose.animation.ExitFade
 import org.beatonma.formio.compose.components.Clock
+import org.beatonma.formio.compose.components.FloatingActionButton
 import org.beatonma.formio.compose.toCompose
 import org.beatonma.formio.core.options.AnyOptions
 import org.jetbrains.compose.resources.stringResource
@@ -73,18 +67,14 @@ fun FullSizeClock(
             }
         },
     ) {
-        AnimatedVisibility(
+        FloatingActionButton(
             isOverlayVisible,
-            Modifier.align(Alignment.BottomEnd).safeDrawingPadding(),
-            enter = EnterFade,
-            exit = ExitFade
+            onClick = onClose,
         ) {
-            FloatingActionButton(onClose, Modifier.floatingActionButton()) {
-                Icon(
-                    AppIcon.FullscreenClose,
-                    stringResource(Res.string.cd_fullscreen_close)
-                )
-            }
+            Icon(
+                AppIcon.FullscreenClose,
+                stringResource(Res.string.cd_fullscreen_close)
+            )
         }
     }
 }

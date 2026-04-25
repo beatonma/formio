@@ -121,7 +121,7 @@ class AppNavigation(
 )
 
 
-typealias SettingsEditorUI = @Composable (navigation: AppNavigation, navigationIcon: @Composable () -> Unit) -> Unit
+typealias SettingsEditorUI = @Composable (navigation: AppNavigation, navigationIcon: @Composable (() -> Unit)?) -> Unit
 
 @Composable
 fun AppNavigation(

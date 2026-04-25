@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Card
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -46,16 +45,18 @@ import formio.app.generated.resources.setting_color_palettes_manage_palettes
 import org.beatonma.formio.app.data.settings.ClockColors
 import org.beatonma.formio.app.data.settings.GlobalOptions
 import org.beatonma.formio.app.data.settings.copyWithColors
-import org.beatonma.formio.app.theme.DesignSpec.FloatingActionButtonSize
-import org.beatonma.formio.app.theme.DesignSpec.floatingActionButton
-import org.beatonma.formio.app.theme.DesignSpec.hamburgerPadding
+import org.beatonma.formio.app.theme.rememberContentColor
 import org.beatonma.formio.app.theme.tokens.CardTokens
+import org.beatonma.formio.app.theme.tokens.FloatingActionButtonTokens
 import org.beatonma.formio.app.ui.screens.LocalClockPreview
 import org.beatonma.formio.compose.AppIcon
 import org.beatonma.formio.compose.components.AssistChip
+import org.beatonma.formio.compose.components.BackNavigationIcon
 import org.beatonma.formio.compose.components.Clock
 import org.beatonma.formio.compose.components.Column
+import org.beatonma.formio.compose.components.FloatingActionButton
 import org.beatonma.formio.compose.components.FullScreenOverlay
+import org.beatonma.formio.compose.components.NavigationIconContainer
 import org.beatonma.formio.compose.components.Row
 import org.beatonma.formio.compose.components.ScrollingRow
 import org.beatonma.formio.compose.isHeightAtLeastMedium
@@ -108,7 +109,7 @@ fun ColorsEditor(
                 { editableColors = it },
                 palettes,
                 onUpdatePalettes,
-                modifier//.padding(16.dp),
+                modifier
             )
         }
     }
@@ -123,6 +124,8 @@ private fun ColorsEditorLayout(
     content: @Composable (Modifier) -> Unit,
 ) {
     val backgroundColor by animateColorAsState(backgroundColor?.toCompose() ?: colorScheme.background)
+    val contentColor = rememberContentColor(backgroundColor)
+
     Box(
         Modifier
             .background(backgroundColor)
@@ -138,7 +141,7 @@ private fun ColorsEditorLayout(
             }
         } else {
             Row(
-                Modifier.fillMaxSize().padding(end = FloatingActionButtonSize),
+                Modifier.fillMaxSize().padding(end = FloatingActionButtonTokens.Size),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -146,13 +149,16 @@ private fun ColorsEditorLayout(
             }
         }
 
-        IconButton(onDiscardChanges, Modifier.hamburgerPadding()) {
-            Icon(AppIcon.Back, stringResource(Res.string.cd_discard_changes))
+        NavigationIconContainer(contentColor) {
+            BackNavigationIcon(
+                onDiscardChanges,
+                contentDescription = stringResource(Res.string.cd_discard_changes)
+            )
         }
 
         FloatingActionButton(
-            onClick = onSaveChanges,
-            Modifier.floatingActionButton().align(Alignment.BottomEnd)
+            true,
+            onClick = onSaveChanges
         ) {
             Icon(AppIcon.Checkmark, stringResource(Res.string.cd_save_changes))
         }

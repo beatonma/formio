@@ -50,15 +50,15 @@ import formio.app.generated.resources.cd_save_changes
 import formio.app.generated.resources.setting_position_align_horizontal_center_cd
 import formio.app.generated.resources.setting_position_align_reset_cd
 import formio.app.generated.resources.setting_position_align_vertical_center_cd
-import org.beatonma.formio.app.theme.DesignSpec
-import org.beatonma.formio.app.theme.DesignSpec.floatingActionButton
 import org.beatonma.formio.app.theme.rememberContentColor
+import org.beatonma.formio.app.theme.tokens.FoundationTokens
 import org.beatonma.formio.app.ui.resolve
 import org.beatonma.formio.app.ui.screens.LocalClockPreview
 import org.beatonma.formio.compose.AppIcon
 import org.beatonma.formio.compose.components.Clock
 import org.beatonma.formio.compose.components.Column
 import org.beatonma.formio.compose.components.FullScreenOverlay
+import org.beatonma.formio.compose.components.fabPadding
 import org.beatonma.formio.compose.components.settings.components.CheckableSettingLayout
 import org.beatonma.formio.compose.components.settings.components.SettingName
 import org.beatonma.formio.compose.components.settings.data.RichSetting
@@ -67,8 +67,8 @@ import org.beatonma.formio.core.geometry.RectF
 import org.jetbrains.compose.resources.stringResource
 
 
-private val MinBoundarySize = DesignSpec.TouchTargetMinSize * 2f
-private val DragHandleSize = DesignSpec.TouchTargetMinSize
+private val MinBoundarySize = FoundationTokens.TouchTarget.MinSize * 2f
+private val DragHandleSize = FoundationTokens.TouchTarget.MinSize
 private val DragHandleOffset = DragHandleSize / 2f
 
 
@@ -159,7 +159,7 @@ private fun PositionEditor(
                 )
                 onSaveChanges(normalizedRect)
             },
-            modifier = Modifier.align(Alignment.BottomEnd).floatingActionButton()
+            modifier = Modifier.fabPadding().align(Alignment.BottomEnd)
         )
     }
 }

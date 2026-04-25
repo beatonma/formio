@@ -53,7 +53,6 @@ import formio.app.generated.resources.setting_save_changes_fab
 import org.beatonma.formio.app.data.settings.AnyContextClockOptions
 import org.beatonma.formio.app.data.settings.DisplayContext
 import org.beatonma.formio.app.data.settings.DisplayContextDefaults
-import org.beatonma.formio.app.theme.DesignSpec.hamburgerPadding
 import org.beatonma.formio.app.theme.rememberContentColor
 import org.beatonma.formio.app.ui.AppNavigation
 import org.beatonma.formio.compose.AppIcon
@@ -64,6 +63,7 @@ import org.beatonma.formio.compose.animation.fadeIn
 import org.beatonma.formio.compose.components.Clock
 import org.beatonma.formio.compose.components.Column
 import org.beatonma.formio.compose.components.IconToolbar
+import org.beatonma.formio.compose.components.NavigationIconContainer
 import org.beatonma.formio.compose.components.settings.Setting
 import org.beatonma.formio.compose.components.settings.data.RichSetting
 import org.beatonma.formio.compose.components.settings.data.RichSettings
@@ -156,6 +156,9 @@ private fun ClockSettingsScaffold(
     toolbar: (@Composable RowScope.() -> Unit)?,
     onSave: () -> Unit,
 ) {
+    val backgroundColor = rememberClockBackgroundColor(options?.displayOptions)
+    val foregroundColor = rememberContentColor(backgroundColor)
+
     Scaffold(
         modifier,
         snackbarHost = { snackbarHostState?.let { SnackbarHost(it) } },
@@ -168,9 +171,6 @@ private fun ClockSettingsScaffold(
         },
     ) { contentPadding ->
         if (options == null || richSettings == null) return@Scaffold LoadingSpinner(Modifier.fillMaxSize())
-
-        val backgroundColor = resolveClockBackgroundColor(options.displayOptions)
-        val foregroundColor = rememberContentColor(backgroundColor)
 
         CompositionLocalProvider(
             LocalClockPreview provides ClockPreview(
@@ -204,11 +204,11 @@ private fun ClockSettingsScaffold(
                     }
                 }
             )
-        }
 
-        Box(Modifier.hamburgerPadding()) {
-            CompositionLocalProvider(LocalContentColor provides foregroundColor) {
-                navigationIcon?.invoke()
+            navigationIcon?.let {
+                NavigationIconContainer(foregroundColor) {
+                    navigationIcon()
+                }
             }
         }
     }
@@ -487,10 +487,19 @@ private fun GroupSeparator(modifier: Modifier, content: @Composable BoxScope.() 
 }
 
 
-@Composable
 private fun resolveClockBackgroundColor(displayOptions: DisplayContext.Options): ComposeColor {
     return when (displayOptions) {
         is DisplayContext.Options.WithBackground -> displayOptions.backgroundColor
         else -> DisplayContextDefaults.DefaultBackgroundColor
     }.toCompose()
+}
+
+@Composable
+private fun rememberClockBackgroundColor(displayOptions: DisplayContext.Options?): ComposeColor {
+    return remember(displayOptions) {
+        when (displayOptions) {
+            is DisplayContext.Options.WithBackground -> displayOptions.backgroundColor
+            else -> DisplayContextDefaults.DefaultBackgroundColor
+        }.toCompose()
+    }
 }
