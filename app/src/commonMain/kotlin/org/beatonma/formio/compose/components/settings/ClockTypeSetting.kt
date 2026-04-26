@@ -30,7 +30,7 @@ fun ClockTypeSetting(
     selected: ClockType,
     onSelect: (ClockType) -> Unit,
     modifier: Modifier = Modifier,
-    helpText: String? = null
+    helpText: String? = null,
 ) {
     SettingLayout(modifier, helpText) {
         SettingName(name)

@@ -2,9 +2,9 @@ package org.beatonma.formio.compose.animation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameMillis
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds

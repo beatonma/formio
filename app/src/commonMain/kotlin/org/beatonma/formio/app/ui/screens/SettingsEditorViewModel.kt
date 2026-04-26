@@ -226,7 +226,7 @@ internal fun DisplaySettingsProvider.defaultAddDisplaySettings(
 @Composable
 fun settingsEditorViewModel(
     repository: AppSettingsRepository,
-    onSave: (() -> Unit)? = null
+    onSave: (() -> Unit)? = null,
 ): SettingsEditorViewModel {
     val factory = remember {
         SettingsEditorViewModelFactory(repository = repository, onSave = onSave)

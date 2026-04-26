@@ -36,7 +36,7 @@ actual enum class DisplayContext {
             override val position: RectF = DisplayContextDefaults.DefaultPosition,
 
             /** 1-indexed list of pages where the clock should be visible */
-            val visibleOnLauncherPages: List<Int> = listOf()
+            val visibleOnLauncherPages: List<Int> = listOf(),
         ) : WithBackground {
             init {
                 debug {

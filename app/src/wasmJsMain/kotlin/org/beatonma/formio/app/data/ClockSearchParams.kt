@@ -56,7 +56,7 @@ internal data class ClockSearchParams(
 
 internal fun mergeSettings(
     appSettings: AppSettings,
-    searchParams: ClockSearchParams?
+    searchParams: ClockSearchParams?,
 ): AppSettings {
     if (searchParams == null) return appSettings
 
@@ -86,7 +86,7 @@ external fun decodeURIComponent(uri: String): String
 
 private fun <O : AnyOptions> mergeOptions(
     options: ContextClockOptions<O>,
-    custom: ClockSearchParams
+    custom: ClockSearchParams,
 ): ContextClockOptions<O> {
     return options.copy(
         clockOptions = options.clockOptions.merge(custom),

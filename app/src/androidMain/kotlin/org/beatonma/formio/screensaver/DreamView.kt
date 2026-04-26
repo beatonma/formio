@@ -41,14 +41,14 @@ class DreamView @JvmOverloads constructor(
                 e1: MotionEvent?,
                 e2: MotionEvent,
                 velocityX: Float,
-                velocityY: Float
+                velocityY: Float,
             ): Boolean = false
 
             override fun onScroll(
                 e1: MotionEvent?,
                 e2: MotionEvent,
                 distanceX: Float,
-                distanceY: Float
+                distanceY: Float,
             ): Boolean = false
 
             override fun onShowPress(e: MotionEvent) {}

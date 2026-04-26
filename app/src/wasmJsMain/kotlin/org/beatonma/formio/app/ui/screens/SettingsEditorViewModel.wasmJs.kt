@@ -11,7 +11,7 @@ actual object DisplaySettingsProvider {
         displayContextOptions: DisplayContext.Options,
         updateDisplayContextOptions: (DisplayContext.Options) -> Unit,
         globalOptions: GlobalOptions,
-        updateGlobalOptions: (GlobalOptions) -> Unit
+        updateGlobalOptions: (GlobalOptions) -> Unit,
     ): RichSettings {
         return defaultAddDisplaySettings(
             settings,

@@ -100,7 +100,7 @@ data class GlobalOptions(
             background = DisplayContextDefaults.DefaultBackgroundColor,
             colors = Io18Paints.DefaultColors
         ),
-    )
+    ),
 )
 
 
@@ -109,7 +109,7 @@ data class GlobalOptions(
 data class AppSettings(
     val state: AppState,
     val settings: Map<DisplayContext, ContextSettings>,
-    val globalOptions: GlobalOptions
+    val globalOptions: GlobalOptions,
 ) {
     val contextSettings: ContextSettings get() = getContextSettings(state.displayContext)
     val contextOptions: AnyContextClockOptions get() = getContextOptions(state.displayContext)
@@ -133,7 +133,7 @@ data class AppSettings(
 
     fun copyWithOptions(
         clockOptions: AnyOptions?,
-        displayOptions: DisplayContext.Options?
+        displayOptions: DisplayContext.Options?,
     ): AppSettings {
         return copyWithOptions(
             clockOptions?.resolveClockType() ?: contextSettings.clock,

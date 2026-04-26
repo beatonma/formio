@@ -34,12 +34,11 @@ import org.beatonma.formio.core.glyph.GlyphVisibility
 import org.beatonma.formio.core.graphics.Canvas
 import org.beatonma.formio.core.graphics.Color
 import org.beatonma.formio.core.options.AnyOptions
-import org.beatonma.formio.core.util.debug as coreDebug
 import org.beatonma.formio.core.util.getCurrentTimeMillis
 import org.jetbrains.annotations.VisibleForTesting
-import kotlin.collections.ifEmpty
 import kotlin.math.roundToInt
 import kotlin.random.Random
+import org.beatonma.formio.core.util.debug as coreDebug
 
 
 interface WallpaperEngineDelegate {
