@@ -12,21 +12,41 @@ import org.beatonma.formio.app.theme.MarkdownTheme
  * Adapted from: https://gist.github.com/binrebin/f3dad29956eb8dcb760a38ce86a9553b
  */
 
-
-fun parseMarkdown(raw: String, theme: MarkdownTheme): List<AnnotatedString> =
-    raw.trim().split("""[\r\n]{2,}""".toRegex()).map { rawParagraph ->
-        buildAnnotatedString {
-            withStyle(theme.paragraph) {
-                parseParagraph(this@buildAnnotatedString, rawParagraph, theme)
-            }
-        }
+fun parseMarkdown(rawText: String, theme: MarkdownTheme): List<MarkdownBlock> =
+    rawText.trim().split("""[\r\n]{2,}""".toRegex()).map { rawParagraph ->
+        parseBlock(rawParagraph, theme)
     }
 
 
-private fun parseParagraph(builder: AnnotatedString.Builder, raw: String, theme: MarkdownTheme) {
+private fun parseBlock(rawText: String, theme: MarkdownTheme): MarkdownBlock {
+    val tokens = parseTokens(rawText)
+
+    if (tokens.isEmpty()) return MarkdownBlock(
+        buildAnnotatedString { withStyle(theme.paragraph) { append(rawText) } },
+        MarkdownBlockType.Paragraph
+    )
+
+    val isHeader = tokens.any { it.type.isHeader }
+
+    if (isHeader) {
+        return MarkdownBlock(
+            buildAnnotatedString { buildBlock(rawText, tokens, theme) },
+            MarkdownBlockType.Header
+        )
+    } else return MarkdownBlock(
+        buildAnnotatedString {
+            withStyle(theme.paragraph) {
+                buildBlock(rawText, tokens, theme)
+            }
+        },
+        MarkdownBlockType.Paragraph
+    )
+}
+
+private fun parseTokens(rawText: String): List<MarkdownToken> {
     val tokens = mutableListOf<MarkdownToken>()
     TokenType.entries.forEach { type ->
-        type.pattern.findAll(raw).forEach { match ->
+        type.pattern.findAll(rawText).forEach { match ->
             tokens.add(
                 MarkdownToken(
                     type,
@@ -38,12 +58,19 @@ private fun parseParagraph(builder: AnnotatedString.Builder, raw: String, theme:
         }
     }
     tokens.sortBy { it.start }
+    return tokens.toList()
+}
 
+private fun AnnotatedString.Builder.buildBlock(
+    rawText: String,
+    tokens: List<MarkdownToken>,
+    theme: MarkdownTheme,
+) {
     var rawIndex = 0
 
     fun appendRaw(until: Int) {
         if (rawIndex < until) {
-            builder.append(raw.substring(rawIndex, until))
+            append(rawText.substring(rawIndex, until))
             rawIndex = until
         }
     }
@@ -55,35 +82,35 @@ private fun parseParagraph(builder: AnnotatedString.Builder, raw: String, theme:
         when (token.type) {
             TokenType.H1 -> {
                 val (_, text) = token.groups
-                builder.withStyle(theme.h1) {
+                withStyle(theme.h1) {
                     append(text)
                 }
             }
 
             TokenType.H2 -> {
                 val (_, text) = token.groups
-                builder.withStyle(theme.h2) {
+                withStyle(theme.h2) {
                     append(text)
                 }
             }
 
             TokenType.Italic -> {
                 val (_, text) = token.groups
-                builder.withStyle(theme.italic) {
+                withStyle(theme.italic) {
                     append(text)
                 }
             }
 
             TokenType.Bold -> {
                 val (_, text) = token.groups
-                builder.withStyle(theme.bold) {
+                withStyle(theme.bold) {
                     append(text)
                 }
             }
 
             TokenType.Link -> {
                 val (_, text, url) = token.groups
-                builder.withStyledLink(url, theme.link) {
+                withStyledLink(url, theme.link) {
                     append(text)
                 }
             }
@@ -91,15 +118,20 @@ private fun parseParagraph(builder: AnnotatedString.Builder, raw: String, theme:
         rawIndex = token.end
     }
 
-    appendRaw(raw.length)
+    appendRaw(rawText.length)
 }
-
 
 fun AnnotatedString.Builder.withStyledLink(url: String, style: SpanStyle, block: AnnotatedString.Builder.() -> Unit) =
     withStyle(style) {
         withLink(LinkAnnotation.Url(url), block)
     }
 
+data class MarkdownBlock(val annotatedString: AnnotatedString, val type: MarkdownBlockType)
+enum class MarkdownBlockType {
+    Header,
+    Paragraph,
+    ;
+}
 
 private enum class TokenType(val pattern: Regex) {
     H1("""^# +(.*)$""".toRegex(RegexOption.MULTILINE)),
@@ -108,6 +140,8 @@ private enum class TokenType(val pattern: Regex) {
     Italic("""(?<!\*)\*(.*?)\*""".toRegex()),
     Link("""\[(?<display>.*?)]\((?<url>.*?)\)""".toRegex()),
     ;
+
+    val isHeader get() = this == H1 || this == H2
 }
 
 private data class MarkdownToken(

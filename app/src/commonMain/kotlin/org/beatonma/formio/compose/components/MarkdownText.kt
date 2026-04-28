@@ -2,15 +2,16 @@ package org.beatonma.formio.compose.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.AnnotatedString
 import org.beatonma.formio.app.theme.MarkdownTheme
 import org.beatonma.formio.app.theme.markdownTheme
+import org.beatonma.formio.core.util.fastForEachIndexed
+import org.beatonma.formio.util.MarkdownBlockType
 import org.beatonma.formio.util.parseMarkdown
 
 
@@ -19,19 +20,24 @@ fun MarkdownText(
     raw: String,
     modifier: Modifier = Modifier,
     style: MarkdownTheme = markdownTheme(),
-    verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(style.paragraphSpacing, Alignment.Top),
+    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
-    text: @Composable ColumnScope.(AnnotatedString) -> Unit = { Text(it) },
+    blockModifier: Modifier = Modifier,
 ) {
     val markdown = rememberSaveable(raw, style) { parseMarkdown(raw.trim(), style) }
+    val paragraphModifier = blockModifier.padding(bottom = style.paragraphSpacing)
 
     Column(
         modifier,
         horizontalAlignment = horizontalAlignment,
         verticalArrangement = verticalArrangement
     ) {
-        markdown.forEach {
-            text(it)
+        markdown.fastForEachIndexed { index, (annotatedString, type) ->
+            val modifier = when (type) {
+                MarkdownBlockType.Header -> blockModifier
+                MarkdownBlockType.Paragraph -> if (index == markdown.size - 1) blockModifier else paragraphModifier
+            }
+            Text(annotatedString, modifier)
         }
     }
 }
