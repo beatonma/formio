@@ -20,6 +20,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.WideNavigationRail
@@ -213,7 +214,7 @@ private fun SecondaryNavigation(
         return content()
     }
 
-    val isOpen = state.isOpen
+    val isOpen = state.isOpen || state.targetValue == DrawerValue.Open
     val close: () -> Unit = { scope.launch { state.close() } }
 
     val isItemSelected: (NavigationMenuItem) -> Boolean = { it == selected }
@@ -245,27 +246,6 @@ private fun SecondaryNavigation(
         }
     ) {
         content()
-    }
-}
-
-
-@Composable
-private fun getNavigationLayoutType(): NavigationSuiteType {
-    val windowInfo = currentWindowAdaptiveInfo()
-
-    with(windowInfo) {
-        return if (windowSizeClass.isHeightAtLeastMedium()) {
-            when {
-                windowSizeClass.isWidthAtLeastExpanded() -> NavigationSuiteType.WideNavigationRailExpanded
-                windowSizeClass.isWidthAtLeastMedium() -> NavigationSuiteType.WideNavigationRailCollapsed
-                else -> NavigationSuiteType.NavigationBar
-            }
-        } else {
-            when {
-                windowSizeClass.isWidthAtLeastExpanded() -> NavigationSuiteType.NavigationDrawer
-                else -> NavigationSuiteType.NavigationBar
-            }
-        }
     }
 }
 
@@ -315,6 +295,7 @@ private fun DrawerItems(
             selected = isSelected(item),
             onClick = { onClick(item) },
             icon = { Icon(item.icon, stringResource(item.contentDescription)) },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
     }
 }
@@ -323,6 +304,27 @@ private fun DrawerItems(
 private fun ColumnScope.Separator() {
     Spacer(Modifier.weight(1f))
     HorizontalDivider(Modifier.padding(vertical = NavigationTokens.Drawer.SeparatorVerticalPadding))
+}
+
+
+@Composable
+private fun getNavigationLayoutType(): NavigationSuiteType {
+    val windowInfo = currentWindowAdaptiveInfo()
+
+    with(windowInfo) {
+        return if (windowSizeClass.isHeightAtLeastMedium()) {
+            when {
+                windowSizeClass.isWidthAtLeastExpanded() -> NavigationSuiteType.WideNavigationRailExpanded
+                windowSizeClass.isWidthAtLeastMedium() -> NavigationSuiteType.WideNavigationRailCollapsed
+                else -> NavigationSuiteType.NavigationBar
+            }
+        } else {
+            when {
+                windowSizeClass.isWidthAtLeastExpanded() -> NavigationSuiteType.NavigationDrawer
+                else -> NavigationSuiteType.NavigationBar
+            }
+        }
+    }
 }
 
 private val NavigationMenu.usesNavigationBar: Boolean get() = primary.size > 1

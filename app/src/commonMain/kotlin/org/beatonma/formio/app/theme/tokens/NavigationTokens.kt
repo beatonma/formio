@@ -15,7 +15,7 @@ internal object NavigationTokens {
 
     /* https://m3.material.io/components/navigation-drawer/specs */
     object Drawer {
-        val MaxWidth: Dp = 240.dp
+        val MaxWidth: Dp = 280.dp
         val windowInsets: WindowInsets @Composable get() = DrawerDefaults.windowInsets
         val SeparatorVerticalPadding: Dp = 16.dp
     }
