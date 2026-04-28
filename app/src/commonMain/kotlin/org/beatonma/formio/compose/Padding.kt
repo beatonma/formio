@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
+import org.beatonma.formio.app.theme.tokens.FloatingActionButtonTokens
 
 @Composable
 operator fun PaddingValues.plus(other: PaddingValues): PaddingValues {
@@ -73,4 +73,5 @@ fun PaddingValues.copy(
 )
 
 
-val VerticalBottomContentPadding = PaddingValues(bottom = 96.dp)
+val VerticalBottomContentPadding =
+    PaddingValues(bottom = FloatingActionButtonTokens.Size + (FloatingActionButtonTokens.Padding * 2))

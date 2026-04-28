@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 @Composable
 fun IconToolbar(
     modifier: Modifier = Modifier,
-    alignment: Alignment.Horizontal = Alignment.CenterHorizontally,
+    alignment: Alignment.Horizontal = Alignment.End,
     content: @Composable RowScope.() -> Unit,
 ) {
     Row(
