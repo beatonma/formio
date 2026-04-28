@@ -47,7 +47,9 @@ import org.beatonma.formio.app.data.settings.GlobalOptions
 import org.beatonma.formio.app.data.settings.copyWithColors
 import org.beatonma.formio.app.theme.rememberContentColor
 import org.beatonma.formio.app.theme.tokens.CardTokens
+import org.beatonma.formio.app.theme.tokens.ColumnTokens
 import org.beatonma.formio.app.theme.tokens.FloatingActionButtonTokens
+import org.beatonma.formio.app.theme.tokens.WindowTokens
 import org.beatonma.formio.app.ui.screens.LocalClockPreview
 import org.beatonma.formio.compose.AppIcon
 import org.beatonma.formio.compose.components.AssistChip
@@ -100,7 +102,7 @@ fun ColorsEditor(
                     clockPreview.options.copyWithColors(editableColors.colors),
                     modifier
                         .sizeIn(maxWidth = 600.dp, maxHeight = 400.dp)
-                        .padding(32.dp)
+                        .padding(WindowTokens.ContentPadding * 2)
                 )
             }
 
@@ -188,7 +190,7 @@ private fun EditorCard(
     Card(modifier) {
         Column(
             Modifier
-                .widthIn(max = 500.dp)
+                .widthIn(max = ColumnTokens.PreferredMaxWidth)
                 .padding(CardTokens.ContentPadding)
                 .animateContentSize(),
             verticalArrangement = Column.LargeSpacingArrangement,

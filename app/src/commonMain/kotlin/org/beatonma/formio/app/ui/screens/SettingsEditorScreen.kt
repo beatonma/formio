@@ -54,6 +54,7 @@ import org.beatonma.formio.app.data.settings.AnyContextClockOptions
 import org.beatonma.formio.app.data.settings.DisplayContext
 import org.beatonma.formio.app.data.settings.DisplayContextDefaults
 import org.beatonma.formio.app.theme.rememberContentColor
+import org.beatonma.formio.app.theme.tokens.ColumnTokens
 import org.beatonma.formio.app.theme.tokens.NavigationTokens
 import org.beatonma.formio.app.theme.tokens.RowTokens
 import org.beatonma.formio.app.theme.tokens.WindowTokens
@@ -82,15 +83,15 @@ import org.beatonma.formio.core.util.fastForEachIndexed
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.graphics.Color as ComposeColor
 
-private val MaxClockWidth = 600.dp
-private val MaxClockHeight = 300.dp
+private val MaxClockWidth = 400.dp
+private val MaxClockHeight = 200.dp
 private val ClockPadding = PaddingValues(
     horizontal = WindowTokens.ContentPadding * 2,
     vertical = WindowTokens.ContentPadding
 )
 
-private val ColumnPreferredWidth = 350.dp
-private val ColumnMaxWidth = 500.dp
+private val ColumnPreferredWidth = ColumnTokens.PreferredMinWidth
+private val ColumnMaxWidth = ColumnTokens.PreferredMaxWidth
 private val SpaceBetweenColumns = RowTokens.LargeSpacing
 private val ColumnContentPadding = SettingTokens.SettingsContainerContentPadding
 

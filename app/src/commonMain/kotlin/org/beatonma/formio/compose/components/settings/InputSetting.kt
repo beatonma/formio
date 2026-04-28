@@ -18,7 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
+import org.beatonma.formio.app.theme.tokens.TextInputTokens
 import org.beatonma.formio.app.ui.resolve
 import org.beatonma.formio.compose.AppIcon
 import org.beatonma.formio.compose.components.InputChip
@@ -30,7 +30,7 @@ import org.beatonma.formio.compose.components.settings.data.SettingValidator
 import org.beatonma.formio.compose.components.settings.data.ValidationFailed
 import org.beatonma.formio.core.util.fastForEach
 
-private val TextFieldMaxWidth = 128.dp
+private val TextFieldMaxWidth = TextInputTokens.NumberMaxWidth
 
 
 @Composable

@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import formio.app.generated.resources.Res
 import formio.app.generated.resources.about_app_markdown
 import formio.app.generated.resources.about_form_markdown
@@ -34,6 +33,7 @@ import formio.app.generated.resources.about_io18_markdown
 import formio.app.generated.resources.about_io_markdown
 import org.beatonma.formio.app.theme.ClockColorScheme
 import org.beatonma.formio.app.theme.tokens.CardTokens
+import org.beatonma.formio.app.theme.tokens.ColumnTokens
 import org.beatonma.formio.app.theme.tokens.WindowTokens
 import org.beatonma.formio.compose.VerticalBottomContentPadding
 import org.beatonma.formio.compose.animation.AnimatedFade
@@ -57,7 +57,7 @@ private fun clockPreviewModifier(color: Color) =
     Modifier
         .composed { clip(shapes.medium) }
         .background(color)
-        .padding(32.dp)
+        .padding(WindowTokens.ContentPadding * 2)
 
 private val CardContentModifier = Modifier.padding(CardTokens.ContentPadding)
 
@@ -80,7 +80,7 @@ fun AboutScreen(navigationIcon: @Composable (() -> Unit)?) {
     ) { insets ->
         val itemSpacing = CardTokens.BetweenCardsPadding
         LazyVerticalStaggeredGrid(
-            StaggeredGridCells.Adaptive(minSize = 300.dp),
+            StaggeredGridCells.Adaptive(minSize = ColumnTokens.PreferredMinWidth),
             Modifier.consumeWindowInsets(insets).consumeWindowInsets(WindowInsets.safeDrawing),
             state = gridState,
             contentPadding = insets + WindowTokens.ContentPaddingValues + VerticalBottomContentPadding,
