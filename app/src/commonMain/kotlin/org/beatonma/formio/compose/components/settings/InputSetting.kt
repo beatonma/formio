@@ -24,9 +24,13 @@ import org.beatonma.formio.compose.AppIcon
 import org.beatonma.formio.compose.components.InputChip
 import org.beatonma.formio.compose.components.Row
 import org.beatonma.formio.compose.components.settings.components.DropdownSettingLayout
+import org.beatonma.formio.compose.components.settings.components.SettingTokens
 import org.beatonma.formio.compose.components.settings.data.RichSetting
 import org.beatonma.formio.compose.components.settings.data.SettingValidator
 import org.beatonma.formio.compose.components.settings.data.ValidationFailed
+import org.beatonma.formio.core.util.fastForEach
+
+private val TextFieldMaxWidth = 128.dp
 
 
 @Composable
@@ -66,17 +70,18 @@ fun IntListSetting(
         var text by remember { mutableStateOf("") }
 
         FlowRow(
-            Modifier.fillMaxWidth().padding(top = 8.dp),
+            Modifier.fillMaxWidth().padding(SettingTokens.SettingHorizontalPadding),
             horizontalArrangement = Row.MediumSpacingArrangement,
             verticalArrangement = Row.MediumSpacingArrangement,
         ) {
-            value.forEach { n ->
+            value.fastForEach { n ->
                 InputChip(
                     { onValueChange(value.filter { it != n }) },
                     label = "$n",
                     trailingIcon = AppIcon.Close
                 )
             }
+
             OutlinedTextField(
                 value = text,
                 onValueChange = { newValue ->
@@ -91,7 +96,7 @@ fun IntListSetting(
                         }
                     )
                 },
-                Modifier.widthIn(max = 128.dp),
+                Modifier.widthIn(max = TextFieldMaxWidth),
                 prefix = { Icon(AppIcon.Add, null) },
                 placeholder = placeholder?.let { { Text(it, maxLines = 1) } },
                 singleLine = true,

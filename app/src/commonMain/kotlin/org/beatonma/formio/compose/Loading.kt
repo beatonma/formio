@@ -10,8 +10,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import org.beatonma.formio.app.data.settings.ClockType
+import org.beatonma.formio.app.theme.tokens.LoadingTokens
 import org.beatonma.formio.compose.animation.currentFrameDelta
 import org.beatonma.formio.core.LoadingSpinner
 import org.beatonma.formio.form.FormLoadingSpinner
@@ -26,7 +26,7 @@ import org.beatonma.formio.io18.Io18Paints
 fun LoadingSpinner(
     modifier: Modifier = Modifier.fillMaxWidth(),
     clock: ClockType = remember { ClockType.entries.random() },
-    maxSize: Dp = 64.dp,
+    maxSize: Dp = LoadingTokens.SpinnerSize,
 ) {
     val animation = rememberLoadingSpinner(clock)
     val canvasHost = rememberCanvasHost()

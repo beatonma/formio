@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
@@ -43,7 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass
@@ -54,10 +52,10 @@ import org.beatonma.formio.app.data.settings.AnyContextClockOptions
 import org.beatonma.formio.app.data.settings.DisplayContext
 import org.beatonma.formio.app.data.settings.DisplayContextDefaults
 import org.beatonma.formio.app.theme.rememberContentColor
+import org.beatonma.formio.app.theme.tokens.RowTokens
 import org.beatonma.formio.app.ui.AppNavigation
 import org.beatonma.formio.compose.AppIcon
 import org.beatonma.formio.compose.LoadingSpinner
-import org.beatonma.formio.compose.VerticalBottomContentPadding
 import org.beatonma.formio.compose.animation.AnimatedFade
 import org.beatonma.formio.compose.animation.fadeIn
 import org.beatonma.formio.compose.components.Clock
@@ -65,25 +63,27 @@ import org.beatonma.formio.compose.components.Column
 import org.beatonma.formio.compose.components.IconToolbar
 import org.beatonma.formio.compose.components.NavigationIconContainer
 import org.beatonma.formio.compose.components.settings.Setting
+import org.beatonma.formio.compose.components.settings.components.SettingTokens
 import org.beatonma.formio.compose.components.settings.data.RichSetting
 import org.beatonma.formio.compose.components.settings.data.RichSettings
 import org.beatonma.formio.compose.components.settings.data.RichSettingsGroup
 import org.beatonma.formio.compose.components.settings.data.Setting
 import org.beatonma.formio.compose.copy
 import org.beatonma.formio.compose.onlyIf
-import org.beatonma.formio.compose.plus
 import org.beatonma.formio.compose.toCompose
 import org.beatonma.formio.core.options.AnyOptions
+import org.beatonma.formio.core.util.fastForEachIndexed
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.graphics.Color as ComposeColor
 
+private val MaxClockWidth = 600.dp
+private val MaxClockHeight = 300.dp
+private val ClockPadding = 64.dp
 
 private val ColumnPreferredWidth = 350.dp
 private val ColumnMaxWidth = 450.dp
-
-private val ColumnSpacing = 16.dp
-private val ColumnTopPadding = 8.dp
-
+private val SpaceBetweenColumns = RowTokens.LargeSpacing
+private val ColumnContentPadding = SettingTokens.SettingsContainerContentPadding
 
 /**
  * Data needed to render a preview of a clock with current settings.
@@ -195,10 +195,10 @@ private fun ClockSettingsScaffold(
                                 }
                                 .animateContentSize(),
                             clockModifier = Modifier
-                                .sizeIn(maxWidth = 600.dp, maxHeight = 300.dp)
-                                .padding(contentPadding)
-                                .consumeWindowInsets(contentPadding)
-                                .padding(64.dp)
+                                .sizeIn(maxWidth = MaxClockWidth, maxHeight = MaxClockHeight)
+                                .padding(ClockPadding)
+                                .padding(contentPadding) // TODO
+                                .consumeWindowInsets(contentPadding) // TODO
                                 .fillMaxWidth(),
                         )
                     }
@@ -236,8 +236,6 @@ private fun WideAndTall(
     key: Any,
     richSettings: RichSettings,
     columnModifier: Modifier,
-    itemModifier: Modifier,
-    groupModifier: Modifier,
     contentPadding: PaddingValues,
     clockPreview: (@Composable (Modifier) -> Unit),
 ) {
@@ -251,7 +249,7 @@ private fun WideAndTall(
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(
-                ColumnSpacing,
+                SpaceBetweenColumns,
                 Alignment.CenterHorizontally
             )
         ) {
@@ -261,8 +259,6 @@ private fun WideAndTall(
                 left,
                 contentPadding.copy(end = 0.dp),
                 modifier = columnModifier,
-                itemModifier = itemModifier,
-                groupModifier = groupModifier
             )
 
             ClockSettingsColumn(
@@ -270,8 +266,6 @@ private fun WideAndTall(
                 right,
                 contentPadding.copy(start = 0.dp),
                 modifier = columnModifier,
-                itemModifier = itemModifier,
-                groupModifier = groupModifier
             )
         }
     }
@@ -282,8 +276,6 @@ private fun NarrowAndTall(
     key: Any,
     richSettings: RichSettings,
     columnModifier: Modifier,
-    itemModifier: Modifier,
-    groupModifier: Modifier,
     contentPadding: PaddingValues,
     clockPreview: (@Composable (Modifier) -> Unit),
 ) {
@@ -294,13 +286,10 @@ private fun NarrowAndTall(
         settings,
         contentPadding.copy(top = 0.dp),
         modifier = columnModifier,
-        itemModifier = itemModifier,
-        groupModifier = groupModifier
     ) {
         stickyHeader {
             clockPreview(Modifier)
         }
-        return@ClockSettingsColumn 1
     }
 }
 
@@ -309,8 +298,6 @@ private fun WideAndShort(
     key: Any,
     richSettings: RichSettings,
     columnModifier: Modifier,
-    itemModifier: Modifier,
-    groupModifier: Modifier,
     contentPadding: PaddingValues,
     clockPreview: (@Composable (Modifier) -> Unit),
 ) {
@@ -328,8 +315,6 @@ private fun WideAndShort(
                 settings,
                 contentPadding.copy(start = 0.dp),
                 modifier = columnModifier,
-                itemModifier = itemModifier,
-                groupModifier = groupModifier
             )
         }
     }
@@ -340,8 +325,6 @@ private fun NarrowAndShort(
     key: Any,
     richSettings: RichSettings,
     columnModifier: Modifier,
-    itemModifier: Modifier,
-    groupModifier: Modifier,
     contentPadding: PaddingValues,
     clockPreview: @Composable (Modifier) -> Unit,
 ) {
@@ -352,14 +335,11 @@ private fun NarrowAndShort(
         settings,
         contentPadding,
         modifier = columnModifier,
-        itemModifier = itemModifier,
-        groupModifier = groupModifier
     ) {
         item {
             // On very small display, allow preview to scroll offscreen.
             clockPreview(Modifier)
         }
-        return@ClockSettingsColumn 1
     }
 }
 
@@ -373,58 +353,21 @@ private fun SettingsUi(
     clockPreview: (@Composable (Modifier) -> Unit),
 ) {
     val columnModifier = Modifier
-    val groupModifier = Modifier.padding(vertical = 8.dp)
-    val itemModifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
 
     BoxWithConstraints(modifier, contentAlignment = Alignment.TopCenter) {
         val isWide: Boolean
         val isTall: Boolean
 
         with(LocalDensity.current) {
-            isWide = constraints.maxWidth.toDp() > ((ColumnPreferredWidth * 2) + ColumnSpacing)
+            isWide = constraints.maxWidth.toDp() > ((ColumnPreferredWidth * 2) + SpaceBetweenColumns)
             isTall = constraints.maxHeight.toDp() > WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND.dp
         }
 
         when {
-            isWide && isTall -> WideAndTall(
-                key,
-                richSettings,
-                columnModifier,
-                itemModifier,
-                groupModifier,
-                contentPadding,
-                clockPreview
-            )
-
-            isWide -> WideAndShort(
-                key,
-                richSettings,
-                columnModifier,
-                itemModifier,
-                groupModifier,
-                contentPadding,
-                clockPreview
-            )
-
-            isTall -> NarrowAndTall(
-                key,
-                richSettings,
-                columnModifier,
-                itemModifier,
-                groupModifier,
-                contentPadding,
-                clockPreview
-            )
-
-            else -> NarrowAndShort(
-                key,
-                richSettings,
-                columnModifier,
-                itemModifier,
-                groupModifier,
-                contentPadding,
-                clockPreview
-            )
+            isWide && isTall -> WideAndTall(key, richSettings, columnModifier, contentPadding, clockPreview)
+            isWide -> WideAndShort(key, richSettings, columnModifier, contentPadding, clockPreview)
+            isTall -> NarrowAndTall(key, richSettings, columnModifier, contentPadding, clockPreview)
+            else -> NarrowAndShort(key, richSettings, columnModifier, contentPadding, clockPreview)
         }
     }
 }
@@ -434,33 +377,36 @@ private fun ClockSettingsColumn(
     key: Any,
     settings: List<Setting>,
     contentPadding: PaddingValues,
-    itemModifier: Modifier,
-    groupModifier: Modifier,
     modifier: Modifier = Modifier,
-    maxWidth: Dp = ColumnMaxWidth,
-    state: LazyListState = rememberLazyListState(),
-    header: LazyListScope.() -> Int = { 0 },
+    header: (LazyListScope.() -> Unit)? = null,
 ) {
+    val state = rememberLazyListState()
+
+    val groupModifier = Modifier
+    val itemModifier = Modifier.padding(horizontal = ColumnContentPadding)
+
     LaunchedEffect(key) {
         state.scrollToItem(0)
     }
 
     LazyColumn(
-        modifier.widthIn(max = maxWidth),
+        modifier.widthIn(max = ColumnMaxWidth),
         state = state,
-        contentPadding = contentPadding + VerticalBottomContentPadding,
+        contentPadding = contentPadding,
+        verticalArrangement = Column.SmallSpacingArrangement,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val headerItemOffset = header()
+        header?.invoke(this)?.also {
+            item {
+                Spacer(Modifier.height(ColumnContentPadding))
+            }
+        }
 
-        item { Spacer(Modifier.height(ColumnTopPadding)) }
-
-        fun addItems(_settings: List<Setting>, indexOffset: Int) {
-            _settings.forEachIndexed { index, item ->
-                val index = index + indexOffset
+        fun addItems(_settings: List<Setting>) {
+            _settings.fastForEachIndexed { index, item ->
                 when (item) {
                     is RichSettingsGroup -> {
-                        addItems(item.settings, index)
+                        addItems(item.settings)
                     }
 
                     is RichSetting<*> -> item(
@@ -469,14 +415,20 @@ private fun ClockSettingsColumn(
                     ) {
                         Setting(item, itemModifier)
                         if (index == _settings.size - 1) {
-                            GroupSeparator(groupModifier)
+                            GroupSeparator(groupModifier) { Text("group") }
                         }
                     }
                 }
             }
         }
 
-        addItems(settings, headerItemOffset)
+        addItems(settings)
+
+        if (header != null) {
+            item {
+                Spacer(Modifier.height(ColumnContentPadding))
+            }
+        }
     }
 }
 
@@ -484,14 +436,6 @@ private fun ClockSettingsColumn(
 @Composable
 private fun GroupSeparator(modifier: Modifier, content: @Composable BoxScope.() -> Unit = {}) {
     Box(modifier, contentAlignment = Alignment.Center, content = content)
-}
-
-
-private fun resolveClockBackgroundColor(displayOptions: DisplayContext.Options): ComposeColor {
-    return when (displayOptions) {
-        is DisplayContext.Options.WithBackground -> displayOptions.backgroundColor
-        else -> DisplayContextDefaults.DefaultBackgroundColor
-    }.toCompose()
 }
 
 @Composable

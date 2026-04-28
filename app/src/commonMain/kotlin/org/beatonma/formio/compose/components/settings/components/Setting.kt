@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import formio.app.generated.resources.Res
 import formio.app.generated.resources.cd_show_less
 import formio.app.generated.resources.cd_show_more
+import org.beatonma.formio.app.theme.tokens.WindowTokens
 import org.beatonma.formio.compose.AppIcon
 import org.beatonma.formio.compose.animation.EnterFade
 import org.beatonma.formio.compose.animation.EnterVertical
@@ -46,6 +48,12 @@ import org.beatonma.formio.compose.animation.ExitFade
 import org.beatonma.formio.compose.animation.ExitVertical
 import org.beatonma.formio.compose.components.Row
 import org.jetbrains.compose.resources.stringResource
+
+internal object SettingTokens {
+    val SettingsContainerContentPadding = WindowTokens.ContentPadding / 2
+    val SettingHorizontalPadding = WindowTokens.ContentPadding / 2
+    val ToolTipPadding = PaddingValues(horizontal = SettingHorizontalPadding, vertical = SettingHorizontalPadding / 2)
+}
 
 
 @Composable
@@ -64,28 +72,29 @@ internal fun SettingLayout(
     }
 }
 
+/**
+ * A setting which can expand into a card.
+ */
 @Composable
-internal fun CollapsibleSettingLayout(
+private fun ExpandableSettingLayout(
     isExpanded: Boolean,
     modifier: Modifier = Modifier,
     helpText: String? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val horizontalPadding by animateDpAsState(if (isExpanded) 8.dp else 0.dp)
-    val verticalPadding by animateDpAsState(if (isExpanded) 16.dp else 0.dp)
-    val innerVerticalPadding by animateDpAsState(if (isExpanded) 8.dp else 0.dp)
-    val innerHorizontalPadding by animateDpAsState(if (isExpanded) 8.dp else 0.dp)
+    val externalPadding by animateDpAsState(if (isExpanded) SettingTokens.SettingHorizontalPadding else 0.dp)
+    val innerPadding by animateDpAsState(if (isExpanded) SettingTokens.SettingHorizontalPadding else 0.dp)
     val backgroundColor by animateColorAsState(if (isExpanded) colorScheme.surface else colorScheme.background)
     val elevation by animateDpAsState(if (isExpanded) 1.dp else 0.dp)
 
     Surface(
-        modifier.padding(vertical = verticalPadding, horizontal = horizontalPadding),
+        modifier.padding(externalPadding),
         color = backgroundColor,
         shape = shapes.small,
         shadowElevation = elevation,
     ) {
         SettingLayout(
-            Modifier.padding(vertical = innerVerticalPadding, horizontal = innerHorizontalPadding),
+            Modifier.padding(innerPadding),
             helpText,
             content
         )
@@ -106,7 +115,7 @@ internal fun DropdownSettingLayout(
 
     val iconRotation by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
 
-    CollapsibleSettingLayout(expanded, modifier, helpText) {
+    ExpandableSettingLayout(expanded, modifier, helpText) {
         CheckableSettingLayout(
             helpText = helpText,
             onClick = onClick,
@@ -152,7 +161,7 @@ internal fun CheckableSettingLayout(
             Modifier
                 .clickable(onClick = onClick, role = role)
                 .minimumInteractiveComponentSize()
-                .padding(horizontal = 8.dp)
+                .padding(horizontal = SettingTokens.SettingHorizontalPadding)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
@@ -210,6 +219,6 @@ private fun Tooltip(text: String) {
         text,
         Modifier
             .background(colorScheme.surfaceVariant, shapes.small)
-            .padding(8.dp, 4.dp)
+            .padding(SettingTokens.ToolTipPadding)
     )
 }

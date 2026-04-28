@@ -1,18 +1,18 @@
 package org.beatonma.formio.compose.components.settings
 
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import org.beatonma.formio.app.ui.resolve
+import org.beatonma.formio.compose.components.Column
 import org.beatonma.formio.compose.components.settings.components.LabelledSlider
 import org.beatonma.formio.compose.components.settings.components.SettingLayout
 import org.beatonma.formio.compose.components.settings.components.SettingName
+import org.beatonma.formio.compose.components.settings.components.SettingTokens
 import org.beatonma.formio.compose.components.settings.data.RichSetting
 import kotlin.math.roundToInt
 
@@ -119,16 +119,11 @@ private fun <N : Number> NumberSettingLayout(
 ) {
     SettingLayout(modifier, helpText) {
         Column(
-            Modifier.padding(horizontal = 8.dp),
-            verticalArrangement = Arrangement.Center,
+            Modifier.padding(horizontal = SettingTokens.SettingHorizontalPadding),
+            verticalArrangement = Column.SmallSpacingArrangement,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            SettingName(
-                "$name: ${value.format()}",
-                Modifier
-                    .padding(bottom = 4.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
+            SettingName("$name: ${value.format()}")
 
             LabelledSlider(
                 value = value.toFloat(),

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -20,6 +21,7 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,6 +72,7 @@ import org.jetbrains.compose.resources.stringResource
 private val MinBoundarySize = FoundationTokens.TouchTarget.MinSize * 2f
 private val DragHandleSize = FoundationTokens.TouchTarget.MinSize
 private val DragHandleOffset = DragHandleSize / 2f
+private val DragHandleIconSize = DragHandleSize / 3
 
 
 @Composable
@@ -260,19 +263,22 @@ private fun DragHandle(
     onDrag: (Float, Float) -> Unit,
     content: @Composable () -> Unit = {},
 ) {
-    Surface(
+    Box(
         modifier
             .size(DragHandleSize)
+            .minimumInteractiveComponentSize()
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
                     change.consume()
                     onDrag(dragAmount.x, dragAmount.y)
                 }
-            }
-            .padding(16.dp),
-        shape = shapes.extraSmall,
-        content = content
-    )
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        Surface(Modifier.size(DragHandleIconSize * 2).aspectRatio(1f), shape = shapes.extraSmall) {
+            Box(Modifier.padding(DragHandleIconSize / 2)) { content() }
+        }
+    }
 }
 
 @Composable

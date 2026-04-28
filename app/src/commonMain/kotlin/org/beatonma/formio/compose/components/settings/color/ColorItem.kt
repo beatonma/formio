@@ -14,17 +14,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import org.beatonma.formio.app.theme.rememberContentColor
+import org.beatonma.formio.app.theme.tokens.FoundationTokens
 import org.beatonma.formio.compose.toCompose
 import org.beatonma.formio.core.graphics.Color
 import androidx.compose.ui.graphics.Color as ComposeColor
 
 
 internal object ColorItemTokens {
-    val DefaultPatchSize = 48.dp
-    val EditablePatchSize = 64.dp
-    val DefaultPreviewSize = 24.dp
+    val DefaultPatchSize = FoundationTokens.TouchTarget.MinSize
+    val EditablePatchSize = DefaultPatchSize * 1.5f
+    val DefaultPreviewSize = DefaultPatchSize * 0.5f
+    val LargePreviewSize = DefaultPatchSize * 0.75f
 }
 
 
@@ -63,7 +64,7 @@ internal fun ColorPatch(
         color = color,
         contentColor = contentColor,
         shape = shapes.extraSmall,
-        border = BorderStroke(1.dp, colorScheme.onBackground.copy(alpha = 0.3f))
+        border = BorderStroke(Dp.Hairline, colorScheme.onBackground.copy(alpha = 0.3f))
     ) {
         content?.let {
             Box(contentAlignment = Alignment.Center) {

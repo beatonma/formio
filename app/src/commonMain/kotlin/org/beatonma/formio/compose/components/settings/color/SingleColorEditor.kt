@@ -19,7 +19,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import formio.app.generated.resources.Res
 import formio.app.generated.resources.setting_color_cd_selected
 import formio.app.generated.resources.setting_color_label_hsl_hue_initial
@@ -28,6 +27,7 @@ import formio.app.generated.resources.setting_color_label_hsl_saturation_initial
 import formio.app.generated.resources.setting_color_label_rgb_blue_initial
 import formio.app.generated.resources.setting_color_label_rgb_green_initial
 import formio.app.generated.resources.setting_color_label_rgb_red_initial
+import org.beatonma.formio.app.theme.tokens.RowTokens
 import org.beatonma.formio.app.ui.Localization.stringResourceMap
 import org.beatonma.formio.app.ui.resolve
 import org.beatonma.formio.compose.AppIcon
@@ -45,7 +45,7 @@ import org.beatonma.formio.core.graphics.withHue
 import org.beatonma.formio.core.graphics.withLightness
 import org.beatonma.formio.core.graphics.withRed
 import org.beatonma.formio.core.graphics.withSaturation
-import org.beatonma.formio.core.util.fastForEachIndexed
+import org.beatonma.formio.core.util.fastForEach
 import org.jetbrains.compose.resources.stringResource
 
 
@@ -99,7 +99,7 @@ private fun SampleColors(
     modifier: Modifier = Modifier,
 ) {
     val swatch = rememberMaterialColorSwatch() ?: return LoadingSpinner()
-    val spacing = 8.dp
+    val spacing = RowTokens.MediumSpacing
 
     FlowRow(
         modifier,
@@ -107,7 +107,7 @@ private fun SampleColors(
         verticalArrangement = Arrangement.spacedBy(spacing),
         maxItemsInEachRow = 5,
     ) {
-        swatch.fastForEachIndexed { index, color ->
+        swatch.fastForEach { color ->
             ColorPatch(
                 color = color.toCompose(),
                 onClick = { onValueChange(color) },

@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.unit.dp
 import formio.app.generated.resources.Res
 import formio.app.generated.resources.setting_color_palettes_current_palette_label
 import formio.app.generated.resources.setting_color_palettes_delete_palette_cd
@@ -21,6 +20,8 @@ import formio.app.generated.resources.setting_color_palettes_restore_default_pal
 import formio.app.generated.resources.setting_color_palettes_save_palette_cd
 import formio.app.generated.resources.setting_color_palettes_saved_palettes_label
 import org.beatonma.formio.app.data.settings.ClockColors
+import org.beatonma.formio.app.theme.tokens.ColumnTokens
+import org.beatonma.formio.app.theme.tokens.RowTokens
 import org.beatonma.formio.compose.AppIcon
 import org.beatonma.formio.compose.components.Button
 import org.beatonma.formio.compose.components.settings.components.CheckableSettingLayout
@@ -52,7 +53,7 @@ internal fun ColorPalettesEditor(
             } else null
         )
 
-        HorizontalDivider(Modifier.padding(top = 8.dp, bottom = 16.dp))
+        HorizontalDivider(Modifier.padding(vertical = ColumnTokens.MediumSpacing))
 
         Text(stringResource(Res.string.setting_color_palettes_saved_palettes_label), style = typography.labelSmall)
         palettes.fastForEach { palette ->
@@ -69,7 +70,7 @@ internal fun ColorPalettesEditor(
             Button(
                 AppIcon.Reset,
                 stringResource(Res.string.setting_color_palettes_restore_default_palettes),
-                Modifier.align(Alignment.CenterHorizontally).padding(16.dp),
+                Modifier.align(Alignment.CenterHorizontally).padding(ColumnTokens.MediumSpacing),
                 onClick = onRestoreDefaults
             )
         }
@@ -90,11 +91,11 @@ private fun ColorPalette(
         modifier,
         text = {
             palette.background?.let {
-                ColorPreview(it, 32.dp)
-                Spacer(Modifier.width(4.dp))
+                ColorPreview(it, ColorItemTokens.LargePreviewSize)
+                Spacer(Modifier.width(RowTokens.SmallSpacing))
             }
             for (color in palette.colors) {
-                ColorPreview(color, 32.dp)
+                ColorPreview(color, ColorItemTokens.LargePreviewSize)
             }
         },
         checkable = {

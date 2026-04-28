@@ -78,12 +78,12 @@ fun AboutScreen(navigationIcon: @Composable (() -> Unit)?) {
             }
         }
     ) { insets ->
-        val itemSpacing = 16.dp
+        val itemSpacing = CardTokens.BetweenCardsPadding
         LazyVerticalStaggeredGrid(
             StaggeredGridCells.Adaptive(minSize = 300.dp),
             Modifier.consumeWindowInsets(insets).consumeWindowInsets(WindowInsets.safeDrawing),
             state = gridState,
-            contentPadding = insets + WindowTokens.ContentPadding + VerticalBottomContentPadding,
+            contentPadding = insets + WindowTokens.ContentPaddingValues + VerticalBottomContentPadding,
             horizontalArrangement = Arrangement.spacedBy(itemSpacing),
             verticalItemSpacing = itemSpacing,
         ) {
