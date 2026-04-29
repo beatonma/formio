@@ -1,5 +1,6 @@
 package org.beatonma.formio.app.ui.screens.settings.components
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import org.beatonma.formio.app.data.settings.ClockType
@@ -31,7 +32,7 @@ fun ClockTypeSetting(
     helpText: String? = null,
 ) {
     SettingLayout(
-        modifier,
+        modifier.padding(bottom = SettingTokens.SettingHorizontalPadding),
         helpText
     ) {
         SettingName(name)
