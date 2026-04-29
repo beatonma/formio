@@ -1,7 +1,5 @@
 package org.beatonma.formio.app.data.settings
 
-import org.beatonma.formio.compose.components.settings.data.RichSetting
-import org.beatonma.formio.compose.components.settings.data.RichSettings
 import org.beatonma.formio.core.options.AnyOptions
 import org.beatonma.formio.core.options.Layout
 import org.beatonma.formio.form.FormOptions

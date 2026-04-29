@@ -3,9 +3,6 @@ package org.beatonma.formio.app.data.settings
 
 import formio.app.generated.resources.Res
 import formio.app.generated.resources.setting_stroke_width
-import org.beatonma.formio.compose.components.settings.data.RichSetting
-import org.beatonma.formio.compose.components.settings.data.RichSettings
-import org.beatonma.formio.compose.components.settings.data.Setting
 import org.beatonma.formio.core.graphics.Paints
 import org.beatonma.formio.core.options.AnyOptions
 import org.beatonma.formio.core.options.Layout

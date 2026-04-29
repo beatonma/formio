@@ -1,9 +1,11 @@
 package buildlogic
 
+import Git
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.create
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
@@ -23,6 +25,7 @@ abstract class ProjectGlobalsExtension @Inject constructor(project: Project) {
     val projectId: String = "org.beatonma.formio"
 
     val javaVersion: JavaVersion = JavaVersion.VERSION_21
+    val jvmTarget: JvmTarget = JvmTarget.JVM_21
 
     val projectVersionName: String = "1.0.0"
     val projectVersionCode: Int = Git.commitCount(project)
@@ -30,9 +33,9 @@ abstract class ProjectGlobalsExtension @Inject constructor(project: Project) {
     val timestamp: String = LocalDateTime.now()
         .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
 
-    val androidMinSdk = 30
-    val androidTargetSdk = 36
-    val androidCompileSdk = 36
+    val androidMinSdk: Int = 30
+    val androidTargetSdk: Int = 36
+    val androidCompileSdk: Int = 36
 
     fun projectPackage(path: String): String = "${projectId}.${path.removePrefix(projectId).removePrefix(".")}"
     fun filename(fileType: String, suffix: String? = null): String {

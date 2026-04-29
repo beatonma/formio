@@ -8,11 +8,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
-import org.beatonma.formio.app.theme.AppTheme
-import org.beatonma.formio.app.theme.Theme
-import org.beatonma.formio.app.ui.screens.SettingsEditorScreen
-import org.beatonma.formio.app.ui.screens.SettingsEditorViewModel
-import org.beatonma.formio.compose.debugHotkey
+import org.beatonma.formio.app.ui.components.debugHotkey
+import org.beatonma.formio.app.ui.providers.HotkeyRegistryProvider
+import org.beatonma.formio.app.ui.providers.LocalSystemBars
+import org.beatonma.formio.app.ui.providers.SystemBarsController
+import org.beatonma.formio.app.ui.screens.settings.SettingsEditorScreen
+import org.beatonma.formio.app.ui.screens.settings.SettingsEditorViewModel
+import org.beatonma.formio.app.ui.theme.AppTheme
+import org.beatonma.formio.app.ui.theme.Theme
 
 @Composable
 fun App(

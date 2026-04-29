@@ -5,7 +5,7 @@ import formio.app.generated.resources.Res
 import formio.app.generated.resources.navigation_about
 import formio.app.generated.resources.navigation_default
 import kotlinx.serialization.Serializable
-import org.beatonma.formio.compose.AppIcon
+import org.beatonma.formio.app.ui.components.AppIcon
 import org.jetbrains.compose.resources.StringResource
 
 

@@ -38,10 +38,10 @@ import org.beatonma.formio.app.data.settings.DisplayContext
 import org.beatonma.formio.app.data.settings.DisplayMetrics
 import org.beatonma.formio.app.data.settingsRepository
 import org.beatonma.formio.app.ui.App
-import org.beatonma.formio.app.ui.SystemBarsController
-import org.beatonma.formio.app.ui.screens.SettingsEditorScreen
-import org.beatonma.formio.app.ui.screens.settingsEditorViewModel
-import org.beatonma.formio.compose.AndroidIcon
+import org.beatonma.formio.app.ui.components.AndroidIcon
+import org.beatonma.formio.app.ui.providers.SystemBarsController
+import org.beatonma.formio.app.ui.screens.settings.SettingsEditorScreen
+import org.beatonma.formio.app.ui.screens.settings.settingsEditorViewModel
 import org.beatonma.formio.wallpaper.ClockWallpaperService
 import org.beatonma.formio.widget.ClockWidgetProvider
 

@@ -5,12 +5,14 @@ import org.beatonma.formio.core.glyph.GlyphRole
 import org.beatonma.formio.core.options.TimeFormat
 
 class TestFont(
-    override val measurements: ClockFont.Measurements = DefaultMeasurements
+    override val measurements: ClockFont.Measurements = DefaultMeasurements,
 ) : ClockFont<TestGlyph> {
     override fun getGlyphAt(
         index: Int,
         format: TimeFormat,
         secondsGlyphScale: Float,
+        previous: TestGlyph?,
+        currentTimeMillis: Long,
     ): TestGlyph {
         val role = format.roles.getOrNull(index) ?: GlyphRole.Default
         val scale = when (role) {

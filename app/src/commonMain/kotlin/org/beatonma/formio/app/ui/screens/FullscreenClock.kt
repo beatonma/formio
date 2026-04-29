@@ -22,11 +22,11 @@ import kotlinx.coroutines.launch
 import org.beatonma.formio.app.data.settings.AnyContextClockOptions
 import org.beatonma.formio.app.data.settings.DisplayContext
 import org.beatonma.formio.app.data.settings.DisplayContextDefaults
-import org.beatonma.formio.app.ui.EdgeToEdge
-import org.beatonma.formio.compose.AppIcon
-import org.beatonma.formio.compose.components.Clock
-import org.beatonma.formio.compose.components.FloatingActionButton
-import org.beatonma.formio.compose.toCompose
+import org.beatonma.formio.app.ui.components.AppIcon
+import org.beatonma.formio.app.ui.components.Clock
+import org.beatonma.formio.app.ui.components.FloatingActionButton
+import org.beatonma.formio.app.ui.components.toCompose
+import org.beatonma.formio.app.ui.providers.EdgeToEdge
 import org.beatonma.formio.core.options.AnyOptions
 import org.jetbrains.compose.resources.stringResource
 

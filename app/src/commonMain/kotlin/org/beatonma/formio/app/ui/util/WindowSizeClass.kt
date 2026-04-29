@@ -1,0 +1,13 @@
+package org.beatonma.formio.app.ui.util
+
+import androidx.window.core.layout.WindowSizeClass
+
+fun WindowSizeClass.isWidthAtLeastExpanded() = isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
+fun WindowSizeClass.isWidthAtLeastMedium() = isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
+fun WindowSizeClass.isWidthSmall() = !isWidthAtLeastMedium()
+
+fun WindowSizeClass.isHeightAtLeastExpanded() =
+    isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND)
+
+fun WindowSizeClass.isHeightAtLeastMedium() = isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
+fun WindowSizeClass.isHeightSmall() = !isHeightAtLeastMedium()

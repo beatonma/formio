@@ -1,9 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalDistributionDsl
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 val wasmOutputDirectoryPath: String = "${layout.buildDirectory.get()}/outputs/wasmJs"
 
@@ -22,40 +19,23 @@ kotlin {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
+    jvm("desktop")
+
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
+            jvmTarget.set(projectGlobals.jvmTarget)
         }
     }
 
-    jvm("desktop")
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
-        outputModuleName.set(projectGlobals.projectName)
         browser {
-            val rootDirPath = project.rootDir.path
-            val projectDirPath = project.projectDir.path
             commonWebpackConfig {
-                outputFileName = when (mode) {
-                    KotlinWebpackConfig.Mode.PRODUCTION -> projectGlobals.filename("js")
-                    KotlinWebpackConfig.Mode.DEVELOPMENT -> projectGlobals.filename("js", suffix = "dev")
-                }
-
-                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-                    // Serve sources to debug inside browser
-                    static(rootDirPath)
-                    static(projectDirPath)
-                }
-            }
-
-            @OptIn(ExperimentalDistributionDsl::class)
-            distribution {
-                outputDirectory = File(wasmOutputDirectoryPath)
+                outputFileName = "${projectGlobals.projectName}.js"
             }
         }
-
         binaries.executable()
     }
 

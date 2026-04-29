@@ -2,6 +2,7 @@ package org.beatonma.formio.core.fixtures
 
 
 import org.beatonma.formio.core.geometry.NativeSize
+import org.beatonma.formio.core.glyph.BaseClockGlyph.Init
 import org.beatonma.formio.core.glyph.ClockGlyph
 import org.beatonma.formio.core.glyph.GlyphCompanion
 import org.beatonma.formio.core.glyph.GlyphRole
@@ -23,22 +24,13 @@ fun TestGlyph(
     separatorWidth: Float = 0f,
     lock: GlyphState? = null,
     currentTimeMillis: Long = getCurrentTimeMillis(),
-): TestGlyph = when (type) {
-    TestGlyph.Type.Synchronized -> SynchronizedTestGlyph(
-        role,
-        scale,
-        separatorWidth,
-        lock,
-        currentTimeMillis
-    )
+): TestGlyph {
+    val init = Init(role, scale, lock, null, null, currentTimeMillis)
 
-    TestGlyph.Type.Desynchronized -> DesynchronizedTestGlyph(
-        role,
-        scale,
-        separatorWidth,
-        lock,
-        currentTimeMillis
-    )
+    return when (type) {
+        TestGlyph.Type.Synchronized -> SynchronizedTestGlyph(init, separatorWidth)
+        TestGlyph.Type.Desynchronized -> DesynchronizedTestGlyph(init, separatorWidth)
+    }
 }
 
 sealed interface TestGlyph : ClockGlyph {
@@ -54,18 +46,9 @@ sealed interface TestGlyph : ClockGlyph {
 }
 
 private class DesynchronizedTestGlyph(
-    role: GlyphRole,
-    scale: Float = 1f,
+    init: Init,
     val separatorWidth: Float = 0f,
-    lock: GlyphState? = null,
-    currentTimeMillis: Long = getCurrentTimeMillis(),
-) : ClockGlyph.DesynchronizedVisibility(
-    role,
-    scale,
-    lock,
-    currentTimeMillis = currentTimeMillis
-),
-    TestGlyph {
+) : ClockGlyph.DesynchronizedVisibility(init), TestGlyph {
     override val companion: GlyphCompanion = TestGlyph
 
     override fun getWidthAtProgress(glyphProgress: Float): Float {
@@ -350,17 +333,9 @@ private class DesynchronizedTestGlyph(
 }
 
 private class SynchronizedTestGlyph(
-    role: GlyphRole,
-    scale: Float = 1f,
+    init: Init,
     val separatorWidth: Float,
-    lock: GlyphState?,
-    currentTimeMillis: Long,
-) : ClockGlyph.SynchronizedVisibility(
-    role,
-    scale,
-    lock,
-    currentTimeMillis = currentTimeMillis
-), TestGlyph {
+) : ClockGlyph.SynchronizedVisibility(init), TestGlyph {
     override val companion: GlyphCompanion = TestGlyph
     private var previousMillis: Int = 0
 

@@ -7,8 +7,8 @@ import formio.app.generated.resources.navigation_screensaver
 import formio.app.generated.resources.navigation_wallpaper
 import formio.app.generated.resources.navigation_widget
 import kotlinx.serialization.Serializable
-import org.beatonma.formio.compose.AndroidIcon
-import org.beatonma.formio.compose.AppIcon
+import org.beatonma.formio.app.ui.components.AndroidIcon
+import org.beatonma.formio.app.ui.components.AppIcon
 import org.jetbrains.compose.resources.StringResource
 
 @Suppress("unused")

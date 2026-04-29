@@ -16,8 +16,8 @@ import androidx.compose.ui.window.rememberWindowState
 import org.beatonma.formio.app.data.DataStoreAppSettingsRepository
 import org.beatonma.formio.app.data.createDataStore
 import org.beatonma.formio.app.ui.App
-import org.beatonma.formio.app.ui.SystemBarsController
-import org.beatonma.formio.app.ui.screens.settingsEditorViewModel
+import org.beatonma.formio.app.ui.providers.SystemBarsController
+import org.beatonma.formio.app.ui.screens.settings.settingsEditorViewModel
 import org.beatonma.formio.core.Build
 
 fun main() = application {

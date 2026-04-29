@@ -18,8 +18,8 @@ import org.beatonma.formio.app.data.settings.ClockType
 import org.beatonma.formio.app.data.settings.DefaultAppSettings
 import org.beatonma.formio.app.ui.App
 import org.beatonma.formio.app.ui.screens.FullSizeClock
-import org.beatonma.formio.app.ui.screens.SettingsEditorScreen
-import org.beatonma.formio.app.ui.screens.settingsEditorViewModel
+import org.beatonma.formio.app.ui.screens.settings.SettingsEditorScreen
+import org.beatonma.formio.app.ui.screens.settings.settingsEditorViewModel
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {

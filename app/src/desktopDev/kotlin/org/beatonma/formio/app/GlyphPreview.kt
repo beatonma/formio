@@ -20,8 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import org.beatonma.formio.compose.components.ConstrainedCanvas
-import org.beatonma.formio.compose.rememberCanvasHost
+import org.beatonma.formio.app.ui.components.ConstrainedCanvas
+import org.beatonma.formio.app.ui.components.rememberCanvasHost
 import org.beatonma.formio.core.geometry.ConstrainedLayout
 import org.beatonma.formio.core.geometry.MeasureConstraints
 import org.beatonma.formio.core.geometry.NativeSize

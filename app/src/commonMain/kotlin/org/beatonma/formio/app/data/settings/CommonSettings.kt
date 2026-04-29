@@ -14,9 +14,6 @@ import formio.app.generated.resources.setting_second_scale
 import formio.app.generated.resources.setting_time_is_24_hour
 import formio.app.generated.resources.setting_time_is_zero_padded
 import formio.app.generated.resources.setting_time_show_seconds
-import org.beatonma.formio.compose.components.settings.data.Key
-import org.beatonma.formio.compose.components.settings.data.RichSetting
-import org.beatonma.formio.compose.components.settings.data.Setting
 import org.beatonma.formio.core.geometry.HorizontalAlignment
 import org.beatonma.formio.core.geometry.RectF
 import org.beatonma.formio.core.geometry.VerticalAlignment

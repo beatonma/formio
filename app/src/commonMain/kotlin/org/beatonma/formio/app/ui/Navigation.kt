@@ -34,12 +34,12 @@ import org.beatonma.formio.app.data.settings.DisplayContext
 import org.beatonma.formio.app.data.settings.FormContextClockOptions
 import org.beatonma.formio.app.data.settings.Io16ContextClockOptions
 import org.beatonma.formio.app.data.settings.Io18ContextClockOptions
+import org.beatonma.formio.app.ui.components.LoadingSpinner
+import org.beatonma.formio.app.ui.components.NavigationScaffold
 import org.beatonma.formio.app.ui.screens.AboutScreen
 import org.beatonma.formio.app.ui.screens.FullSizeClock
-import org.beatonma.formio.app.ui.screens.SettingsEditorViewModel
+import org.beatonma.formio.app.ui.screens.settings.SettingsEditorViewModel
 import org.beatonma.formio.clocks.whenOptions
-import org.beatonma.formio.compose.LoadingSpinner
-import org.beatonma.formio.compose.components.NavigationScaffold
 import org.beatonma.formio.core.options.AnyOptions
 import org.beatonma.formio.form.FormOptions
 import org.beatonma.formio.io16.Io16Options
