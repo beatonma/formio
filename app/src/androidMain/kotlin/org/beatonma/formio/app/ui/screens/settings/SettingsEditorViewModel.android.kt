@@ -5,6 +5,8 @@ import formio.app.generated.resources.setting_help_lwp_launcher_pages
 import formio.app.generated.resources.setting_lwp_launcher_pages
 import formio.app.generated.resources.setting_lwp_launcher_pages_all
 import formio.app.generated.resources.setting_placeholder_lwp_launcher_pages
+import formio.app.generated.resources.widget_alarm_permission_request_description
+import formio.app.generated.resources.widget_alarm_permission_request_title
 import org.beatonma.formio.app.data.AppSettingsRepository
 import org.beatonma.formio.app.data.settings.DisplayContext
 import org.beatonma.formio.app.data.settings.GlobalOptions
@@ -18,12 +20,20 @@ import org.beatonma.formio.app.data.settings.chooseClockPosition
 import org.beatonma.formio.app.data.settings.replace
 
 
-actual object DisplaySettingsProvider {
-    actual fun addDisplaySettings(
 actual class SettingsEditorViewModel actual constructor(
     repository: AppSettingsRepository,
     onSave: (() -> Unit)?,
 ) : AbstractSettingsEditorViewModel(repository, onSave) {
+    companion object {
+        val WidgetAlarmPermission = Key.Action("test_widget_alarm_permission")
+    }
+
+    var shouldShowWidgetPermissionRequest: Boolean = true
+        set(value) {
+            field = value
+            refreshRichSettings()
+        }
+
     override fun addDisplaySettings(
         settings: RichSettings,
         displayContextOptions: DisplayContext.Options,
@@ -154,7 +164,12 @@ actual class SettingsEditorViewModel actual constructor(
         updateDisplayContextOptions: (DisplayContext.Options.Widget) -> Unit,
         globalOptions: GlobalOptions,
         updateGlobalOptions: (GlobalOptions) -> Unit,
-    ): RichSettings = settings
+    ): RichSettings = settings.copy(
+        core = when (shouldShowWidgetPermissionRequest) {
+            true -> listOf(widgetAlarmPermission()) + settings.core
+            false -> settings.core
+        }
+    )
 }
 
 
@@ -174,3 +189,10 @@ private fun chooseLwpLauncherPages(value: List<Int>, onUpdate: (List<Int>) -> Un
             }
         }
     )
+
+
+private fun widgetAlarmPermission() = RichSetting.ActionCard(
+    key = SettingsEditorViewModel.WidgetAlarmPermission,
+    name = Res.string.widget_alarm_permission_request_title,
+    helpText = Res.string.widget_alarm_permission_request_description,
+)

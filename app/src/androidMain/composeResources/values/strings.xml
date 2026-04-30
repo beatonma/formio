@@ -3,4 +3,11 @@
     <string name="navigation_widget">Widget</string>
     <string name="navigation_wallpaper">Wallpaper</string>
     <string name="navigation_screensaver">Screensaver</string>
+
+    <string name="widget_alarm_permission_request_title">Permission required</string>
+    <string name="widget_alarm_permission_request_description">
+        <![CDATA[The widget needs to update itself each minute in order to show the correct time. This requires the system permission `SCHEDULE_EXACT_ALARM`.
+
+Without this permission, system battery optimisations will likely cause the widget to show the wrong time most of the time.]]></string>
+    <string name="widget_alarm_permission_request_action">Grant permission</string>
 </resources>

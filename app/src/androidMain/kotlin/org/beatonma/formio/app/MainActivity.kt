@@ -11,12 +11,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -24,11 +23,11 @@ import androidx.core.app.AlarmManagerCompat.canScheduleExactAlarms
 import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import formio.app.generated.resources.Res
+import formio.app.generated.resources.widget_alarm_permission_request_action
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.beatonma.formio.R
 import org.beatonma.formio.android.alarmManager
 import org.beatonma.formio.android.appContext
 import org.beatonma.formio.android.componentNameOf
@@ -41,6 +40,10 @@ import org.beatonma.formio.app.ui.App
 import org.beatonma.formio.app.ui.components.AndroidIcon
 import org.beatonma.formio.app.ui.providers.SystemBarsController
 import org.beatonma.formio.app.ui.screens.settings.SettingsEditorScreen
+import org.beatonma.formio.app.ui.screens.settings.SettingsEditorViewModel
+import org.beatonma.formio.app.ui.screens.settings.components.LocalSettingActions
+import org.beatonma.formio.app.ui.screens.settings.components.SettingAction
+import org.beatonma.formio.app.ui.screens.settings.components.SettingActions
 import org.beatonma.formio.app.ui.screens.settings.settingsEditorViewModel
 import org.beatonma.formio.wallpaper.ClockWallpaperService
 import org.beatonma.formio.widget.ClockWidgetProvider
@@ -66,56 +69,53 @@ class MainActivity : ComponentActivity() {
 
     private fun setAppContent() {
         setContent {
-            val editorViewModel = settingsEditorViewModel(settingsRepository) {
-                ClockWidgetProvider.refreshWidgets(appContext)
-            }
-            val displayContext by editorViewModel.displayContext.collectAsStateWithLifecycle(null)
-
-            val snackbarHostState = remember { SnackbarHostState() }
+            val editorViewModel = settingsEditorViewModel(
+                settingsRepository,
+                onSave = { ClockWidgetProvider.refreshWidgets(appContext) }
+            )
             val systemBarsController = rememberSystemBarsController()
 
-            LaunchedEffect(displayContext, shouldShowWidgetPermissionRequest) {
-                if (displayContext == DisplayContext.Widget && shouldShowWidgetPermissionRequest) {
-                    showWidgetPermissionRequest(snackbarHostState)
-                }
+            LaunchedEffect(shouldShowWidgetPermissionRequest) {
+                editorViewModel.shouldShowWidgetPermissionRequest = shouldShowWidgetPermissionRequest
             }
 
             App(editorViewModel, systemBarsController) { navigation, navigationIcon ->
-                SettingsEditorScreen(
-                    editorViewModel,
-                    navigation,
-                    snackbarHostState = snackbarHostState,
-                    navigationIcon = navigationIcon,
-                    toolbar = { ClockToolbar(it) }
-                )
+                CompositionLocalProvider(LocalSettingActions provides rememberSettingActions()) {
+                    SettingsEditorScreen(
+                        editorViewModel,
+                        navigation,
+                        snackbarHostState = null,
+                        navigationIcon = navigationIcon,
+                        toolbar = { ClockToolbar(it) }
+                    )
+                }
             }
         }
     }
 
-    private suspend fun showWidgetPermissionRequest(snackbarHostState: SnackbarHostState) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            throw IllegalStateException("")
-        }
-        val result = snackbarHostState.showSnackbar(
-            resources.getString(R.string.permission_widget_alarms),
-            actionLabel = resources.getString(R.string.permission_widget_alarms_action_label),
-            duration = SnackbarDuration.Indefinite,
-        )
-
-        when (result) {
-            SnackbarResult.ActionPerformed -> {
-                requestAlarmPermissionLauncher.launch(
-                    Intent(
-                        Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
-                        "package:$packageName".toUri()
-                    )
+    @Composable
+    private fun rememberSettingActions(): SettingActions {
+        return remember {
+            mutableStateMapOf(
+                SettingsEditorViewModel.WidgetAlarmPermission to SettingAction(
+                    Res.string.widget_alarm_permission_request_action,
+                    ::requestWidgetExactAlarmPermission
                 )
-            }
-
-            SnackbarResult.Dismissed -> {
-                shouldShowWidgetPermissionRequest = false
-            }
+            )
         }
+    }
+
+    private fun requestWidgetExactAlarmPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            error("requestWidgetExactAlarmPermission() should only be called on Android >= 31")
+        }
+
+        requestAlarmPermissionLauncher.launch(
+            Intent(
+                Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                "package:$packageName".toUri()
+            )
+        )
     }
 
     /**

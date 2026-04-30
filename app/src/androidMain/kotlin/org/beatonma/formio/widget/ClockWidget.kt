@@ -65,13 +65,6 @@ interface ClockWidget {
     private fun scheduleUpdateAt(context: AppContext, time: LocalDateTime) {
         // There should never be more than one update scheduled at once.
         cancelUpdates(context)
-
-        val alarmManager = context.alarmManager.also {
-            if (!canScheduleExactAlarms(it)) {
-                warn("Cannot schedule alarm: Permission SCHEDULE_EXACT_ALARM has not been granted")
-                return
-            }
-        }
         val widgetIds: IntArray = getWidgetIds(context).also {
             if (it.isEmpty()) {
                 debug("Aborting scheduleNextUpdate: There are no active widgets to update.")
@@ -85,7 +78,14 @@ interface ClockWidget {
             putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds)
         }
         val pendingIntent = context.getBroadcastPendingIntent(intent)
-        alarmManager.setExact(AlarmManager.RTC, timeEpochMillis, pendingIntent)
+
+        val alarmManager = context.alarmManager
+        if (canScheduleExactAlarms(alarmManager)) {
+            alarmManager.setExact(AlarmManager.RTC, timeEpochMillis, pendingIntent)
+        } else {
+            warn("Cannot schedule exact alarm: Permission SCHEDULE_EXACT_ALARM has not been granted")
+            alarmManager.set(AlarmManager.RTC, timeEpochMillis, pendingIntent)
+        }
         debug("Update scheduled for $time | $timeEpochMillis")
     }
 
