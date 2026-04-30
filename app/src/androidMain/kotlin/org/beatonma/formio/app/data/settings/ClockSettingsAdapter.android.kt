@@ -44,7 +44,7 @@ private fun filterSettings(context: DisplayContext, settings: RichSettings): Ric
  * Remove settings/setting values which reference seconds as widget only
  * updates once a minute and never shows seconds.
  */
-private fun filterWidgetSettings(setting: RichSetting<*>): RichSetting<*>? {
+private fun filterWidgetSettings(setting: RichSetting): RichSetting? {
     return when (setting.key) {
         SettingKey.clockLayout -> {
             // Layout.Wrapped only useful for displaying seconds.
@@ -63,7 +63,7 @@ private fun filterWidgetSettings(setting: RichSetting<*>): RichSetting<*>? {
 }
 
 private fun <E : Enum<E>> filterSingleSelect(
-    setting: RichSetting<*>,
+    setting: RichSetting,
     filter: (E) -> Boolean,
 ): RichSetting.SingleSelect<E> {
     @Suppress("UNCHECKED_CAST")

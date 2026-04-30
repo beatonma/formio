@@ -433,7 +433,7 @@ private fun ClockSettingsColumn(
                         addItems(item.settings)
                     }
 
-                    is RichSetting<*> -> item(
+                    is RichSetting -> item(
                         key = item.key.value,
                         contentType = item.key
                     ) {

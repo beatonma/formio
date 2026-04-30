@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 import org.beatonma.formio.app.data.settings.RichSetting
 
 @Composable
-fun Setting(setting: RichSetting<*>, modifier: Modifier) {
+fun Setting(setting: RichSetting, modifier: Modifier) {
     when (setting) {
         is RichSetting.ClockColors -> ClockColorsSetting(setting, modifier)
         is RichSetting.ClockPosition -> ClockPositionSetting(setting, modifier)
@@ -16,5 +16,7 @@ fun Setting(setting: RichSetting<*>, modifier: Modifier) {
         is RichSetting.Float -> FloatSetting(setting, modifier)
         is RichSetting.Int -> IntegerSetting(setting, modifier)
         is RichSetting.IntList -> IntListSetting(setting, modifier)
+        is RichSetting.InfoCard -> InfoCard(setting, modifier)
+        is RichSetting.ActionCard -> ActionCard(setting, modifier)
     }
 }

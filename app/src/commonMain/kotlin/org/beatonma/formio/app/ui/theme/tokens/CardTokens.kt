@@ -6,4 +6,8 @@ import androidx.compose.ui.unit.dp
 internal object CardTokens {
     val ContentPadding = 16.dp
     val BetweenCardsPadding = 16.dp
+
+    val TitleSupportingTextSpacing = ColumnTokens.LargeSpacing
+    val ActionButtonsPadding = 16.dp
+    val ActionButtonsSpacing = RowTokens.SmallSpacing
 }

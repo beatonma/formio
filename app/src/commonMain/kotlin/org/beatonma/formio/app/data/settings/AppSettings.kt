@@ -149,10 +149,10 @@ data class AppSettings(
     ): AppSettings {
         val previous = settings[state.displayContext] ?: ContextSettings(state.displayContext)
 
-        @Suppress("UNCHECKED_CAST")
         val updatedSettings = settings.toMutableMap().apply {
             set(
                 state.displayContext,
+                @Suppress("UNCHECKED_CAST")
                 when (clock) {
                     ClockType.Form -> previous.copy(
                         clock = ClockType.Form,

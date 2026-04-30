@@ -12,6 +12,7 @@ import org.beatonma.formio.app.data.settings.ClockType as ClockTypeData
 sealed interface Setting
 
 
+@Immutable
 data class RichSettings(
     val core: List<Setting>,
     val colors: List<Setting>,
@@ -51,7 +52,7 @@ data class RichSettings(
         }
     }
 
-    fun filter(block: (RichSetting<*>) -> RichSetting<*>?): RichSettings {
+    fun filter(block: (RichSetting) -> RichSetting?): RichSettings {
         return copy(
             colors = colors.filterSettings(block),
             layout = layout.filterSettings(block),
@@ -61,22 +62,29 @@ data class RichSettings(
     }
 }
 
-
+@Immutable
 data class RichSettingsGroup(
     val settings: List<Setting>,
 ) : Setting
 
 
-/**
- * Wrapper for a specific [Options] field, with localized display test and
- * (optional) help text.
- */
-sealed interface RichSetting<T : Any> : Setting {
+sealed interface RichSetting : Setting {
     val key: Key
     val name: StringResource
     val helpText: StringResource?
-    val value: T
-    val onValueChange: (T) -> Unit
+
+    /**
+     * Wrapper for a specific [Options] field, with localized display test and (optional) help text.
+     */
+    sealed interface Editable<T : Any> : RichSetting {
+        val value: T
+        val onValueChange: (T) -> Unit
+    }
+
+    /**
+     * Item with additional information, not associated with any particular setting value but rendered inline with actual settings.
+     */
+    sealed interface Card : RichSetting
 
     @Immutable
     class ClockColors(
@@ -87,7 +95,7 @@ sealed interface RichSetting<T : Any> : Setting {
         override val onValueChange: (ClockColorsData) -> Unit,
         val palettes: List<ClockColorsData>,
         val onUpdatePalettes: (List<ClockColorsData>) -> Unit,
-    ) : RichSetting<ClockColorsData>
+    ) : Editable<ClockColorsData>
 
     @Immutable
     class SingleSelect<E : Enum<E>>(
@@ -97,7 +105,7 @@ sealed interface RichSetting<T : Any> : Setting {
         override val value: E,
         override val onValueChange: (E) -> Unit,
         val values: Set<E>,
-    ) : RichSetting<E> {
+    ) : Editable<E> {
         fun filterValues(predicate: (E) -> Boolean) = SingleSelect(
             key, name, helpText, value, onValueChange, values.filter(predicate).toSet()
         )
@@ -111,7 +119,7 @@ sealed interface RichSetting<T : Any> : Setting {
         override val value: Set<E>,
         override val onValueChange: (Set<E>) -> Unit,
         val values: Set<E>,
-    ) : RichSetting<Set<E>> {
+    ) : Editable<Set<E>> {
         fun filterValues(predicate: (E) -> Boolean) = MultiSelect(
             key, name, helpText, value, onValueChange, values.filter(predicate).toSet()
         )
@@ -128,7 +136,7 @@ sealed interface RichSetting<T : Any> : Setting {
         val max: kotlin.Int,
         val stepSize: kotlin.Int = 1,
         override val onValueChange: (kotlin.Int) -> Unit,
-    ) : RichSetting<kotlin.Int>
+    ) : Editable<kotlin.Int>
 
     @Immutable
     class Float(
@@ -141,7 +149,7 @@ sealed interface RichSetting<T : Any> : Setting {
         val max: kotlin.Float,
         val stepSize: kotlin.Float,
         override val onValueChange: (kotlin.Float) -> Unit,
-    ) : RichSetting<kotlin.Float>
+    ) : Editable<kotlin.Float>
 
     @Immutable
     class Bool(
@@ -150,7 +158,7 @@ sealed interface RichSetting<T : Any> : Setting {
         override val helpText: StringResource? = null,
         override val value: Boolean,
         override val onValueChange: (Boolean) -> Unit,
-    ) : RichSetting<Boolean>
+    ) : Editable<Boolean>
 
     @Immutable
     class ClockPosition(
@@ -159,7 +167,7 @@ sealed interface RichSetting<T : Any> : Setting {
         override val helpText: StringResource? = null,
         override val value: RectF,
         override val onValueChange: (RectF) -> Unit,
-    ) : RichSetting<RectF>
+    ) : Editable<RectF>
 
     @Immutable
     class ClockType(
@@ -168,7 +176,7 @@ sealed interface RichSetting<T : Any> : Setting {
         override val helpText: StringResource? = null,
         override val value: ClockTypeData,
         override val onValueChange: (ClockTypeData) -> Unit,
-    ) : RichSetting<ClockTypeData>
+    ) : Editable<ClockTypeData>
 
     @Immutable
     class IntList(
@@ -180,7 +188,21 @@ sealed interface RichSetting<T : Any> : Setting {
         val validator: SettingValidator<kotlin.Int>,
         val placeholder: StringResource? = null,
         val defaultValueDescription: StringResource? = null,
-    ) : RichSetting<List<kotlin.Int>>
+    ) : Editable<List<kotlin.Int>>
+
+    @Immutable
+    data class InfoCard(
+        override val key: Key.Info,
+        override val name: StringResource,
+        override val helpText: StringResource,
+    ) : Card
+
+    @Immutable
+    data class ActionCard(
+        override val key: Key.Action,
+        override val name: StringResource,
+        override val helpText: StringResource,
+    ) : Card
 }
 
 
@@ -207,6 +229,12 @@ sealed interface Key {
 
     @JvmInline
     value class RectF(override val value: String) : Key
+
+    @JvmInline
+    value class Info(override val value: String) : Key
+
+    @JvmInline
+    value class Action(override val value: String) : Key
 }
 
 fun interface SettingValidator<T> {
@@ -219,7 +247,7 @@ fun interface SettingValidator<T> {
 class ValidationFailed(message: String?) : Exception(message)
 
 
-private fun List<Setting>.filterSettings(block: (RichSetting<*>) -> RichSetting<*>?): List<Setting> {
+private fun List<Setting>.filterSettings(block: (RichSetting) -> RichSetting?): List<Setting> {
     val out = mutableListOf<Setting>()
 
     for (setting in this) {
@@ -231,7 +259,7 @@ private fun List<Setting>.filterSettings(block: (RichSetting<*>) -> RichSetting<
                 }
             }
 
-            is RichSetting<*> -> {
+            is RichSetting -> {
                 block(setting)?.let { out.add(it) }
             }
         }
@@ -240,17 +268,17 @@ private fun List<Setting>.filterSettings(block: (RichSetting<*>) -> RichSetting<
     return out
 }
 
-fun List<Setting>.forEachSetting(block: (RichSetting<*>) -> Unit) {
+fun List<Setting>.forEachSetting(block: (RichSetting) -> Unit) {
     for (setting in this) {
         when (setting) {
             is RichSettingsGroup -> setting.settings.forEachSetting(block)
-            is RichSetting<*> -> block(setting)
+            is RichSetting -> block(setting)
         }
     }
 }
 
 fun List<Setting>.insertBefore(key: Key, setting: Setting): List<Setting> {
-    val index = indexOfFirst { it is RichSetting<*> && it.key == key }
+    val index = indexOfFirst { it is RichSetting && it.key == key }
 
     return toMutableList().apply {
         if (index >= 0) {
@@ -262,7 +290,7 @@ fun List<Setting>.insertBefore(key: Key, setting: Setting): List<Setting> {
 }
 
 fun List<Setting>.insertAfter(key: Key, setting: Setting): List<Setting> {
-    val index = indexOfFirst { it is RichSetting<*> && it.key == key }
+    val index = indexOfFirst { it is RichSetting && it.key == key }
 
     return toMutableList().apply {
         if (index >= 0) {
@@ -274,7 +302,7 @@ fun List<Setting>.insertAfter(key: Key, setting: Setting): List<Setting> {
 }
 
 fun List<Setting>.replace(key: Key, block: (Setting) -> Setting): List<Setting> {
-    val index = indexOfFirst { it is RichSetting<*> && it.key == key }
+    val index = indexOfFirst { it is RichSetting && it.key == key }
 
     return toMutableList().apply {
         if (index >= 0) {
