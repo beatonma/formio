@@ -43,7 +43,7 @@ private typealias OnSaveCallback = () -> Unit
 
 class SettingsEditorViewModelFactory(
     private val repository: AppSettingsRepository,
-    private var onSave: OnSaveCallback? = null,
+    private val onSave: OnSaveCallback? = null,
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(
         modelClass: KClass<T>,
@@ -54,9 +54,9 @@ class SettingsEditorViewModelFactory(
     }
 }
 
-class SettingsEditorViewModel(
+abstract class AbstractSettingsEditorViewModel(
     private val repository: AppSettingsRepository,
-    private var onSave: OnSaveCallback? = null,
+    private val onSave: OnSaveCallback? = null,
 ) : ViewModel() {
     private val _appSettings: MutableStateFlow<AppSettings?> = MutableStateFlow(null)
     val appSettings: StateFlow<AppSettings?> = _appSettings.asStateFlow()
@@ -70,18 +70,23 @@ class SettingsEditorViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     val displayContext: Flow<DisplayContext?> = appSettings.mapLatest { it?.state?.displayContext }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val richSettings: StateFlow<RichSettings?> = appSettings.mapLatest { settings ->
-        when (settings) {
-            null -> null
-            else -> buildRichSettings(
-                settings.contextSettings.clock,
-                settings.contextOptions,
-                settings.globalOptions
-            )
-        }
-    }.stateIn(viewModelScope, started = SharingStarted.Eagerly, initialValue = null)
+    /**
+     * When value is changed (via [refreshRichSettings]), causes [richSettings] to rebuild and emit a new value.
+     */
+    private val refreshRichSettingsFlag = MutableStateFlow(false)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val richSettings: StateFlow<RichSettings?> =
+        combine(refreshRichSettingsFlag, appSettings) { _, settings -> settings }.mapLatest { settings ->
+            when (settings) {
+                null -> null
+                else -> buildRichSettings(
+                    settings.contextSettings.clock,
+                    settings.contextOptions,
+                    settings.globalOptions
+                )
+            }
+        }.stateIn(viewModelScope, started = SharingStarted.Eagerly, initialValue = null)
 
     init {
         viewModelScope.launch(Dispatchers.io) {
@@ -132,6 +137,16 @@ class SettingsEditorViewModel(
         }
     }
 
+    /**
+     * Force [richSettings] to rebuild and emit a new value.
+     *
+     * Primary use case: update the display state of any [RichSetting.Card]s (i.e. 'settings' which are not derived
+     * from [AppSettings]).
+     */
+    protected fun refreshRichSettings() {
+        refreshRichSettingsFlag.update { !it }
+    }
+
     fun restoreDefaultSettings() {
         viewModelScope.launch(Dispatchers.io) { repository.restoreDefaultSettings() }
     }
@@ -156,69 +171,62 @@ class SettingsEditorViewModel(
             globalOptions,
             ::setGlobalOptions
         )
-        settings = DisplaySettingsProvider.addDisplaySettings(
+        settings = addDisplaySettings(
             settings, options.displayOptions, ::setDisplayOptions,
             globalOptions,
             ::setGlobalOptions
         )
-        settings =
-            adapter.filterRichSettings(settings, options.clockOptions, options.displayContext)
+        settings = adapter.filterRichSettings(settings, options.clockOptions, options.displayContext)
 
         return settings
     }
-}
 
-expect object DisplaySettingsProvider {
-    fun addDisplaySettings(
+    open fun addDisplaySettings(
         settings: RichSettings,
         displayContextOptions: DisplayContext.Options,
         updateDisplayContextOptions: (DisplayContext.Options) -> Unit,
         globalOptions: GlobalOptions,
         updateGlobalOptions: (GlobalOptions) -> Unit,
-    ): RichSettings
-}
-
-@Suppress("UnusedReceiverParameter")
-internal fun DisplaySettingsProvider.defaultAddDisplaySettings(
-    settings: RichSettings,
-    displayContextOptions: DisplayContext.Options,
-    updateDisplayContextOptions: (DisplayContext.Options) -> Unit,
-    globalOptions: GlobalOptions,
-    updateGlobalOptions: (GlobalOptions) -> Unit,
-): RichSettings {
-    return when (displayContextOptions) {
-        is DisplayContextDefaults.WithBackground -> {
-            settings.copy(
-                colors = settings.colors.replace(SettingKey.clockColors) { previous ->
-                    val previous = previous as RichSetting.ClockColors
-                    chooseClockColors(
-                        value = previous.value.copy(background = displayContextOptions.backgroundColor),
-                        onValueChange = {
-                            it.background?.let { backgroundColor ->
-                                updateDisplayContextOptions(
-                                    displayContextOptions.copy(
-                                        backgroundColor = backgroundColor
+    ): RichSettings {
+        return when (displayContextOptions) {
+            is DisplayContextDefaults.WithBackground -> {
+                settings.copy(
+                    colors = settings.colors.replace(SettingKey.clockColors) { previous ->
+                        val previous = previous as RichSetting.ClockColors
+                        chooseClockColors(
+                            value = previous.value.copy(background = displayContextOptions.backgroundColor),
+                            onValueChange = {
+                                it.background?.let { backgroundColor ->
+                                    updateDisplayContextOptions(
+                                        displayContextOptions.copy(
+                                            backgroundColor = backgroundColor
+                                        )
                                     )
-                                )
-                            }
-                            previous.onValueChange(it)
-                        },
-                        palettes = globalOptions.colorPalettes,
-                        onUpdatePalettes = { updateGlobalOptions(globalOptions.copy(colorPalettes = it)) },
-                    )
-                },
-                layout = listOf(
-                    chooseClockPosition(
-                        value = displayContextOptions.position,
-                        onUpdate = { updateDisplayContextOptions(displayContextOptions.copy(position = it)) },
-                    ),
-                ) + settings.layout,
-            )
-        }
+                                }
+                                previous.onValueChange(it)
+                            },
+                            palettes = globalOptions.colorPalettes,
+                            onUpdatePalettes = { updateGlobalOptions(globalOptions.copy(colorPalettes = it)) },
+                        )
+                    },
+                    layout = listOf(
+                        chooseClockPosition(
+                            value = displayContextOptions.position,
+                            onUpdate = { updateDisplayContextOptions(displayContextOptions.copy(position = it)) },
+                        ),
+                    ) + settings.layout,
+                )
+            }
 
-        else -> throw IllegalStateException("Unhandled DisplayContext.Options: ${displayContextOptions::class}")
+            else -> throw IllegalStateException("Unhandled DisplayContext.Options: ${displayContextOptions::class}")
+        }
     }
 }
+
+expect class SettingsEditorViewModel(
+    repository: AppSettingsRepository,
+    onSave: OnSaveCallback? = null,
+) : AbstractSettingsEditorViewModel
 
 
 @Composable
@@ -226,8 +234,6 @@ fun settingsEditorViewModel(
     repository: AppSettingsRepository,
     onSave: (() -> Unit)? = null,
 ): SettingsEditorViewModel {
-    val factory = remember {
-        SettingsEditorViewModelFactory(repository = repository, onSave = onSave)
-    }
+    val factory = remember { SettingsEditorViewModelFactory(repository = repository, onSave = onSave) }
     return viewModel<SettingsEditorViewModel>(factory = factory)
 }
