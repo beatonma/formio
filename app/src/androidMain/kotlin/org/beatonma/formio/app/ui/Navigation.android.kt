@@ -14,12 +14,6 @@ import org.jetbrains.compose.resources.StringResource
 @Suppress("unused")
 @Serializable
 actual enum class NavigationMenuItem {
-    Widget {
-        override val label: StringResource = Res.string.navigation_widget
-        override val contentDescription: StringResource = Res.string.navigation_widget
-        override val icon: ImageVector = AndroidIcon.Widget
-        override val type: NavigationMenuItemType = NavigationMenuItemType.DisplayContext
-    },
     LiveWallpaper {
         override val label: StringResource = Res.string.navigation_wallpaper
         override val contentDescription: StringResource = Res.string.navigation_wallpaper
@@ -30,6 +24,12 @@ actual enum class NavigationMenuItem {
         override val label: StringResource = Res.string.navigation_screensaver
         override val contentDescription: StringResource = Res.string.navigation_screensaver
         override val icon: ImageVector = AndroidIcon.Screensaver
+        override val type: NavigationMenuItemType = NavigationMenuItemType.DisplayContext
+    },
+    Widget {
+        override val label: StringResource = Res.string.navigation_widget
+        override val contentDescription: StringResource = Res.string.navigation_widget
+        override val icon: ImageVector = AndroidIcon.Widget
         override val type: NavigationMenuItemType = NavigationMenuItemType.DisplayContext
     },
     About {
