@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
@@ -29,7 +29,7 @@ fun MarkdownText(
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     blockModifier: Modifier = Modifier,
 ) {
-    val markdown = rememberSaveable(raw, style) { parseMarkdown(raw.trim(), style) }
+    val markdown = remember(raw, style) { parseMarkdown(raw.trim(), style) }
     val paragraphModifier = blockModifier.padding(bottom = style.paragraphSpacing)
 
     Column(
@@ -135,6 +135,13 @@ private fun AnnotatedString.Builder.buildBlock(
                 }
             }
 
+            TokenType.Bold -> {
+                val (_, text) = token.groups
+                withStyle(theme.bold) {
+                    append(text)
+                }
+            }
+
             TokenType.Italic -> {
                 val (_, text) = token.groups
                 withStyle(theme.italic) {
@@ -142,9 +149,9 @@ private fun AnnotatedString.Builder.buildBlock(
                 }
             }
 
-            TokenType.Bold -> {
+            TokenType.Code -> {
                 val (_, text) = token.groups
-                withStyle(theme.bold) {
+                withStyle(theme.code) {
                     append(text)
                 }
             }
@@ -183,10 +190,11 @@ internal enum class MarkdownBlockType {
 }
 
 private enum class TokenType(val pattern: Regex) {
-    H1("""^# +(.*)$""".toRegex(RegexOption.MULTILINE)),
-    H2("""^## +(.*)$""".toRegex(RegexOption.MULTILINE)),
-    Bold("""\*\*(.*?)\*\*""".toRegex()),
-    Italic("""(?<!\*)\*(.*?)\*""".toRegex()),
+    H1("""^# +(.+)$""".toRegex(RegexOption.MULTILINE)),
+    H2("""^## +(.+)$""".toRegex(RegexOption.MULTILINE)),
+    Bold("""\*\*(.+?)\*\*""".toRegex()),
+    Italic("""(?<!\*)\*(.+?)\*""".toRegex()),
+    Code("""(`.+?`)""".toRegex()),
     Link("""\[(?<display>.*?)]\((?<url>.*?)\)""".toRegex()),
     ;
 

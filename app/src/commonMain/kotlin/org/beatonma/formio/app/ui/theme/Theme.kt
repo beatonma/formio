@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -49,6 +50,7 @@ data class MarkdownTheme(
     val link: SpanStyle,
     val bold: SpanStyle = SpanStyle(fontWeight = FontWeight.Bold),
     val italic: SpanStyle = SpanStyle(fontStyle = FontStyle.Italic),
+    val code: SpanStyle = SpanStyle(fontFamily = FontFamily.Monospace),
     val paragraph: ParagraphStyle = ParagraphStyle(),
     val paragraphSpacing: Dp = 8.dp,
 )
