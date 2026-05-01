@@ -50,6 +50,8 @@ interface WallpaperEngineDelegate {
         xPixelOffset: Int, yPixelOffset: Int,
     )
 
+    fun onZoomChanged(zoom: Float)
+
     fun onTouchEvent(event: MotionEvent): Boolean
     fun onDestroy()
 
@@ -163,12 +165,17 @@ internal class WallpaperEngineDelegateImpl(
 
             wallpaperSettings.first().let { wallpaper ->
                 backgroundColor = wallpaper.backgroundColor
-                animator.setConstraints(layoutManager.setBounds(wallpaper.position))
+                val constraints = layoutManager.setBounds(wallpaper.position)
+                updateConstraints(constraints)
                 visibilityManager.setLauncherPages(wallpaper.zeroIndexLauncherPages.ifEmpty { null })
             }
 
             postInvalidate()
         }
+    }
+
+    private fun updateConstraints(constraints: MeasureConstraints) {
+        _animator?.setConstraints(constraints)
     }
 
     private fun postInvalidate(delayMillis: Long = 0L) {
@@ -181,8 +188,8 @@ internal class WallpaperEngineDelegateImpl(
 
     override fun onSurfaceChanged(width: Int, height: Int) {
         debug("onSurfaceChanged($width, $height)")
-        val constraints = layoutManager.setSize(width, height)
-        _animator?.setConstraints(constraints)
+        val constraints = layoutManager.setAvailableSize(width, height)
+        updateConstraints(constraints)
     }
 
     override fun onVisibilityChanged(isVisible: Boolean, getIsKeyguardLocked: () -> Boolean) {
@@ -235,6 +242,11 @@ internal class WallpaperEngineDelegateImpl(
         visibilityManager.onPageChanged(currentPage)
     }
 
+    override fun onZoomChanged(zoom: Float) {
+        debug("onZoomChanged: $zoom")
+        layoutManager.setZoom(zoom)
+    }
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val glyph = _animator?.getGlyphAt(
             event.x - layoutManager.left,
@@ -252,9 +264,7 @@ internal class WallpaperEngineDelegateImpl(
     override fun draw(canvas: Canvas) {
         canvas.fill(backgroundColor)
         animator.tick()
-        canvas.withTranslation(layoutManager.left, layoutManager.top) {
-            animator.render(canvas)
-        }
+        layoutManager.withTransform(canvas, animator::render)
     }
 
     override fun clear(canvas: Canvas) {
@@ -268,7 +278,7 @@ internal class WallpaperEngineDelegateImpl(
         } ?: createAnimatorFromOptions(options, allowVariance = true) {
             postInvalidate(frameDelayMillis)
         }
-        animator.setConstraints(layoutManager.constraints)
+        updateConstraints(layoutManager.constraints)
         previousClockOptions = options
         return animator
     }
@@ -359,21 +369,31 @@ private class Debouncer(scope: CoroutineScope, dispatcher: CoroutineDispatcher) 
 }
 
 private class LayoutManager {
-    var width: Int = 0
-        private set
-    var height: Int = 0
-        private set
+    companion object {
+        private val MaxZoomOut = 0.15f
+    }
+
+    private var availableWidth: Int = 0
+    private var availableHeight: Int = 0
     private var relativeBounds: RectF = RectF.Invalid
     private var absoluteBounds: RectF = RectF(0f, 0f, 0f, 0f)
     val top get() = absoluteBounds.top
     val left get() = absoluteBounds.left
 
+    private var scale: Float = 1f
+    private var scalePivotX: Float = top
+    private var scalePivotY: Float = left
+
     var constraints: MeasureConstraints = MeasureConstraints(0f, 0f)
         private set
 
-    fun setSize(width: Int, height: Int): MeasureConstraints {
-        this.width = width
-        this.height = height
+    fun setAvailableSize(width: Int, height: Int): MeasureConstraints {
+        availableWidth = width
+        availableHeight = height
+
+        scalePivotX = width / 2f
+        scalePivotY = height / 2f
+
         return updateConstraints()
     }
 
@@ -382,9 +402,24 @@ private class LayoutManager {
         return updateConstraints()
     }
 
+    /**
+     * Somewhat unintuitively, WallpaperServiceEngine reports zoom as a value between 0..1 where
+     * - 0 means "fully zoomed in" (apparently the default state)
+     * - 1 means "fully zoomed out"
+     */
+    fun setZoom(zoom: Float) {
+        scale = 1f - (zoom * MaxZoomOut)
+    }
+
+    fun withTransform(canvas: Canvas, block: (Canvas) -> Unit) {
+        canvas.withScale(scale, scale, scalePivotX, scalePivotY) {
+            canvas.withTranslation(left, top, block)
+        }
+    }
+
     private fun updateConstraints(): MeasureConstraints {
-        val w = width.toFloat()
-        val h = height.toFloat()
+        val w = availableWidth.toFloat()
+        val h = availableHeight.toFloat()
 
         if (relativeBounds.isValid) {
             absoluteBounds = RectF(

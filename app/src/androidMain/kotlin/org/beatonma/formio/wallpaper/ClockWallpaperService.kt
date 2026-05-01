@@ -112,6 +112,11 @@ class ClockWallpaperService : WallpaperService() {
             )
         }
 
+        override fun onZoomChanged(zoom: Float) {
+            super.onZoomChanged(zoom)
+            delegate.onZoomChanged(zoom)
+        }
+
         override fun onTouchEvent(event: MotionEvent) {
             val consumed = delegate.onTouchEvent(event)
             if (!consumed) {
