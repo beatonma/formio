@@ -199,6 +199,7 @@ internal fun TestScope.createEngineDelegate(
     onDraw: (AndroidCanvasHost) -> Unit = {},
     onClearCanvas: (AndroidCanvasHost) -> Unit = {},
     getCurrentTimeMillis: () -> Long = ::getCurrentTimeMillis,
+    onNotifyColorsChanged: () -> Unit = {},
 ): WallpaperEngineDelegateImpl {
     val dispatcher = StandardTestDispatcher(testScheduler)
     val engine = WallpaperEngineDelegateImpl(
@@ -211,7 +212,8 @@ internal fun TestScope.createEngineDelegate(
         ioDispatcher = dispatcher,
         onDraw = onDraw,
         onClearCanvas = onClearCanvas,
-        getCurrentTimeMillis = getCurrentTimeMillis
+        getCurrentTimeMillis = getCurrentTimeMillis,
+        onNotifyColorsChanged = onNotifyColorsChanged,
     ).apply {
         // Apply initial state
         onSurfaceChanged(surfaceSize.width, surfaceSize.height)

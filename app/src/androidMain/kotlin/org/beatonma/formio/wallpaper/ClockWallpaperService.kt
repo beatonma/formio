@@ -1,6 +1,7 @@
 package org.beatonma.formio.wallpaper
 
 import android.app.KeyguardManager
+import android.app.WallpaperColors
 import android.app.wallpaper.WallpaperDescription
 import android.service.wallpaper.WallpaperService
 import android.view.MotionEvent
@@ -46,6 +47,7 @@ class ClockWallpaperService : WallpaperService() {
                 onClearCanvas = { canvasHost ->
                     withCanvasHost(canvasHost, delegate::clear)
                 },
+                onNotifyColorsChanged = ::notifyColorsChanged
             )
         }
 
@@ -122,6 +124,10 @@ class ClockWallpaperService : WallpaperService() {
             if (!consumed) {
                 super.onTouchEvent(event)
             }
+        }
+
+        override fun onComputeColors(): WallpaperColors? {
+            return delegate.onComputeColors()
         }
 
         override fun onDestroy() {

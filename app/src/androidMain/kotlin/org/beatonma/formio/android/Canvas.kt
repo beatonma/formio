@@ -381,6 +381,8 @@ private fun Paint.withStyle(color: Color, alpha: Float, drawStyle: DrawStyle): P
     return this
 }
 
+fun Color.toAndroidColor(): android.graphics.Color = android.graphics.Color.valueOf(this.toRgbInt())
+
 private fun StrokeCap.toAndroid(): Paint.Cap = when (this) {
     StrokeCap.Round -> Paint.Cap.ROUND
     StrokeCap.Butt -> Paint.Cap.BUTT

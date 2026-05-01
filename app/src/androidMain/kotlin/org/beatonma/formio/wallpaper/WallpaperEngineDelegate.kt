@@ -1,5 +1,7 @@
 package org.beatonma.formio.wallpaper
 
+import android.app.WallpaperColors
+import android.os.Build
 import android.service.wallpaper.WallpaperService
 import android.view.MotionEvent
 import kotlinx.coroutines.CoroutineDispatcher
@@ -19,6 +21,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.beatonma.formio.android.AndroidCanvasHost
+import org.beatonma.formio.android.toAndroidColor
 import org.beatonma.formio.app.data.AppSettingsRepository
 import org.beatonma.formio.app.data.loadDisplayMetrics
 import org.beatonma.formio.app.data.loadWallpaperSettings
@@ -33,6 +36,7 @@ import org.beatonma.formio.core.glyph.GlyphState
 import org.beatonma.formio.core.glyph.GlyphVisibility
 import org.beatonma.formio.core.graphics.Canvas
 import org.beatonma.formio.core.graphics.Color
+import org.beatonma.formio.core.graphics.luminance
 import org.beatonma.formio.core.options.AnyOptions
 import org.beatonma.formio.core.util.getCurrentTimeMillis
 import org.jetbrains.annotations.VisibleForTesting
@@ -43,6 +47,7 @@ import org.beatonma.formio.core.util.debug as coreDebug
 
 interface WallpaperEngineDelegate {
     fun onSurfaceChanged(width: Int, height: Int)
+
     fun onVisibilityChanged(isVisible: Boolean, getIsKeyguardLocked: () -> Boolean)
     fun onOffsetsChanged(
         xOffset: Float, yOffset: Float,
@@ -53,6 +58,10 @@ interface WallpaperEngineDelegate {
     fun onZoomChanged(zoom: Float)
 
     fun onTouchEvent(event: MotionEvent): Boolean
+
+    fun onComputeColors(): WallpaperColors?
+    fun notifyColorsChanged()
+
     fun onDestroy()
 
     fun draw(canvas: Canvas)
@@ -65,6 +74,7 @@ fun WallpaperEngineDelegate(
     settingsRepository: AppSettingsRepository,
     onDraw: (AndroidCanvasHost) -> Unit,
     onClearCanvas: (AndroidCanvasHost) -> Unit,
+    onNotifyColorsChanged: () -> Unit,
 ): WallpaperEngineDelegate = WallpaperEngineDelegateImpl(
     engine.isPreview,
     engine.isVisible,
@@ -75,6 +85,7 @@ fun WallpaperEngineDelegate(
     settingsRepository.loadWallpaperSettings().mapLatest { it.clockOptions },
     onDraw = onDraw,
     onClearCanvas = onClearCanvas,
+    onNotifyColorsChanged = onNotifyColorsChanged,
 )
 
 @VisibleForTesting
@@ -88,6 +99,7 @@ internal class WallpaperEngineDelegateImpl(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.io,
     private val onDraw: (AndroidCanvasHost) -> Unit,
     private val onClearCanvas: (AndroidCanvasHost) -> Unit,
+    private val onNotifyColorsChanged: () -> Unit,
     private val getCurrentTimeMillis: () -> Long = ::getCurrentTimeMillis,
     private val random: Random = Random.Default,
 ) : WallpaperEngineDelegate {
@@ -96,6 +108,7 @@ internal class WallpaperEngineDelegateImpl(
     private val animator: ClockAnimator<*> get() = _animator!!
     private var previousClockOptions: AnyOptions? = null
     private var backgroundColor: Color = Color(0xff000000.toInt())
+    private var colors: List<Color>? = null
 
     @VisibleForTesting
     internal val visibilityManager: VisibilityManager = VisibilityManager(
@@ -161,6 +174,7 @@ internal class WallpaperEngineDelegateImpl(
 
             clockSettings.first().let { clock ->
                 _animator = createAnimator(clock)
+                colors = clock.paints.colors.toList()
             }
 
             wallpaperSettings.first().let { wallpaper ->
@@ -170,6 +184,7 @@ internal class WallpaperEngineDelegateImpl(
                 visibilityManager.setLauncherPages(wallpaper.zeroIndexLauncherPages.ifEmpty { null })
             }
 
+            notifyColorsChanged()
             postInvalidate()
         }
     }
@@ -255,6 +270,24 @@ internal class WallpaperEngineDelegateImpl(
         glyph?.setState(GlyphState.Active, currentTimeMillis = getCurrentTimeMillis())
 
         return glyph != null
+    }
+
+    override fun onComputeColors(): WallpaperColors? {
+        val colors = colors ?: return null
+        if (colors.size < 3) return null
+        val (primary, secondary, tertiary) = colors.map { it.toAndroidColor() }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val hints: Int = if (backgroundColor.luminance() > 0.5f) WallpaperColors.HINT_SUPPORTS_DARK_TEXT else 0
+
+            return WallpaperColors(primary, secondary, tertiary, hints)
+        }
+
+        return WallpaperColors(primary, secondary, tertiary)
+    }
+
+    override fun notifyColorsChanged() {
+        onNotifyColorsChanged()
     }
 
     override fun onDestroy() {
