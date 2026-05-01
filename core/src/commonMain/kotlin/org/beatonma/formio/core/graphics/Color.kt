@@ -10,6 +10,7 @@ import kotlinx.serialization.encoding.Encoder
 import org.beatonma.formio.core.geometry.positiveDegrees
 import kotlin.jvm.JvmInline
 import kotlin.math.min
+import kotlin.math.pow
 
 @Serializable(with = ColorAsStringSerializer::class)
 @JvmInline
@@ -166,6 +167,27 @@ fun Color.withLightness(lightness: Float): Color {
 fun Color.withRed(red: Int): Color = Color.argb(alpha, red, green, blue)
 fun Color.withGreen(green: Int): Color = Color.argb(alpha, red, green, blue)
 fun Color.withBlue(blue: Int): Color = Color.argb(alpha, red, green, blue)
+
+/**
+ * Based on equations from https://www.w3.org/TR/2008/REC-WCAG20-20081211/: relative luminance
+ */
+fun Color.luminance(): Float {
+    val f: (Int) -> Double = { component ->
+        val asDouble = component.normalised().toDouble()
+
+        if (asDouble < 0.3928) {
+            asDouble / 12.92
+        } else {
+            ((asDouble + 0.055) / 1.055).pow(2.4)
+        }
+    }
+
+    val r = f(red)
+    val g = f(green)
+    val b = f(blue)
+
+    return (((0.2126 * r) + (0.7152 * g) + (0.0722 * b)).toFloat()).coerceIn(0f, 1f)
+}
 
 /**
  * Convert 0f..1f -> 0..255

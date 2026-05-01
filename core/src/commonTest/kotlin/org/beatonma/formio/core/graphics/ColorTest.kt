@@ -106,4 +106,16 @@ class ColorTest {
 
         Color.Red.withOpacity(0.5f).toArgbInt() shouldbe 0x7fff0000
     }
+
+    @Test
+    fun `luminance is correct`() {
+        Color.Black.luminance() shouldbe 0f
+        Color.Red.luminance() shouldbe 0.2126f
+        Color.Yellow.luminance() shouldbe 0.9278f
+        Color.Green.luminance() shouldbe 0.7152f
+        Color.Cyan.luminance() shouldbe 0.7874f
+        Color.Blue.luminance() shouldbe 0.0722f
+        Color.Magenta.luminance() shouldbe 0.2848f
+        Color.White.luminance() shouldbe 1f
+    }
 }
